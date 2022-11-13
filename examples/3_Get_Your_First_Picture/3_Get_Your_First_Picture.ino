@@ -20,7 +20,7 @@ void setup() {
      *  - eye()
      *  - wrover()
      */
-    cam.m5wide();
+    cam.aithinker();
 
     /**
      * Configure camera resolution

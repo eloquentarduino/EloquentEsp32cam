@@ -13,7 +13,7 @@ void setup() {
     Serial.println("Init");
 
     // see 3_Get_Your_First_Picture for more details
-    cam.m5wide();
+    cam.aithinker();
     cam.highQuality();
     cam.vga();
 

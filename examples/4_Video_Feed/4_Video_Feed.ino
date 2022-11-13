@@ -2,8 +2,8 @@
 #include "esp32cam/http/LiveFeed.h"
 
 // Replace with your WiFi credentials
-#define WIFI_SSID "Salerno"
-#define WIFI_PASS "SalernoWifi"
+#define WIFI_SSID "Your SSID"
+#define WIFI_PASS "Your password"
 
 // 80 is the port to listen to
 // You can change it to whatever you want, 80 is the default for HTTP
@@ -17,7 +17,7 @@ void setup() {
     Serial.println("Init");
 
     // see 3_Get_Your_First_Picture for more details
-    cam.m5wide();
+    cam.aithinker();
     cam.highQuality();
     cam.qvga();
 

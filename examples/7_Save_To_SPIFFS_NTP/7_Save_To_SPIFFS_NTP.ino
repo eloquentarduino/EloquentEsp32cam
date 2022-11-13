@@ -3,8 +3,8 @@
 #include "esp32cam.h"
 #include "esp32cam/NtpClient.h"
 
-#define WIFI_SSID "Salerno"
-#define WIFI_PASS "SalernoWifi"
+#define WIFI_SSID "Your SSID"
+#define WIFI_PASS "Your password"
 
 
 Eloquent::Esp32cam::Cam cam;
@@ -17,7 +17,7 @@ void setup() {
     Serial.println("Init");
 
     // see 3_Get_Your_First_Picture for more details
-    cam.m5wide();
+    cam.aithinker();
     cam.highQuality();
     cam.vga();
 
