@@ -1,0 +1,16 @@
+{
+  "name": "EloquentEsp32cam",
+  "keywords": "",
+  "description": "",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/eloquentarduino/EloquentEsp32cam"
+  },
+  "version": "1.0.0",
+  "authors": {
+    "name": "Simone Salerno",
+    "url": "https://github.com/eloquentarduino"
+  },
+  "frameworks": "arduino",
+  "platforms": "*"
+}
