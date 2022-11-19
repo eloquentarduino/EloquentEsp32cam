@@ -5,36 +5,49 @@
 #ifndef ELOQUENTSURVEILLANCE_BENCHMARKSCODE_H
 #define ELOQUENTSURVEILLANCE_BENCHMARKSCODE_H
 
-namespace EloquentSurveillance {
-    class BenchmarksCode {
-    public:
-
+namespace Eloquent {
+    namespace Esp32cam {
         /**
-         *
-         * @return
+         * Measure how long a piece of code takes
          */
-        size_t getExecutionTimeInMicros() {
-            return _benchmark;
-        }
+        class BenchmarksCode {
+        public:
 
-    protected:
-        size_t _benchmark;
-        size_t _startOfBenchmark;
+            /**
+             *
+             * @return
+             */
+            size_t getExecutionTimeInMicros() {
+                return _benchmark;
+            }
 
-        /**
-         *
-         */
-        void startBenchmark() {
-            _startOfBenchmark = micros();
-        }
+            /**
+             *
+             * @return
+             */
+            size_t getExecutionTimeInMillis() {
+                return getExecutionTimeInMicros() / 1000;
+            }
 
-        /**
-         *
-         */
-        void endBenchmark() {
-            _benchmark = micros() - _startOfBenchmark;
-        }
-    };
+        protected:
+            size_t _benchmark;
+            size_t _startOfBenchmark;
+
+            /**
+             *
+             */
+            void startBenchmark() {
+                _startOfBenchmark = micros();
+            }
+
+            /**
+             *
+             */
+            void stopBenchmark() {
+                _benchmark = micros() - _startOfBenchmark;
+            }
+        };
+    }
 }
 
 #endif //ELOQUENTSURVEILLANCE_BENCHMARKSCODE_H

@@ -7,13 +7,13 @@
 
 #include <esp_camera.h>
 #include <FS.h>
+#include "../traits/HasErrorMessage.h"
 #include "../traits/SetFrameSize.h"
 #include "../traits/SetJpegQuality.h"
 #include "../traits/SetModelPins.h"
 #include "../traits/ConfiguresImageSensor.h"
 #include "../traits/Debounces.h"
 #include "../traits/ConnectsToWiFi.h"
-#include "../traits/DecodesJpeg.h"
 #include "../traits/HasMDNS.h"
 #include "../traits/SavesToFilesystem.h"
 
@@ -25,12 +25,12 @@ namespace Eloquent {
          * Esp32 cam interface
          */
         class Cam :
+                public HasErrorMessage,
                 public SetFrameSize,
                 public SetJpegQuality,
                 public SetModelPins,
                 public ConfiguresImageSensor,
                 public Debounces,
-                public DecodesJpeg,
                 public HasMDNS,
                 public SavesToFilesystem,
                 public ConnectsToWiFi {
@@ -106,8 +106,6 @@ namespace Eloquent {
 
                 if (!captured())
                     return setErrorMessage("Capture error");
-
-                setJpeg(frame->buf, frame->len);
 
                 return touch();
             }

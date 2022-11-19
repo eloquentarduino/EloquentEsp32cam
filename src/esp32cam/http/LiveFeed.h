@@ -58,7 +58,7 @@ namespace Eloquent {
                     _mjpegServer.get("/", [](httpd_req_t *req) {
                         esp_err_t res = ESP_OK;
                         char *part[64];
-                        Cam * cam = (Cam * ) req->user_ctx;
+                        Cam * cam = (Cam *) req->user_ctx;
 
                         if (httpd_resp_set_type(req, "multipart/x-mixed-replace;boundary=frame") != ESP_OK)
                             return ESP_FAIL;
@@ -82,8 +82,7 @@ namespace Eloquent {
                             if (httpd_resp_send_chunk(req, (const char *) part, contentTypeHeaderLength) != ESP_OK)
                                 return ESP_FAIL;
 
-                            if (httpd_resp_send_chunk(req, (const char *) cam->frame->buf,
-                                                      cam->getFileSize()) != ESP_OK)
+                            if (httpd_resp_send_chunk(req, (const char *) cam->frame->buf, cam->getFileSize()) != ESP_OK)
                                 return ESP_FAIL;
 
                             res = httpd_resp_send_chunk(req, "\r\n--frame\r\n", 12);
