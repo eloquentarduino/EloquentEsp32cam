@@ -11,7 +11,7 @@ void setup() {
     delay(3000);
     Serial.println("Init");
 
-    cam.m5wide();
+    cam.aithinker();
     cam.highQuality();
     cam.vga();
 

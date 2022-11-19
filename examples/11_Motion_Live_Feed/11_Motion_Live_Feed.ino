@@ -9,8 +9,8 @@
 #include "esp32cam/http/MotionLiveFeed.h"
 
 // Replace with your WiFi credentials
-#define WIFI_SSID "Salerno"
-#define WIFI_PASS "SalernoWifi"
+#define WIFI_SSID "Your SSID"
+#define WIFI_PASS "Your password"
 
 
 Eloquent::Esp32cam::Cam cam;
@@ -29,7 +29,7 @@ void setup() {
     delay(3000);
     Serial.println("Init");
 
-    cam.m5wide();
+    cam.aithinker();
     cam.highQuality();
     cam.vga();
     cam.highestSaturation();
