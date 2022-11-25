@@ -240,24 +240,33 @@ namespace Eloquent {
                  * Detect if motion happened in RoI
                  * @return
                  */
-                 template<typename RoI>
+                template<typename RoI>
                 bool triggeredIn(RoI& roi) {
-                    size_t count = 0;
+                    uint16_t x1;
+                    uint16_t x2;
+                    uint16_t y1;
+                    uint16_t y2;
                     size_t foregroundCount = 0;
 
-                    for (size_t y = 0; y < _height; y++) {
+                    roi.forget();
+                    roi.setBoundaries(_width, _height);
+                    roi.getBoundingBox(&x1, &y1, &x2, &y2);
+
+                    for (size_t y = y1; y < y2; y++) {
                         const size_t offset = y * _width;
 
-                        for (size_t x = 0; x < _width; x++)
-                            if (roi.test(x, y, _width, _height) && ++count)
-                                if (foreground[offset + x])
+                        for (size_t x = x1; x < x2; x++)
+                            if (roi.includes(x, y)) {
+                                roi.incrementArea();
+
+                                if (foreground[offset + x]) {
                                     foregroundCount += 1;
+                                    roi.incrementForeground();
+                                }
+                            }
                     }
 
-                    const float t = roi.getThreshold();
-                    const size_t thresh = (t >= 1) ? t : t * count;
-
-                    return count > 0 && ((float) foregroundCount) / count >= thresh;
+                    return roi.triggered();
                 }
 
                 /**

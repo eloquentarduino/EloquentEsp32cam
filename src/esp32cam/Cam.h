@@ -77,6 +77,22 @@ namespace Eloquent {
             }
 
             /**
+             * Turn flashlight on
+             */
+            inline void flashOn() {
+                if (_pins.flashlight >= 0)
+                    digitalWrite(_pins.flashlight, HIGH);
+            }
+
+            /**
+             * Turn flashlight off
+             */
+            inline void flashOff() {
+                if (_pins.flashlight >= 0)
+                    digitalWrite(_pins.flashlight, LOW);
+            }
+
+            /**
              * Test if frame is in memory
              * @return
              */

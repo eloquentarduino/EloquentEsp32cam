@@ -42,8 +42,8 @@ namespace Eloquent {
                     if (!_detector->getWidth() || !_detector->getHeight())
                         return setErrorMessage("Unknown frame size");
 
-                    for(int y = 0; y < _detector->getHeight(); y++) {
-                        for(int x = 0; x < _detector->getWidth(); x++) {
+                    for(int y = 2, height = _detector->getHeight(); y < height - 2; y++) {
+                        for(int x = 2, width = _detector->getWidth(); x < width - 2; x++) {
                             if(!_visited[y][x] && _detector->isForeground(x, y)) {
                                 _count = 1;
                                 dfs(x, y, &_count);
@@ -76,25 +76,39 @@ namespace Eloquent {
                 inline void dfs(int x, int y, size_t* count) {
                     _visited[y][x] = true;
 
-                    if (isSafe(x, y + 1)) {
+                    // @implemention note
+                    // using a pure recursive DFS, we get a runtime error
+                    // probably due to too deep recursion
+                    // so we manually "unroll" the recursion
+
+                    // 1st degree neighbors
+                    if (isCandidate(x, y + 1)) {
                         (*count) += 1;
-                        dfs(x, y + 1, count);
                     }
 
-                    if (isSafe(x + 1, y)) {
+                    if (isCandidate(x + 1, y)) {
                         (*count) += 1;
-                        dfs(x + 1, y, count);
                     }
 
-                    if (x > 1 && isSafe(x - 1, y)) {
+                    if (x > 1 && isCandidate(x - 1, y)) {
                         (*count) += 1;
-                        dfs(x - 1, y, count);
                     }
 
-                    /*if (y > 1 && isSafe(x, y - 1)) {
+                    if (y > 1 && isCandidate(x, y - 1)) {
                         (*count) += 1;
-                        dfs(x, y - 1, count);
-                    }*/
+                    }
+
+                    // 2nd degree neighbors
+                    for (int dy = -2; dy < 3; dy++) {
+                        for (int dx = -2; dx < 3; dx++) {
+                            if (abs(dx) + abs(dy) == 2 && isCandidate(x + dx, y + dy)) {
+                                (*count) += 1;
+                            }
+                        }
+                    }
+
+                    // 3rd degree neighbors
+
                 }
 
                 /**
@@ -103,13 +117,15 @@ namespace Eloquent {
                  * @param y
                  * @return
                  */
-                inline bool isSafe(int x, int y)
+                inline bool isCandidate(int x, int y)
                 {
                     return
                         x >= 0
                         && y >= 0
-                        && _detector->isForeground(x, y)
-                        && !_visited[y][x];
+                        && x < MAX_RESOLUTION_WIDTH / 8
+                        && y < MAX_RESOLUTION_HEIGHT / 8
+                        && !_visited[y][x]
+                        && _detector->isForeground(x, y);
                     ;
                 }
             };

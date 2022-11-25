@@ -32,11 +32,13 @@ void setup() {
     cam.highestSaturation();
     /**
      * For motion detection to perform well, I suggest
-     * you disable automatic white balance, otherwise
+     * you disable automatic controls, otherwise
      * the camera sensor will artificially alter the
      * pixels and those will be mis-labelled as foreground
      */
     cam.disableAutomaticWhiteBalance();
+    cam.disableAutomaticExposureControl();
+    cam.disableGainControl();
 
     /**
      * Configure the detector
@@ -51,10 +53,10 @@ void setup() {
      */
     detector.retrainAfter(33ULL * 600);
     /**
-     * detection motion when 10% or more pixels of the frame
+     * detection motion when 20% or more pixels of the frame
      * are labelled as background
      */
-    detector.triggerAbove(0.1);
+    detector.triggerAbove(0.2);
     /**
      * try to remove spurious foreground pixels
      */
@@ -66,9 +68,9 @@ void setup() {
      */
      /**
       * label pixel as foreground if its value changed
-      * by more than 10 (in a range from 0 to 255)
+      * by more than 20 (in a range from 0 to 255)
       */
-    algorithm.differBy(10);
+    algorithm.differBy(20);
     /**
      * when updating the pixel value, how much shall we
      * take into consideration its previous value?

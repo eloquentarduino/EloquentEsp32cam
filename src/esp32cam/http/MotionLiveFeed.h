@@ -8,6 +8,7 @@
 #include <WebServer.h>
 
 #include "../motion/Detector.h"
+#include "../motion/roi/RoI.h"
 #include "../JpegDecoder.h"
 #include "../../traits/HasErrorMessage.h"
 
@@ -30,10 +31,21 @@ namespace Eloquent {
                 MotionLiveFeed(Cam& cam, Motion::Detector& detector, uint16_t httpPort = 80) :
                     _cam(&cam),
                     _detector(&detector),
+                    _roi(NULL),
                     port(httpPort),
                     _indexServer(httpPort) {
                 }
 
+                /**
+                 * Display RoI on top of image
+                 * @param roi
+                 */
+                void addRoI(Motion::RoI::RegionOfInterest& roi) {
+                    if (_roi == NULL)
+                        _roi = &roi;
+                    else
+                        _roi->chain(roi);
+                }
 
                 /**
                  *
@@ -60,17 +72,32 @@ namespace Eloquent {
                         _indexServer.sendContent(F("`; var algorithmConfig = `"));
                         _indexServer.sendContent(_detector->algorithm->getCurrentConfig());
                         _indexServer.sendContent(F("`</script>"));
+                        _indexServer.sendContent(F("<script>var rois = []</script>"));
+
+                        Motion::RoI::RegionOfInterest *roi = _roi;
+
+                        while (roi != NULL) {
+                            roi->setBoundaries(_cam->getWidth() / 8, _cam->getHeight() / 8);
+                            _indexServer.sendContent(F("<script>rois.push((ctx) => {"));
+                            _indexServer.sendContent(roi->drawToCanvas());
+                            _indexServer.sendContent(F("})</script>"));
+
+                            roi = roi->next();
+                        }
+
                         _indexServer.sendContent(F(R"===(
 <style>
 #frame {position: relative; display: inline-block;}
 #grid-container {position: absolute; top: 0; left: 0; right: 0; bottom: 0;}
 #grid {display:grid; width: 100%; height: 100%; }
+#canvas {position: absolute; top: 0; left: 0; width: 100%; height: 100%;}
 .cell.foreground { background: rgba(255, 255, 0, 0.5); }
 </style>
 <div id="app">
     <div id="frame">
         <img id="feed" />
         <div id="grid-container"><div id="grid"></div></div>
+        <canvas id="canvas"></canvas>
     </div>
     <div>
         <pre id="detector-config"></pre>
@@ -83,16 +110,31 @@ document.getElementById('detector-config').textContent = 'Detector config: ' + d
 document.getElementById('algorithm-config').textContent = 'Algorithm config: ' + algorithmConfig;
 </script>
 <script>
+var colors = ['#3498db', '#c0392b', '#16a085', '#2c3e50', '#e67e22', '#8e44ad']
+
+const urlParams = new URLSearchParams(window.location.search);
 const grid = document.getElementById("grid");
 const feed = document.getElementById("feed");
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext('2d')
 const motionResponse = document.getElementById("motion-response");
 
+// draw grid
 grid.style['grid-template-columns'] = `repeat(${width / 8}, 1fr)`
 grid.style['grid-template-rows'] = `repeat(${height / 8}, 1fr)`
 ;[...new Array(width * height / 64)].forEach(() => {
     const cell = document.createElement('span')
     cell.className = 'cell'
     grid.appendChild(cell)
+})
+
+// draw RoIs
+canvas.setAttribute("width", width);
+canvas.setAttribute("height", height);
+rois.forEach((draw, i) => {
+    ctx.strokeStyle = colors[i % colors.length]
+    ctx.lineWidth = parseInt(urlParams.get('line-width') || '4')
+    draw(ctx)
 })
 </script>
 <script>
@@ -107,12 +149,14 @@ function drawFeed() {
 }
 
 function drawMotion() {
-    let isMotion = ''
+    let statusMessages = []
     let isOk
 
     fetch("/motion")
         .then(res => {
-            isMotion = res.headers.get('X-Motion-Status')
+            statusMessages.push(res.headers.get('X-Motion-Status'))
+            rois.forEach((_, i) => statusMessages.push(res.headers.get(`X-Motion-Status-Roi-${i}`)))
+
             return res
         })
         .then(res => {
@@ -121,7 +165,7 @@ function drawMotion() {
         })
         .then(body => {
             if (isOk) {
-                motionResponse.textContent = isMotion
+                motionResponse.textContent = statusMessages.join("\n")
                 body.split("").forEach((isForeground, i) => {
                     const classList = grid.children[i].classList
                     isForeground == '1' ? classList.add("foreground") : classList.remove("foreground")
@@ -145,10 +189,28 @@ setTimeout(() => drawMotion(), 1500)
 
                     _indexServer.on("/motion", [this]() {
                         if (!_detector->isTraining()) {
-                            _indexServer.sendHeader("X-Motion-Status",
-                                                    String(_detector->triggered() ? "Motion detected" : "Motion not detected")
-                                                    + " | "
-                                                    + _detector->getTriggerStatus());
+                            _indexServer.sendHeader(
+                                    "X-Motion-Status",
+                                    String(_detector->triggered() ? "Motion detected" : "Motion not detected")
+                                    + " | "
+                                    + _detector->getTriggerStatus());
+
+                            uint16_t i = 0;
+                            Motion::RoI::RegionOfInterest *roi = _roi;
+
+                            while (roi != NULL) {
+                                _detector->triggeredIn(*roi);
+
+                                _indexServer.sendHeader(
+                                        String("X-Motion-Status-Roi-") + i,
+                                        String(roi->triggered() ? "Motion detected" : "Motion not detected")
+                                        + " | "
+                                        + roi->getTriggerStatus());
+
+                                i += 1;
+                                roi = roi->next();
+                            }
+
                             _indexServer.send(200, "text/plain", _detector->toString());
                         }
                         else
@@ -212,6 +274,7 @@ setTimeout(() => drawMotion(), 1500)
                 Cam* _cam;
                 JpegDecoder _decoder;
                 Motion::Detector* _detector;
+                Motion::RoI::RegionOfInterest* _roi;
                 WebServer _indexServer;
             };
         }

@@ -33,6 +33,7 @@ namespace Eloquent {
                 _pins.sscb_scl = 27;
                 _pins.pwdn = 32;
                 _pins.reset = -1;
+                _pins.flashlight = 4;
             }
 
             /**
@@ -55,6 +56,7 @@ namespace Eloquent {
                 _pins.sscb_scl = 23;
                 _pins.pwdn = -1;
                 _pins.reset = 15;
+                _pins.flashlight = 16;
             }
 
             /**
@@ -77,6 +79,7 @@ namespace Eloquent {
                 _pins.sscb_scl = 23;
                 _pins.pwdn = -1;
                 _pins.reset = 15;
+                _pins.flashlight = 14;
             }
 
             /**
@@ -99,6 +102,7 @@ namespace Eloquent {
                 _pins.sscb_scl = 23;
                 _pins.pwdn = -1;
                 _pins.reset = -1;
+                _pins.flashlight = 22;
             }
 
             /**
@@ -121,6 +125,7 @@ namespace Eloquent {
                 _pins.sscb_scl = 27;
                 _pins.pwdn = -1;
                 _pins.reset = -1;
+                _pins.flashlight = -1;
             }
 
         protected:
@@ -141,6 +146,7 @@ namespace Eloquent {
                 int8_t sscb_scl;
                 int8_t pwdn;
                 int8_t reset;
+                int8_t flashlight;
             } _pins;
 
 
