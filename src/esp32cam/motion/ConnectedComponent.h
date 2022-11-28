@@ -1,5 +1,6 @@
 //
 // Created by Simone on 17/11/22.
+// @WIP
 //
 
 #ifndef ELOQUENTESP32CAM_CONNECTEDCOMPONENT_H

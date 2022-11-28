@@ -9,6 +9,7 @@
 
 #include "../motion/Detector.h"
 #include "../motion/roi/RoI.h"
+#include "../motion/localization/Localizer.h"
 #include "../JpegDecoder.h"
 #include "../../traits/HasErrorMessage.h"
 
@@ -32,6 +33,7 @@ namespace Eloquent {
                     _cam(&cam),
                     _detector(&detector),
                     _roi(NULL),
+                    _localizer(NULL),
                     port(httpPort),
                     _indexServer(httpPort) {
                 }
@@ -45,6 +47,14 @@ namespace Eloquent {
                         _roi = &roi;
                     else
                         _roi->chain(roi);
+                }
+
+                /**
+                 * Display localization
+                 * @param localizer
+                 */
+                void localizeWith(Motion::Localization::Localizer& localizer) {
+                    _localizer = &localizer;
                 }
 
                 /**
@@ -91,6 +101,7 @@ namespace Eloquent {
 #grid-container {position: absolute; top: 0; left: 0; right: 0; bottom: 0;}
 #grid {display:grid; width: 100%; height: 100%; }
 #canvas {position: absolute; top: 0; left: 0; width: 100%; height: 100%;}
+#localization {position: absolute; background: rgba(255, 0, 0, 0.2); width: 0; height: 0;}
 .cell.foreground { background: rgba(255, 255, 0, 0.5); }
 </style>
 <div id="app">
@@ -98,10 +109,12 @@ namespace Eloquent {
         <img id="feed" />
         <div id="grid-container"><div id="grid"></div></div>
         <canvas id="canvas"></canvas>
+        <div id="localization"></div>
     </div>
     <div>
         <pre id="detector-config"></pre>
         <pre id="algorithm-config"></pre>
+        <pre id="localization-text"></pre>
         <pre id="motion-response"></pre>
     </div>
 </div>
@@ -115,6 +128,8 @@ var colors = ['#3498db', '#c0392b', '#16a085', '#2c3e50', '#e67e22', '#8e44ad']
 const urlParams = new URLSearchParams(window.location.search);
 const grid = document.getElementById("grid");
 const feed = document.getElementById("feed");
+const localization = document.getElementById("localization");
+const localizationText = document.getElementById("localization-text");
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext('2d')
 const motionResponse = document.getElementById("motion-response");
@@ -154,8 +169,30 @@ function drawMotion() {
 
     fetch("/motion")
         .then(res => {
+            // RoIs
             statusMessages.push(res.headers.get('X-Motion-Status'))
             rois.forEach((_, i) => statusMessages.push(res.headers.get(`X-Motion-Status-Roi-${i}`)))
+
+            // localization
+            try {
+                const locHeader = res.headers.get('X-Motion-Localization')
+                const loc = locHeader ? JSON.parse(locHeader) : null
+
+                localizationText.innerText = `Localized motion at: ${locHeader}`
+
+                if (loc) {
+                    localization.style.left = `${loc.x}px`
+                    localization.style.top = `${loc.y}px`
+                    localization.style.width = `${loc.w}px`
+                    localization.style.height = `${loc.h}px`
+                }
+                else {
+                    localization.style.left = '0px'
+                    localization.style.top = '0px'
+                    localization.style.width = '0px'
+                    localization.style.height = '0px'
+                }
+            } catch (e) {}
 
             return res
         })
@@ -195,6 +232,7 @@ setTimeout(() => drawMotion(), 1500)
                                     + " | "
                                     + _detector->getTriggerStatus());
 
+                            // RoIs
                             uint16_t i = 0;
                             Motion::RoI::RegionOfInterest *roi = _roi;
 
@@ -209,6 +247,11 @@ setTimeout(() => drawMotion(), 1500)
 
                                 i += 1;
                                 roi = roi->next();
+                            }
+
+                            // localizer
+                            if (_localizer != NULL && _localizer->localize(*_detector)) {
+                                _indexServer.sendHeader("X-Motion-Localization", _localizer->toJson());
                             }
 
                             _indexServer.send(200, "text/plain", _detector->toString());
@@ -275,6 +318,7 @@ setTimeout(() => drawMotion(), 1500)
                 JpegDecoder _decoder;
                 Motion::Detector* _detector;
                 Motion::RoI::RegionOfInterest* _roi;
+                Motion::Localization::Localizer* _localizer;
                 WebServer _indexServer;
             };
         }
