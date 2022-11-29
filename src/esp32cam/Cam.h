@@ -49,6 +49,20 @@ namespace Eloquent {
             }
 
             /**
+             * Set clock speed to 1MHz
+             */
+            inline void slowClock() {
+                config.xclk_freq_hz = 10000000;
+            }
+
+            /**
+             * Set clock speed to 2MHz
+             */
+            inline void fastClock() {
+                config.xclk_freq_hz = 20000000;
+            }
+
+            /**
              *
              * @return
              */
