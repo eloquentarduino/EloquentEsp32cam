@@ -79,7 +79,7 @@ namespace Eloquent {
             /**
              * Turn flashlight on
              */
-            inline void flashlighOn() {
+            inline void flashlightOn() {
                 if (_pins.flashlight >= 0)
                     digitalWrite(_pins.flashlight, HIGH);
             }

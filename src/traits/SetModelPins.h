@@ -128,6 +128,29 @@ namespace Eloquent {
                 _pins.flashlight = -1;
             }
 
+            /**
+             *
+             */
+            void ttgoLCD() {
+                _pins.d0 = 34;
+                _pins.d1 = 13;
+                _pins.d2 = 26;
+                _pins.d3 = 35;
+                _pins.d4 = 39;
+                _pins.d5 = 38;
+                _pins.d6 = 37;
+                _pins.d7 = 36;
+                _pins.xclk = 4;
+                _pins.pclk = 25;
+                _pins.vsync = 5;
+                _pins.href = 27;
+                _pins.sscb_sda = 18;
+                _pins.sscb_scl = 23;
+                _pins.pwdn = -1;
+                _pins.reset = -1;
+                _pins.flashlight = -1;
+            }
+
         protected:
             struct {
                 int8_t d0 = 0;
@@ -171,6 +194,9 @@ namespace Eloquent {
                 config->pin_sscb_scl = _pins.sscb_scl;
                 config->pin_pwdn = _pins.pwdn;
                 config->pin_reset = _pins.reset;
+
+                if (_pins.flashlight >= 0)
+                    pinMode(_pins.flashlight, OUTPUT);
             }
 
             /**
