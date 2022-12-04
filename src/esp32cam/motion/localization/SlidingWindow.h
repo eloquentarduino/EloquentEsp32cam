@@ -21,10 +21,10 @@ namespace Eloquent {
                     /**
                      *
                      */
-                    SlidingWindow() :
+                    SlidingWindow(Detector& detector) :
                         _thresh(0.5),
                         _earlyStop(true) {
-
+                        this->detector = &detector;
                     }
 
                     /**
@@ -60,10 +60,10 @@ namespace Eloquent {
                      * @param detector
                      * @return
                      */
-                    bool localize(Detector& detector) {
+                    bool localize() {
                         uint8_t dividers[] = {3, 4, 8};
-                        const uint16_t width = detector.getWidth();
-                        const uint16_t height = detector.getHeight();
+                        const uint16_t width = detector->getWidth();
+                        const uint16_t height = detector->getHeight();
 
                         startBenchmark();
 
@@ -87,7 +87,7 @@ namespace Eloquent {
                                             break;
 
                                         for (uint16_t j = x; j < x + dx; j++) {
-                                            if (detector.isForeground(j, i))
+                                            if (detector->isForeground(j, i))
                                                 foreground += 1;
                                         }
                                     }

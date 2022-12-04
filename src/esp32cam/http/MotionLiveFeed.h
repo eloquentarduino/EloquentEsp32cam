@@ -250,7 +250,7 @@ setTimeout(() => drawMotion(), 1500)
                             }
 
                             // localizer
-                            if (_localizer != NULL && _localizer->localize(*_detector)) {
+                            if (_localizer != NULL && _localizer->localize()) {
                                 _indexServer.sendHeader("X-Motion-Localization", _localizer->toJson());
                             }
 

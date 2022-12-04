@@ -13,12 +13,13 @@
 #define WIFI_SSID "Abc"
 #define WIFI_PASS "12345678"
 
+using namespace Eloquent::Esp32cam::Motion;
 
 Eloquent::Esp32cam::Cam cam;
 Eloquent::Esp32cam::JpegDecoder decoder;
-Eloquent::Esp32cam::Motion::SimpleChange algorithm;
-Eloquent::Esp32cam::Motion::Detector detector(algorithm);
-Eloquent::Esp32cam::Motion::Localization::SlidingWindow localizer;
+SimpleChange algorithm;
+Detector detector(algorithm);
+Localization::SlidingWindow localizer(detector);
 Eloquent::Esp32cam::Http::MotionLiveFeed feed(cam, detector, 80);
 
 

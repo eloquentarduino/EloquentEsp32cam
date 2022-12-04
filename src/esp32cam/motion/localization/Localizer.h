@@ -22,6 +22,7 @@ namespace Eloquent {
                     uint16_t width;
                     uint16_t height;
                     float coverage;
+                    Detector *detector;
 
                     /**
                      * Convert to JSON
@@ -43,10 +44,9 @@ namespace Eloquent {
 
                     /**
                      * Abstract localization algorithm
-                     * @param detector
                      * @return
                      */
-                    virtual bool localize(Detector& detector) = 0;
+                    virtual bool localize() = 0;
                 };
             }
         }

@@ -23,6 +23,15 @@ namespace Eloquent {
                 _debounce = value;
             }
 
+            /**
+             * Set debounce interval
+             *
+             * @param value
+             */
+            void debounceSeconds(size_t value) {
+                _debounce = value * 1000;
+            }
+
         protected:
             size_t _lastTick = 0;
             size_t _debounce = 0;

@@ -9,12 +9,13 @@
 #include "esp32cam/motion/SimpleChange.h"
 #include "esp32cam/motion/localization/SlidingWindow.h"
 
+using namespace Eloquent::Esp32cam::Motion;
 
 Eloquent::Esp32cam::Cam cam;
 Eloquent::Esp32cam::JpegDecoder decoder;
-Eloquent::Esp32cam::Motion::SimpleChange algorithm;
-Eloquent::Esp32cam::Motion::Detector detector(algorithm);
-Eloquent::Esp32cam::Motion::Localization::SlidingWindow localizer;
+SimpleChange algorithm;
+Detector detector(algorithm);
+Localization::SlidingWindow localizer(detector);
 
 
 void setup() {
@@ -41,12 +42,10 @@ void setup() {
     algorithm.smooth(0.9);
     algorithm.onlyUpdateBackground();
 
-    /**
-     * Configure localizer algorithm
-     */
+
     /**
      * How many pixels of each sliding window should be foreground
-     * to trigger the localization? (from 0 to 1)
+     * to trigger the localization? (in percent, from 0 to 1)
      */
     localizer.setMinCoverage(0.7);
     /**
@@ -80,14 +79,14 @@ void loop() {
     }
 
     if (detector.triggered()) {
-        Serial.println("Motion");
+        Serial.println("Motion detected");
 
         /**
          * If motion was detected, try to localize where it happened.
          * This may fail if the motion is spread across the whole image
          * and not localized in a specific region
          */
-        if (localizer.localize(detector)) {
+        if (localizer.localize()) {
             Serial.print(" > localized at coordinates (top-left corner) ");
             Serial.print(localizer.x);
             Serial.print(", ");
