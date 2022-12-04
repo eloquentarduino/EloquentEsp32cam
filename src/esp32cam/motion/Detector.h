@@ -6,6 +6,7 @@
 #define ELOQUENTESP32CAM_MOTION_DETECTOR_H
 
 #include "../../traits/HasErrorMessage.h"
+#include "../../traits/Debounces.h"
 #include "./Algorithm.h"
 
 
@@ -15,7 +16,7 @@ namespace Eloquent {
             /**
              * Algorithm-independent motion detection
              */
-            class Detector : public HasErrorMessage {
+            class Detector : public HasErrorMessage, public Debounces {
             public:
                 Algorithm *algorithm;
                 size_t foregroundCount;
@@ -233,7 +234,7 @@ namespace Eloquent {
                         if (foreground[i])
                             foregroundCount += 1;
 
-                    return foregroundCount >= getCountThresh();
+                    return debounced() && foregroundCount >= getCountThresh() && touch();
                 }
 
                 /**
@@ -266,7 +267,7 @@ namespace Eloquent {
                             }
                     }
 
-                    return roi.triggered();
+                    return debounced() && roi.triggered() && touch();
                 }
 
                 /**

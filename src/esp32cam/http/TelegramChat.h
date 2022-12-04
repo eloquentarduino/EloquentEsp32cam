@@ -17,9 +17,10 @@ namespace Eloquent {
     namespace Esp32cam {
         namespace Http {
             /**
-             * Send pictures to
+             * Send pictures to Telegram
+             * @bug can only send 1 picture (cannot figure out why)
              */
-            class Telegram : public HasErrorMessage {
+            class TelegramChat : public HasErrorMessage {
             public:
                 AsyncTelegram2 bot;
                 WiFiClientSecure client;
@@ -28,7 +29,8 @@ namespace Eloquent {
                  *
                  * @param bot
                  */
-                Telegram(const char *token) :
+                TelegramChat(const char *token, const int64_t chatId) :
+                    _chatId(chatId),
                     bot(client),
                     _token(token),
                     _isInitialized(false) {
@@ -44,11 +46,14 @@ namespace Eloquent {
                     if (_isInitialized)
                         return true;
 
-                    bot.setTelegramToken(_token);
                     client.setCACert(telegram_cert);
+                    bot.setTelegramToken(_token);
 
                     if (!bot.begin())
                         return setErrorMessage("Cannot init bot");
+
+                    if (!client.connected())
+                        return setErrorMessage("Client not connected");
 
                     return (_isInitialized = true);
                 }
@@ -56,24 +61,16 @@ namespace Eloquent {
                 /**
                  * Send text message
                  *
-                 * @param chatId
                  * @param message
                  * @return
                  */
-                bool sendMessage(const int64_t chatId, String message) {
+                bool sendMessage(String message) {
                     if (!begin())
                         return false;
 
-                    TBMessage msg;
-                    msg.chatId = chatId;
-
-                    if (bot.sendMessage(msg, message.c_str(), nullptr, true)) {
-                        client.stop();
-
+                    if (bot.sendTo(_chatId, message)) {
                         return setErrorMessage("");
                     }
-
-                    client.stop();
 
                     return setErrorMessage("Send message error");
                 }
@@ -84,21 +81,21 @@ namespace Eloquent {
                  * @param chatId
                  * @return
                  */
-                bool sendPhoto(const int64_t chatId, Cam& cam) {
+                bool sendPhoto(Cam& cam) {
                     if (!begin())
                         return false;
 
                     if (!cam.captured())
                         return setErrorMessage("Cannot find frame");
 
-                    bool response = bot.sendPhoto(chatId, cam.frame->buf, cam.frame->len);
-                    client.stop();
+                    bool response = bot.sendPhoto(_chatId, cam.frame->buf, cam.frame->len);
 
-                    return response;
+                    return setErrorMessage(response ? "" : "Cannot send to Telegram");
                 }
 
             protected:
                 bool _isInitialized;
+                const int64_t _chatId;
                 const char *_token;
             };
         }
