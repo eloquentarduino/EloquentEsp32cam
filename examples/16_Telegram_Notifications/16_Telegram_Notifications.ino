@@ -1,13 +1,16 @@
-// 10_Image_Wise_Motion_Detection.ino
+// 16_Telegram_Notifications.ino
 
 
 #define MAX_RESOLUTION_VGA
+#define DEBUG_ENABLE 1
 
+// Replace with your WiFi credentials
 #define WIFI_SSID "Abc"
 #define WIFI_PASS "12345678"
 
-#define TELEGRAM_TOKEN "bot token"
-#define CHAT_ID 01234567
+// Replace with your Telegram credentials
+#define TELEGRAM_TOKEN "1111111111:xxxxxxxxxxxxxxxxxxxxxxx-yyyyyyyyyyy"
+#define CHAT_ID "1234567890"
 
 #include "esp32cam.h"
 #include "esp32cam/JpegDecoder.h"
@@ -15,12 +18,13 @@
 #include "esp32cam/motion/SimpleChange.h"
 #include "esp32cam/http/TelegramChat.h"
 
+using namespace Eloquent::Esp32cam;
 
-Eloquent::Esp32cam::Cam cam;
-Eloquent::Esp32cam::JpegDecoder decoder;
-Eloquent::Esp32cam::Motion::SimpleChange algorithm;
-Eloquent::Esp32cam::Motion::Detector detector(algorithm);
-Eloquent::Esp32cam::Http::TelegramChat telegram(TELEGRAM_TOKEN, CHAT_ID);
+Cam cam;
+JpegDecoder decoder;
+Motion::SimpleChange algorithm;
+Motion::Detector detector(algorithm);
+Http::TelegramChat telegram(TELEGRAM_TOKEN, CHAT_ID);
 
 
 void setup() {
@@ -28,6 +32,7 @@ void setup() {
     delay(3000);
     Serial.println("Init");
 
+    // see 2_CameraSettings for more details
     cam.aithinker();
     cam.highQuality();
     cam.vga();
@@ -36,6 +41,7 @@ void setup() {
     cam.disableAutomaticExposureControl();
     cam.disableGainControl();
 
+    // See 10_Image_Wise_Motion_Detection for details
     detector.trainFor(30);
     detector.retrainAfter(33ULL * 600);
     detector.triggerAbove(0.2);
@@ -80,13 +86,12 @@ void loop() {
      * When motion is detected...
      */
     if (detector.triggered()) {
-        Serial.print("Motion detected. Sending to Telegram... ");
+        Serial.println("Motion detected. Sending to Telegram... ");
 
         /**
          * ...send message and picture to Telegram chat
          */
-        telegram.sendMessage("Motion detected");
-        telegram.sendPhoto(cam);
-        Serial.println("done");
+        Serial.println(telegram.sendText("Motion detected") ? "Text OK" : "Text ERROR");
+        Serial.println(telegram.sendPhoto(cam) ? "Picture OK" : "Picture ERROR");
     }
 }
