@@ -204,7 +204,7 @@ namespace Eloquent {
              * @return
              */
             bool enableExposureControl() {
-                setExposureControl(true);
+                return setExposureControl(true);
             }
 
             /**

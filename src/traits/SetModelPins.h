@@ -151,6 +151,29 @@ namespace Eloquent {
                 _pins.flashlight = -1;
             }
 
+            /**
+             *
+             */
+            void simcam() {
+                _pins.d0 = 11;
+                _pins.d1 = 9;
+                _pins.d2 = 8;
+                _pins.d3 = 10;
+                _pins.d4 = 12;
+                _pins.d5 = 17;
+                _pins.d6 = 16;
+                _pins.d7 = 15;
+                _pins.xclk = 14;
+                _pins.pclk = 13;
+                _pins.vsync = 6;
+                _pins.href = 7;
+                _pins.sscb_sda = 4;
+                _pins.sscb_scl = 5;
+                _pins.pwdn = -1;
+                _pins.reset = 18;
+                _pins.flashlight = -1;
+            }
+
         protected:
             struct {
                 int8_t d0 = 0;

@@ -30,7 +30,7 @@ namespace Eloquent {
                     _maxy(0.999),
                     _t(0),
                     _lag(3),
-                    _sparsity(4),
+                    _wideness(4),
                     _ltrCount(0),
                     _rtlCount(0) {
 
@@ -76,11 +76,39 @@ namespace Eloquent {
                  * How large each band to the left and to
                  * the right of the vertical line is?
                  * The lower, the smaller objects will be detected
-                 * @param sparsity
+                 * @param wideness
                  */
-                inline void sparsity(uint8_t sparsity)
+                inline void wideness(uint8_t wideness)
                 {
-                    _sparsity = sparsity;
+                    _wideness = wideness;
+                }
+
+                /**
+                 *
+                 * @return
+                 */
+                uint16_t getBandWidth() {
+                    return _wideness * 8;
+                }
+
+                /**
+                 *
+                 * @param width
+                 * @return
+                 */
+                uint16_t getX(uint16_t width = 1) {
+                    return _x >= 1 ? _x / 8 : _x * width;
+                }
+
+                /**
+                 * Reset counter
+                 */
+                void forget() {
+                    for (int i = 0; i < 7; i++)
+                        _motion[i] = 0;
+
+                    _ltrCount = 0;
+                    _rtlCount = 0;
                 }
 
                 /**
@@ -90,7 +118,7 @@ namespace Eloquent {
                 bool update() {
                     const uint16_t width = _detector->getWidth();
                     const uint16_t height = _detector->getHeight();
-                    const uint16_t x = _x >= 1 ? _x / 8 : _x * width;
+                    const uint16_t x = getX(width);
                     const uint16_t above = height - (_miny >= 1 ? _miny / 8 : _miny * height);
                     const uint16_t below = height - (_maxy >= 1 ? _maxy / 8 : _maxy * height);
 
@@ -114,14 +142,15 @@ namespace Eloquent {
                         if (_motion[i + 3] >= _t - _lag)
                             continue;
 
-                        for (uint8_t j = 0; j < _sparsity; j++) {
-                            const int16_t dx = i * _sparsity + j;
+                        for (uint8_t j = 0; j < _wideness; j++) {
+                            const int16_t dx = i * _wideness + j;
+                            const int16_t xdx = dx + x;
 
-                            if (dx + x < 0 || dx + x > width)
+                            if (xdx < 0 || xdx > width)
                                 continue;
 
                             for (uint16_t y = below; y < above; y++) {
-                                if (_detector->isForeground(dx + x, y)) {
+                                if (_detector->isForeground(xdx, y)) {
                                     _motion[i + 3] = _t;
                                     break;
                                 }
@@ -195,22 +224,40 @@ namespace Eloquent {
                     return _rtlCount;
                 }
 
+                /**
+                 *
+                 * @return
+                 */
                 String debug() {
-                    return String("motion = {")
-                        + _motion[0]
+                    return String("motion = ") + this->toJson();
+                }
+
+                /**
+                 * Convert to JSON
+                 *
+                 * @return
+                 */
+                String toJson() {
+                    // [3] is missing because is the of no relevance for counting
+                    return
+                        String("{")
+                        + "\"ltr\":"
+                        + _ltrCount
+                        + ", \"rtl\":"
+                        + _rtlCount
+                        + ",\"ages\":["
+                        + (_t - _motion[0])
                         + ", "
-                        + _motion[1]
+                        + (_t - _motion[1])
                         + ", "
-                        + _motion[2]
+                        + (_t - _motion[2])
                         + ", "
-                        + _motion[3]
+                        + (_t - _motion[4])
                         + ", "
-                        + _motion[4]
+                        + (_t - _motion[5])
                         + ", "
-                        + _motion[5]
-                        + ", "
-                        + _motion[6]
-                        + "}";
+                        + (_t - _motion[6])
+                        + "]}";
                 }
 
             protected:
@@ -218,7 +265,7 @@ namespace Eloquent {
                 float _miny;
                 float _maxy;
                 uint8_t _lag;
-                uint8_t _sparsity;
+                uint8_t _wideness;
                 uint16_t _t;
                 uint16_t _ltrCount;
                 uint16_t _rtlCount;

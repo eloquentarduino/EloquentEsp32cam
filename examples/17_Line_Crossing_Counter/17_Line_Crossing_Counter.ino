@@ -8,13 +8,13 @@
 #include "esp32cam/motion/SimpleChange.h"
 #include "esp32cam/apps/LineCrossingCounter.h"
 
+using namespace Eloquent::Esp32cam;
 
-Eloquent::Esp32cam::Cam cam;
-Eloquent::Esp32cam::JpegDecoder decoder;
-Eloquent::Esp32cam::Motion::SimpleChange algorithm;
-Eloquent::Esp32cam::Motion::Detector detector(algorithm);
-Eloquent::Esp32cam::Applications::LineCrossingCounter counter(detector);
-
+Cam cam;
+JpegDecoder decoder;
+Motion::SimpleChange algorithm;
+Motion::Detector detector(algorithm);
+Applications::LineCrossingCounter counter(detector);
 
 void setup() {
     Serial.begin(115200);
@@ -41,8 +41,15 @@ void setup() {
 
     /**
      * At which x-coordinate is the vertical line to cross?
+     * You can use absolute numbers to give the exact coordinate
+     * or relative numbers (between 0 and 1) to given percent
+     * values relative to the width.
+     *
+     * Assuming a VGA frame (640 x 480), the following two lines
+     * do the same thing
      */
     counter.lineAt(640 / 2);
+    counter.lineAt(0.5);
     /**
      * Limit analysis to region above given coordinate
      * 0 is bottom of the image
@@ -50,23 +57,37 @@ void setup() {
     counter.above(0);
     /**
     * Limit analysis to region below given coordinate
-    * 0 is bottom of the image
+    * 0 is bottom of the image.
+    *
+    * You can use absolute numbers to give the exact coordinate
+    * or relative numbers (between 0 and 1) to given percent
+    * values relative to the width.
+    *
+    * Assuming a VGA frame (640 x 480), the following two lines
+    * do the same thing
     */
-    counter.below(200);
+    counter.below(240);
+    counter.below(0.5);
     /**
-     * Increase this value to accomodate slower transitions
-     */
-    counter.lag(3);
-    /**
+     * To detect crossing, the software defines "transition zones"
+     * immediately before and after the line you set (3 before, 3 after).
+     * You can specify how wide these zones should be.
+     *
      * Decrease this number to catch smaller objects
      */
-    counter.sparsity(4);
+    counter.wideness(4);
+    /**
+     * The greater this value, the more time it is allowed
+     * for an object to move across different "trnasition zones".
+     *
+     * Increase this value to catch slower transitions.
+     */
+    counter.lag(3);
     /**
      * After an event, don't trigger for the
      * next given seconds
      */
     counter.debounceSeconds(3);
-
 
     while (!cam.begin())
         Serial.println(cam.getErrorMessage());
