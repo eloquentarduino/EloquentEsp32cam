@@ -99,6 +99,11 @@ namespace Eloquent {
                     detector->forget();
                     counter->forget();
 
+                    // update counter parameters from query string
+                    for (int i = 0; i < server.args(); i++) {
+                        counter->set(server.argName(i), server.arg(i).toFloat());
+                    }
+
                     server.sendContent(F(R"===(
                         <style>
                             #canvas {position: relative; display: inline-block;}
@@ -111,11 +116,13 @@ namespace Eloquent {
                                     <div id="line"></div>
                                 </div>
                             </div>
+                            <pre id="configText"></pre>
                             <pre id="statusText"></pre>
                         </div>
                     )==="));
 
                     addJpegFeedScript();
+                    addConfigScript();
                     addLineScript();
                     addStatusScript();
                     server.sendContent(F(""));
@@ -147,6 +154,15 @@ namespace Eloquent {
                 bool onStatus() {
                     server.send(200, "application/json", counter->toJson());
                     return true;
+                }
+
+                /**
+                 *
+                 */
+                void addConfigScript() {
+                    server.sendContent(F("<script>document.getElementById('configText').textContent = '"));
+                    server.sendContent(counter->getCurrentConfig());
+                    server.sendContent(F("'</script>"));
                 }
 
                 /**

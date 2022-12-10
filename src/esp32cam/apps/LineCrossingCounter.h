@@ -112,6 +112,47 @@ namespace Eloquent {
                 }
 
                 /**
+                 * Update parameter by key-value
+                 *
+                 * @param param
+                 * @param value
+                 * @return
+                 */
+                bool set(String param, float value) {
+                    if (param == "lineAt") {
+                        lineAt(value);
+                        return true;
+                    }
+
+                    if (param == "above") {
+                        above(value);
+                        return true;
+                    }
+
+                    if (param == "below") {
+                        below(value);
+                        return true;
+                    }
+
+                    if (param == "lag") {
+                        lag(value);
+                        return true;
+                    }
+
+                    if (param == "wideness") {
+                        wideness(value);
+                        return true;
+                    }
+
+                    if (param == "debounce") {
+                        debounceSeconds(value);
+                        return true;
+                    }
+
+                    return false;
+                }
+
+                /**
                  *
                  * @return
                  */
@@ -258,6 +299,27 @@ namespace Eloquent {
                         + ", "
                         + (_t - _motion[6])
                         + "]}";
+                }
+
+                /**
+                 *
+                 * @return
+                 */
+                String getCurrentConfig() {
+                    return
+                        String("lineAt=")
+                        + _x
+                        + ", above="
+                        + _miny
+                        + ", below="
+                        + _maxy
+                        + ", lag="
+                        + _lag
+                        + ", wideness="
+                        + _wideness
+                        + ", debounce="
+                        + (_debounce / 1000)
+                        ;
                 }
 
             protected:

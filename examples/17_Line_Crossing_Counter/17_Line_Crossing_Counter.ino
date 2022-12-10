@@ -1,4 +1,4 @@
-// 16_Line_Crossing_Counter.ino
+// 17_Line_Crossing_Counter.ino
 
 #define MAX_RESOLUTION_VGA
 

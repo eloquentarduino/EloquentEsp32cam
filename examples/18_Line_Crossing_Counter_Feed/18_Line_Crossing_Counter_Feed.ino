@@ -29,7 +29,7 @@ void setup() {
     Serial.println("Init");
 
     // see 3_Get_Your_First_Picture for more details
-    cam.m5wide();
+    cam.aithinker();
     cam.highQuality();
     cam.vga();
     cam.disableAutomaticWhiteBalance();
@@ -64,7 +64,7 @@ void setup() {
         Serial.println(feed.getErrorMessage());
 
     cam.viewAt("esp32cam");
-    Serial.println("Connected");
+    Serial.println(feed.getWelcomeMessage());
 }
 
 
