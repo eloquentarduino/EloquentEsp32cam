@@ -29,6 +29,15 @@ namespace Eloquent {
                 _port(port),
                 _count(0) {
                     config = HTTPD_DEFAULT_CONFIG();
+                    listenOn(port);
+                }
+
+                /**
+                 * Set listening port
+                 *
+                 * @param port
+                 */
+                void listenOn(uint16_t port) {
                     config.server_port = port;
                     config.ctrl_port = port;
                 }

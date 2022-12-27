@@ -1,4 +1,4 @@
-// 18_Line_Crossing_Counter_Feed.ino
+// 18_Line_Crossing_Counter_HTTP.ino
 
 #define MAX_RESOLUTION_VGA
 
@@ -7,11 +7,8 @@
 #include "esp32cam/motion/Detector.h"
 #include "esp32cam/motion/SimpleChange.h"
 #include "esp32cam/apps/LineCrossingCounter.h"
-#include "esp32cam/http/LineCrossingCounterFeed.h"
+#include "esp32cam/http/LineCrossingCounterHTTP.h"
 
-
-#define WIFI_SSID "Abc"
-#define WIFI_PASS "12345678"
 
 using namespace Eloquent::Esp32cam;
 
@@ -20,7 +17,7 @@ JpegDecoder decoder;
 Motion::SimpleChange algorithm;
 Motion::Detector detector(algorithm);
 Applications::LineCrossingCounter counter(detector);
-Http::LineCrossingCounterFeed feed(cam, decoder, detector, counter);
+Http::LineCrossingCounterHTTP http(cam, decoder, detector, counter);
 
 
 void setup() {
@@ -57,17 +54,17 @@ void setup() {
     while (!cam.begin())
         Serial.println(cam.getErrorMessage());
 
-    while (!cam.connect(WIFI_SSID, WIFI_PASS))
+    while (!cam.connect("SSID", "PASSWORD"))
         Serial.println(cam.getErrorMessage());
 
-    while (!feed.begin())
-        Serial.println(feed.getErrorMessage());
+    while (!http.begin())
+        Serial.println(http.getErrorMessage());
 
-    cam.viewAt("esp32cam");
-    Serial.println(feed.getWelcomeMessage());
+    cam.mDNS("esp32cam");
+    Serial.println(http.getWelcomeMessage());
 }
 
 
 void loop() {
-    feed.handle();
+    http.handle();
 }

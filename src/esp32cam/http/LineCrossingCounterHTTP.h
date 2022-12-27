@@ -2,8 +2,8 @@
 // Created by Simone on 07/12/22.
 //
 
-#ifndef ELOQUENTESP32CAM_LINECROSSINGCOUNTERFEED_H
-#define ELOQUENTESP32CAM_LINECROSSINGCOUNTERFEED_H
+#ifndef ELOQUENTESP32CAM_LINECROSSINGCOUNTERCOUNTER_H
+#define ELOQUENTESP32CAM_LINECROSSINGCOUNTERCOUNTER_H
 
 
 #include "../Cam.h"
@@ -19,7 +19,7 @@ namespace Eloquent {
             /**
              * Debug line crossing counter
              */
-            class LineCrossingCounterFeed : public ServesJpegFeed {
+            class LineCrossingCounterHTTP : public ServesJpegFeed {
             public:
                 int httpPort;
                 Motion::Detector *detector;
@@ -33,14 +33,13 @@ namespace Eloquent {
                  * @param crossingCounter
                  * @param port
                  */
-                LineCrossingCounterFeed(
+                LineCrossingCounterHTTP(
                         Cam& camera,
                         JpegDecoder& decoder,
                         Motion::Detector& motionDetector,
                         Applications::LineCrossingCounter& crossingCounter,
                         uint16_t port = 80) :
                     ServesJpegFeed(camera, decoder, port),
-                    httpPort(port),
                     detector(&motionDetector),
                     counter(&crossingCounter) {
 
@@ -104,10 +103,10 @@ namespace Eloquent {
                         counter->set(server.argName(i), server.arg(i).toFloat());
                     }
 
-                    server.sendContent(F(R"===(
-                        <style>
-                            #canvas {position: relative; display: inline-block;}
-                        </style>
+                    refresh();
+                    initWebpage();
+
+                    addHTML(F(R"===(
                         <div id="app">
                             <div id="canvas">
                                 <img id="feed" />
@@ -121,11 +120,12 @@ namespace Eloquent {
                         </div>
                     )==="));
 
-                    addJpegFeedScript();
-                    addConfigScript();
+                    initJpegFeedScript();
+                    registerConfigScript();
                     addLineScript();
-                    addStatusScript();
-                    server.sendContent(F(""));
+                    registerStatusScript();
+
+                    flush();
 
                     return true;
                 }
@@ -159,10 +159,11 @@ namespace Eloquent {
                 /**
                  *
                  */
-                void addConfigScript() {
-                    server.sendContent(F("<script>document.getElementById('configText').textContent = '"));
-                    server.sendContent(counter->getCurrentConfig());
-                    server.sendContent(F("'</script>"));
+                void registerConfigScript() {
+                    js.onDOMContentLoaded(
+                            String(F("document.getElementById('configText').textContent = '"))
+                            + counter->getCurrentConfig()
+                            + "'");
                 }
 
                 /**
@@ -202,40 +203,38 @@ namespace Eloquent {
                 /**
                  *
                  */
-                void addStatusScript() {
-                    server.sendContent(F(R"===(
-                        <script>
-                            const statusText = document.getElementById("statusText")
+                void registerStatusScript() {
+                    js.onDOMContentLoaded(F(R"===(
+                        const statusText = document.getElementById("statusText")
 
-                            function updateStatus() {
-                                try {
-                                    fetch("/status")
-                                        .then(res => res.json())
-                                        .then(status => {
-                                            const maxAge = 20
+                        function updateStatus() {
+                            try {
+                                fetch("/status")
+                                    .then(res => res.json())
+                                    .then(status => {
+                                        const maxAge = 20
 
-                                            // draw bands
-                                            if (status && status.ages && status.ages.forEach) {
-                                                status.ages.forEach((age, i) => {
-                                                    const opacity = 1 - Math.min(age, maxAge) / maxAge
-                                                    const hue = Math.round(60 * Math.min(age, maxAge) / maxAge)
-                                                    //if (bands[i]) bands[i].style.backgroundColor = `rgba(255, 255, 255, ${opacity / 2})`;
-                                                    if (bands[i]) bands[i].style.backgroundColor = `hsla(${hue}, 100%, 50%, ${opacity / 2})`;
-                                                })
-                                            }
+                                        // draw bands
+                                        if (status && status.ages && status.ages.forEach) {
+                                            status.ages.forEach((age, i) => {
+                                                const opacity = 1 - Math.min(age, maxAge) / maxAge
+                                                const hue = Math.round(60 * Math.min(age, maxAge) / maxAge)
+                                                //if (bands[i]) bands[i].style.backgroundColor = `rgba(255, 255, 255, ${opacity / 2})`;
+                                                if (bands[i]) bands[i].style.backgroundColor = `hsla(${hue}, 100%, 50%, ${opacity / 2})`;
+                                            })
+                                        }
 
-                                            // print status text
-                                            statusText.textContent = `${status.ltr} crosses from left to right.\n${status.rtl} crosses from right to left.`
+                                        // print status text
+                                        statusText.textContent = `${status.ltr} crosses from left to right.\n${status.rtl} crosses from right to left.`
 
-                                            updateStatus()
-                                        })
-                                } catch (e) {
-                                    updateStatus()
-                                }
+                                        updateStatus()
+                                    })
+                            } catch (e) {
+                                updateStatus()
                             }
+                        }
 
-                            updateStatus()
-                        </script>
+                        updateStatus()
                     )==="));
                 }
             };
@@ -243,4 +242,4 @@ namespace Eloquent {
     }
 }
 
-#endif //ELOQUENTESP32CAM_LINECROSSINGCOUNTERFEED_H
+#endif //ELOQUENTESP32CAM_LINECROSSINGCOUNTERCOUNTER_H

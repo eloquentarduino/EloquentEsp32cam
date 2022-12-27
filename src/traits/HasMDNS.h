@@ -17,11 +17,21 @@ namespace Eloquent {
         public:
 
             /**
-             * Set mDNS hostname
+             * @deprecated
              * @param hostname
              * @return
              */
             bool viewAt(const char *hostname) {
+                return mDNS(hostname);
+            }
+
+            /**
+             * Set mDNS hostname
+             *
+             * @param hostname
+             * @return
+             */
+            bool mDNS(const char *hostname) {
                 return MDNS.begin(hostname);
             }
         };

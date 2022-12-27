@@ -163,6 +163,18 @@ namespace Eloquent {
                 return SavesToFilesystem::saveTo(fs, filename, frame->buf, frame->len);
             }
 
+            /**
+             * Get HTTP address of camera
+             * @param port
+             * @return
+             */
+            String getAddress(uint16_t port = 80) {
+                return
+                String("http://")
+                + this->getIP()
+                + (port != 80 ? String(':') + port : "");
+            }
+
         protected:
         };
     }
