@@ -1,3 +1,5 @@
+#define MAX_RESOLUTION_VGA
+
 #include "esp32cam.h"
 #include "esp32cam/JpegDecoder.h"
 
