@@ -77,8 +77,8 @@ namespace Eloquent {
                 int status;
                 uint16_t i = 0;
                 JpegDecoding decoding = {
-                        .cam = &cam,
-                        .offset = 0
+                    .cam = &cam,
+                    .offset = 0
                 };
 
                 startBenchmark();
@@ -147,6 +147,24 @@ namespace Eloquent {
              */
             inline uint16_t getHeight() {
                 return jpeg.m_height;
+            }
+
+            /**
+             *
+             * @tparam Printer
+             * @param printer
+             * @param format
+             */
+            template<typename Printer>
+            void printTo(Printer& printer, uint8_t format = DEC) {
+                printer.print(gray.pixels[0], format);
+
+                for (uint16_t i = 1; i < gray.length; i++) {
+                    printer.print(',');
+                    printer.print(gray.pixels[i], format);
+                }
+
+                printer.print('\n');
             }
 
         protected:
