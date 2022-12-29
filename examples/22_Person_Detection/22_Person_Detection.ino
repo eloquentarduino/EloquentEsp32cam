@@ -15,7 +15,7 @@ void setup() {
     delay(3000);
     Serial.println("Init");
 
-    cam.m5wide();
+    cam.aithinker();
     // person detection requires grayscale image
     cam.grayscale();
     // person detection requires a 96x96 image
