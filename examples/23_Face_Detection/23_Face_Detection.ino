@@ -1,4 +1,4 @@
-// 16_Face_Detect.ino
+// 23_Face_Detection.ino
 
 #include "esp32cam.h"
 #include "esp32cam/apps/FaceDetector.h"

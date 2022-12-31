@@ -21,7 +21,8 @@ namespace Eloquent {
             /**
              * Face bounding box
              */
-            struct FaceBBox {
+            class FaceBBox {
+            public:
                 uint16_t left;
                 uint16_t right;
                 uint16_t top;
@@ -32,6 +33,23 @@ namespace Eloquent {
                 uint16_t y;
                 uint16_t cx;
                 uint16_t cy;
+
+                /**
+                 * Convert to JSON
+                 *
+                 * @return
+                 */
+                String toJson() {
+                    return String("{\"left\":")
+                        + left
+                        + ", \"right\":"
+                        + right
+                        + ", \"top\":"
+                        + top
+                        + ", \"bottom\":"
+                        + bottom
+                        + "}";
+                }
             };
 
             /**
@@ -152,18 +170,18 @@ namespace Eloquent {
                  * @param intervalInMillis
                  * @return
                  */
-                bool enroll() {
-                    if (!allocate())
-                        return false;
-
-                    //remaining = enroll_face(&_ids, person);
-                    int8_t remaining = enroll_face_id_to_flash(&_ids, person);
-
-                    if (remaining == _confimTimes - 1)
-                        enrolledId = _ids.tail;
-
-                    return setErrorMessage(remaining > 0 ? "Enrolling" : "");
-                }
+//                bool enroll() {
+//                    if (!allocate())
+//                        return false;
+//
+//                    //remaining = enroll_face(&_ids, person);
+//                    int8_t remaining = enroll_face_id_to_flash(&_ids, person);
+//
+//                    if (remaining == _confimTimes - 1)
+//                        enrolledId = _ids.tail;
+//
+//                    return setErrorMessage(remaining > 0 ? "Enrolling" : "");
+//                }
 
                 /**
                  * Detect face (any face)
@@ -193,36 +211,36 @@ namespace Eloquent {
                  * Detect known face
                  * @return
                  */
-                bool recognize() {
-                    setErrorMessage("");
-
-                    if (!boxes)
-                        return setErrorMessage("No face detected");
-
-                    startBenchmark();
-
-                    if (align_face(boxes, _image, person) == ESP_OK) {
-                        id = recognize_face(&_ids, person);
-
-                        if (id >= 0) {
-                            stopBenchmark();
-                            return true;
-                        }
-
-                        /*personId = get_face_id(person);
-
-                        if (_ids.count > 0) {
-                            face_id_node *face_recognized = recognize_face_with_name(&_ids, faceId);
-
-                            if (face_recognized)
-                                return true;
-                        }*/
-                    }
-
-                    stopBenchmark();
-
-                    return false;
-                }
+//                bool recognize() {
+//                    setErrorMessage("");
+//
+//                    if (!boxes)
+//                        return setErrorMessage("No face detected");
+//
+//                    startBenchmark();
+//
+//                    if (align_face(boxes, _image, person) == ESP_OK) {
+//                        id = recognize_face(&_ids, person);
+//
+//                        if (id >= 0) {
+//                            stopBenchmark();
+//                            return true;
+//                        }
+//
+//                        /*personId = get_face_id(person);
+//
+//                        if (_ids.count > 0) {
+//                            face_id_node *face_recognized = recognize_face_with_name(&_ids, faceId);
+//
+//                            if (face_recognized)
+//                                return true;
+//                        }*/
+//                    }
+//
+//                    stopBenchmark();
+//
+//                    return false;
+//                }
 
                 /**
                  * Run function on each face
@@ -264,6 +282,30 @@ namespace Eloquent {
                     bbox.cy = (bbox.top + bbox.bottom) / 2;
 
                     return true;
+                }
+
+                /**
+                 * Convert faces' bboxes to JSON
+                 *
+                 * @return
+                 */
+                String toJson() {
+                    if (numFaces() == 0)
+                        return "[]";
+
+                    String json = "[";
+
+                    for (int i = 0; i < numFaces(); i++) {
+                        if (i > 0)
+                            json += ',';
+
+                        select(i);
+                        json += bbox.toJson();
+                    };
+
+                    select(0);
+
+                    return json + "]";
                 }
 
 
