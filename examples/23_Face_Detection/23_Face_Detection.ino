@@ -38,7 +38,9 @@ void loop() {
     }
 
     if (faces.detect()) {
-        Serial.println("Faces detected!");
+        Serial.print("Detected ");
+        Serial.print(faces.numFaces());
+        Serial.println(" faces");
         Serial.print("Face detection took ");
         Serial.print(faces.getExecutionTimeInMillis());
         Serial.println("ms");

@@ -1,19 +1,21 @@
-// 24_Face_Detection_HTTP.ino
+// 25_Person_Detection_HTTP.ino
+#define MAX_RESOLUTION_1024x768
 
 /**
  * Run a development HTTP server to see live
- * the face detection results
+ * the person detection results.
+ * You need at least 8 MB of DRAM
  */
 
 #include "esp32cam.h"
-#include "esp32cam/http/FaceDetectorHTTP.h"
+#include "esp32cam/http/PersonDetectorHTTP.h"
 
 using namespace Eloquent::Esp32cam;
 
 
 Cam cam;
-Applications::FaceDetector faces(cam);
-Http::FaceDetectorHTTP http(faces);
+Applications::PersonDetector person(cam);
+Http::PersonDetectorHTTP http(person);
 
 
 void setup() {
@@ -22,15 +24,18 @@ void setup() {
     Serial.println("Init");
 
     cam.aithinker();
-    cam.bestQuality();
-    cam.highestSaturation();
-    cam.qvga();
+    cam.grayscale();
+    cam.xga();
+    cam.highQuality();
+    person.minConfidence(190);
 
     while (!cam.begin())
         Serial.println(cam.getErrorMessage());
 
-    while (!faces.begin())
-        Serial.println(faces.getErrorMessage());
+    while (!person.begin()) {
+        Serial.print("Detector init error: ");
+        Serial.println(person.getErrorMessage());
+    }
 
     while (!cam.connect("SSID", "PASSWORD"))
         Serial.println(cam.getErrorMessage());

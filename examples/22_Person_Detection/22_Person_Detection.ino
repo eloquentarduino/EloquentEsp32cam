@@ -3,8 +3,10 @@
 #include "esp32cam.h"
 #include "esp32cam/apps/PersonDetector.h"
 
-Eloquent::Esp32cam::Cam cam;
-Eloquent::Esp32cam::Applications::PersonDetector detector(cam);
+using namespace Eloquent::Esp32cam;
+
+Cam cam;
+Applications::PersonDetector detector(cam);
 
 /**
  * Detect people in frame.

@@ -6,7 +6,7 @@
 #define ELOQUENTESP32CAM_PERSONDETECTION_H
 
 #define MAX_RESOLUTION_1024x768
-#define PERSON_DETECTION_ARENA_SIZE 80000L
+#define PERSON_DETECTION_ARENA_SIZE 70000L
 
 #include <EloquentTinyML.h>
 #include <eloquent_tinyml/tensorflow/person_detection.h>
