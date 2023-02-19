@@ -49,7 +49,6 @@ namespace Eloquent {
 
                     drawsBBoxes.onRequest([this]() {
                         server.send(200, "application/json", faces->toJson());
-                        //server.send(200, "application/json", "[]");
                     });
 
                     if (!jpeg.isOk())

@@ -9,6 +9,7 @@
 #include <WebServer.h>
 #include "../../Cam.h"
 #include "./Resources.h"
+#include "./HTML.h"
 #include "../../../traits/HasErrorMessage.h"
 
 
@@ -37,8 +38,75 @@ namespace Eloquent {
 
                     }
 
+
                     /**
+                     * Render component HTML
                      *
+                     * @param html
+                     */
+                    void renderTo(HTML& html) {
+                        //html.html(F("<div class=\"flex-1\"><img id=\"jpeg\" />"));
+
+                        html.inlineCSS(F(R"===(
+                            #frame {position: relative; display: inline-block;}
+                            #canvas {position: relative; display: inline-block;}
+                            canvas {transform-origin: 0 0;}
+                        )==="));
+
+                        html.declareJsVariable("imgWidth", cam->getWidth());
+                        html.declareJsVariable("imgHeight", cam->getHeight());
+                        html.onDOMContentLoaded(F(R"===(
+                            const jpeg = document.getElementById("jpeg")
+
+                            function drawJpeg() {
+                                fetch("/jpeg")
+                                    .then(res => res.arrayBuffer())
+                                    .then(buf => {
+                                        const blob = new Blob([buf], { type: "image/jpeg" });
+
+                                        jpeg.src = (window.URL || window.webkitURL).createObjectURL(blob)
+                                        jpeg.style.width = `${APP.imgWidth}px`
+                                        jpeg.style.height = `${APP.imgHeight}px`
+                                    })
+                                    .catch(() => {})
+                                    .finally(() => drawJpeg())
+                            }
+
+                            drawJpeg()
+                        )==="));
+
+                        html.html(F("</div>"));
+                    }
+
+                    /**
+                     * Register route handler
+                     */
+                    bool registerRoute() {
+                        if (!probeCamera())
+                            return false;
+
+                        server->on("/jpeg", [this]() {
+                            if (!cam->capture()) {
+                                server->send(500, "text/plain", cam->getErrorMessage());
+                                return;
+                            }
+
+                            WiFiClient client = server->client();
+
+                            client.println(F("HTTP/1.1 200 OK"));
+                            client.println(F("Content-Type: image/jpeg"));
+                            client.println(F("Connection: close"));
+                            client.print(F("Content-Length: "));
+                            client.println(cam->frame->len);
+                            client.println();
+                            client.write(cam->frame->buf, cam->frame->len);
+                        });
+
+                        return isOk();
+                    }
+
+                    /**
+                     * Register route handler AND call function on each frame
                      * @tparam Callback
                      * @param callback
                      */
@@ -106,8 +174,6 @@ namespace Eloquent {
                         )==="));
                     }
 
-                protected:
-
                     /**
                      * Try to capture JPEG frame
                      *
@@ -119,6 +185,8 @@ namespace Eloquent {
 
                         return setErrorMessage("");
                     }
+
+                protected:
                 };
             }
         }

@@ -6,23 +6,30 @@
 #define ELOQUENTESP32CAM_YCBCRHTTP_H
 
 
-#include "../../traits/http/ServesJpegFeed.h"
+#include <WebServer.h>
+#include "../Cam.h"
+#include "../JpegDecoder.h"
+#include "./features/DisplaysJpegFeed.h"
 
 
 namespace Eloquent {
     namespace Esp32cam {
         namespace Http {
-            class YCbCrHTTP : public ServesJpegFeed {
+            class YCbCrHTTP : public HasErrorMessage {
             public:
+                WebServer server;
+                Cam *cam;
+                JpegDecoder *decoder;
 
                 /**
                  *
                  * @param cam
                  * @param decoder
-                 * @param httpPort
                  */
-                YCbCrHTTP(Cam& cam, JpegDecoder& decoder, uint16_t httpPort = 80) :
-                    ServesJpegFeed(cam, decoder, httpPort) {
+                YCbCrHTTP(Cam& camera, JpegDecoder& jpegDecoder) :
+                    cam(&camera),
+                    decoder(&jpegDecoder),
+                    jpeg(server, camera) {
 
                 }
 
@@ -31,21 +38,31 @@ namespace Eloquent {
                  * @return
                  */
                 bool begin() {
-                    server.on("/", [this]() {
-                        return this->onIndex();
+                    if (!jpeg.probeCamera())
+                        return setErrorMessage(jpeg.getErrorMessage());
+
+                    jpeg.onRequest([this]() {
+                        decoder->decode(*cam);
                     });
 
-                    server.on("/feed", [this]() {
-                        capture();
+                    server.on("/", [this]() {
+                        return this->onIndex();
                     });
 
                     server.on("/ycbcr", [this]() {
                         this->onYCbCr();
                     });
 
-                    server.begin(httpPort);
+                    server.begin();
 
                     return setErrorMessage("");
+                }
+
+                /**
+                 *
+                 */
+                void handle() {
+                    server.handleClient();
                 }
 
                 /**
@@ -53,29 +70,29 @@ namespace Eloquent {
                  * @return
                  */
                 String getWelcomeMessage() {
-                    String ip = cam->getIP();
-
                     return
                             String(F("YCbCr Feed webpage available at http://"))
-                            + ip
-                            + (httpPort != 80 ? String(':') + httpPort : "")
+                            + cam->getAddress()
                             + ". JPEG feed available at /feed. YCbCr available at /ycbcr";
                 }
 
             protected:
+                Features::DisplaysJpegFeed jpeg;
 
                 /**
                  *
                  * @return
                  */
                 void onYCbCr() {
-                    if (!cam->captured())
+                    if (!decoder->isOk()) {
+                        server.send(500, "text/plain", decoder->getErrorMessage());
                         return;
+                    }
 
                     auto client = server.client();
-                    const uint16_t lenY = jpegDecoder->luma.length;
-                    const uint16_t lenCb = jpegDecoder->cb.length;
-                    const uint16_t lenCr = jpegDecoder->cr.length;
+                    const uint16_t lenY = decoder->luma.length;
+                    const uint16_t lenCb = decoder->cb.length;
+                    const uint16_t lenCr = decoder->cr.length;
 
                     client.println(F("HTTP/1.1 200 OK"));
                     client.println(F("Content-Type: application/octet-stream"));
@@ -83,9 +100,9 @@ namespace Eloquent {
                     client.print(F("Content-Length: "));
                     client.println(lenY + lenCb + lenCr);
                     client.print(F("X-Width: "));
-                    client.println(jpegDecoder->getWidth() / 8);
+                    client.println(decoder->getWidth() / 8);
                     client.print(F("X-Height: "));
-                    client.println(jpegDecoder->getHeight() / 8);
+                    client.println(decoder->getHeight() / 8);
                     client.print(F("X-Luma: "));
                     client.println(lenY);
                     client.print(F("X-Cb: "));
@@ -93,9 +110,9 @@ namespace Eloquent {
                     client.print(F("X-Cr: "));
                     client.println(lenCr);
                     client.println();
-                    client.write(jpegDecoder->luma.pixels, lenY);
-                    client.write(jpegDecoder->cb.pixels, lenCb);
-                    client.write(jpegDecoder->cr.pixels, lenCr);
+                    client.write(decoder->luma.pixels, lenY);
+                    client.write(decoder->cb.pixels, lenCb);
+                    client.write(decoder->cr.pixels, lenCr);
                 }
 
                 /**
@@ -103,14 +120,15 @@ namespace Eloquent {
                  * @return
                  */
                 bool onIndex() {
-                    addCSS(F(R"===(
-                        .flex > div {flex: 1;}
-                    )==="));
+                    Features::Resources resources(server);
 
-                    addHTML(F(R"===(
+                    jpeg.css();
+                    resources.css(".flex {display: flex; } .flex > div {flex: 1;}");
+
+                    server.sendContent(F(R"===(
                         <div id="app">
                             <div id="canvas">
-                                <img id="feed" />
+                                <img id="jpeg" />
                                 <div class="flex">
                                     <div><canvas id="y"></canvas><h4>Y</h4></div>
                                     <div><canvas id="cb"></canvas><h4>Cb</h4></div>
@@ -120,54 +138,44 @@ namespace Eloquent {
                         </div>
                     )==="));
 
-                    initJpegFeedScript();
-                    initYCbCrScript();
-                    flush();
+                    jpeg.js();
+                    resources.onDOMContentLoaded(F(R"===(
+                        const app = document.getElementById("app")
+                        const y = document.getElementById("y")
+                        const cb = document.getElementById("cb")
+                        const cr = document.getElementById("cr")
 
-                    return true;
-                }
+                        let width
+                        let height
+                        let chunk
 
-                /**
-                 *
-                 */
-                void initYCbCrScript() {
-                    addJS(F(R"===(
-                        function execYCbCr() {
-                            const app = document.getElementById("app")
-                            const y = document.getElementById("y")
-                            const cb = document.getElementById("cb")
-                            const cr = document.getElementById("cr")
+                        function toImage(arr) {
+                            const rgb = new Uint8ClampedArray(arr.length * 4)
 
-                            let width
-                            let height
-                            let chunk
-
-                            function toImage(arr) {
-                                const rgb = new Uint8ClampedArray(arr.length * 4)
-
-                                for (let i = 0; i < arr.length; i++) {
-                                    const p = arr[i]
-                                    rgb[4 * i + 0] = p
-                                    rgb[4 * i + 1] = p
-                                    rgb[4 * i + 2] = p
-                                    rgb[4 * i + 3] = 255
-                                }
-
-                                return new ImageData(rgb, width, height)
+                            for (let i = 0; i < arr.length; i++) {
+                                const p = arr[i]
+                                rgb[4 * i + 0] = p
+                                rgb[4 * i + 1] = p
+                                rgb[4 * i + 2] = p
+                                rgb[4 * i + 3] = 255
                             }
 
-                            function drawImage(canvas, image) {
-                                const w = canvas.parentElement.clientWidth
-                                const scale = w / width
+                            return new ImageData(rgb, width, height)
+                        }
 
-                                canvas.style.transform = `scale(${scale}, ${scale})`
-                                canvas.getContext('2d').putImageData(image, 0, 0)
-                            }
+                        function drawImage(canvas, image) {
+                            const w = canvas.parentElement.clientWidth
+                            const scale = w / width
 
-                            function drawYCbCr() {
+                            canvas.style.transform = `scale(${scale}, ${scale})`
+                            canvas.getContext('2d').putImageData(image, 0, 0)
+                        }
+
+                        function drawYCbCr() {
+                            try {
                                 fetch("/ycbcr")
                                     .then(res => {
-                                        if (res.headers.get("X-Width")) {
+                                        if (parseInt(res.headers.get("X-Width")) > 0) {
                                             width = parseInt(res.headers.get("X-Width"))
                                             height = parseInt(res.headers.get("X-Height"))
                                             chunk = width * height
@@ -194,13 +202,14 @@ namespace Eloquent {
                                         drawImage(cr, r)
                                         drawYCbCr();
                                     })
-                            }
-
-                            drawYCbCr()
+                            } catch (e) { drawYCbCr(); }
                         }
+
+                        drawYCbCr()
                     )==="));
 
-                    onDOMContentLoaded("execYCbCr");
+                    server.sendContent("");
+                    return true;
                 }
             };
         }

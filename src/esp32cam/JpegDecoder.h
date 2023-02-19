@@ -11,6 +11,7 @@
 #include "../libs/picojpeg.h"
 #include "../traits/HasErrorMessage.h"
 #include "../traits/BenchmarksCode.h"
+#include "./transforms/pixel/PixelMapper.h"
 
 
 struct JpegDecoding {
@@ -153,7 +154,22 @@ namespace Eloquent {
                 if (luma.length != getWidth() * getHeight() / 64)
                     return setErrorMessage("Size mismatch");
 
+                mapPixels(0, luma.pixels, luma.length);
+                mapPixels(1, cb.pixels, cb.length);
+                mapPixels(2, cr.pixels, cr.length);
+
                 return true;
+            }
+
+            /**
+             *
+             * @param f
+             */
+            void transformPixels(Transforms::Pixel::PixelMapper *f) {
+                if (pixelTransforms == NULL)
+                    pixelTransforms = f;
+                else
+                    pixelTransforms->chain(f);
             }
 
             /**
@@ -176,6 +192,23 @@ namespace Eloquent {
 
         protected:
             uint16_t _offset;
+            Transforms::Pixel::PixelMapper *pixelTransforms = NULL;
+
+            /**
+             * Apply a function to each pixel
+             *
+             * @param mapper
+             */
+            void mapPixels(uint8_t channel, uint8_t *pixels, size_t length) {
+                Transforms::Pixel::PixelMapper *mapper = pixelTransforms;
+
+                while (mapper != NULL) {
+                    for (size_t i = 0; i < length; i++)
+                        pixels[i] = mapper->transform(channel, i, pixels[i]);
+
+                    mapper = mapper->next;
+                }
+            }
         };
     }
 }

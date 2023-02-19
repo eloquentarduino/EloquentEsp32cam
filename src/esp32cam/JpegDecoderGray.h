@@ -14,7 +14,7 @@
 
 
 struct JpegDecoding {
-    Eloquent::Esp32cam::Cam *cam;
+    const Eloquent::Esp32cam::Cam *cam;
     uint16_t offset;
 };
 
@@ -73,13 +73,17 @@ namespace Eloquent {
              * @param cam 
              * @return 
              */
-            bool decode(Cam& cam) {
+            bool decode(const Cam& cam) {
                 int status;
                 uint16_t i = 0;
                 JpegDecoding decoding = {
                     .cam = &cam,
                     .offset = 0
                 };
+
+                // skip repeated decoding of the same image
+                if (cam.frame != NULL && cam.frame->len == _lastSize)
+                    return true;
 
                 startBenchmark();
 
@@ -123,6 +127,7 @@ namespace Eloquent {
                 gray.length = i;
                 gray.width = w;
                 gray.height = h;
+                _lastSize = cam.frame->len;
                 stopBenchmark();
 
                 if (gray.length != getWidth() * getHeight() / 64)
@@ -150,6 +155,16 @@ namespace Eloquent {
             }
 
             /**
+             * Get pixel at (x, y)
+             * @param x
+             * @param y
+             * @return
+             */
+            inline uint8_t at(size_t x, size_t y) {
+                return gray.pixels[y * gray.width + x];
+            }
+
+            /**
              *
              * @tparam Printer
              * @param printer
@@ -169,6 +184,7 @@ namespace Eloquent {
 
         protected:
             uint16_t _offset;
+            size_t _lastSize = 0;
         };
     }
 }

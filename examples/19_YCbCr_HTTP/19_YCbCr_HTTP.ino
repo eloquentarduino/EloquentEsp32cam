@@ -7,13 +7,13 @@
 
 #include "esp32cam.h"
 #include "esp32cam/JpegDecoder.h"
-#include "esp32cam/http/LiveYCbCr.h"
+#include "esp32cam/http/YCbCrHTTP.h"
 
 using namespace Eloquent::Esp32cam;
 
 Cam cam;
 JpegDecoder decoder;
-Http::LiveYCbCr feed(cam, decoder);
+Http::YCbCrHTTP feed(cam, decoder);
 
 
 void setup() {
