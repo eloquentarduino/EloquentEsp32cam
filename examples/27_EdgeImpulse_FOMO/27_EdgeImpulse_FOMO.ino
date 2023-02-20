@@ -22,6 +22,10 @@ void setup() {
     delay(3000);
     Serial.println("Init");
 
+    /**
+     * Replace with your camera model.
+     * Available: aithinker, m5, m5wide, wrover, eye, ttgoLCD
+     */
     cam.aithinker();
     cam.highQuality();
     cam.highestSaturation();

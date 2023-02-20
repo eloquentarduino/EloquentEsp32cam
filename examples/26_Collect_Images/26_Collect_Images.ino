@@ -7,17 +7,13 @@
  */
 
 #include "esp32cam.h"
-#include "esp32cam/http/api/ApiServer.h"
-#include "esp32cam/http/api/GetJpeg.h"
-#include "esp32cam/http/api/GetGrayscale.h"
+#include "esp32cam/http/FomoImageCollectionServer.h"
 
 using namespace Eloquent::Esp32cam;
 
 
 Cam cam;
-Http::Api::ApiServer api;
-Http::Api::GetJpeg getJpeg(cam);
-Http::Api::GetGrayscale getGrayscale(cam);
+Http::FOMO::CollectImagesServer http(cam);
 
 
 void setup() {
@@ -25,30 +21,30 @@ void setup() {
     delay(3000);
     Serial.println("Init");
 
+    /**
+     * Replace with your camera model.
+     * Available: aithinker, m5, m5wide, wrover, eye, ttgoLCD
+     */
     cam.aithinker();
     cam.highQuality();
     cam.highestSaturation();
     cam.xga();
 
-    api.add(getJpeg);
-    api.add(getGrayscale);
-
     while (!cam.begin())
         Serial.println(cam.getErrorMessage());
 
+    // replace with your SSID and PASSWORD
     while (!cam.connect("SSID", "PASSWORD"))
         Serial.println(cam.getErrorMessage());
 
-    while (!api.begin())
-        Serial.println(api.getErrorMessage());
+    while (!http.begin())
+        Serial.println(http.getErrorMessage());
 
-    Serial.print("Camera IP address: ");
-    Serial.println(cam.getAddress());
-    Serial.println(api.getWelcomeMessage());
+    Serial.println(http.getWelcomeMessage());
     cam.mDNS("esp32cam");
 }
 
 
 void loop() {
-    api.handle();
+    http.handle();
 }
