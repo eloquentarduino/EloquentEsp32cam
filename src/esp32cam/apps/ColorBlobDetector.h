@@ -171,6 +171,19 @@ namespace Eloquent {
                 }
 
                 /**
+                 * Update target color
+                 *
+                 * @param y
+                 * @param cb
+                 * @param cr
+                 */
+                void updateColor(uint8_t y, uint8_t cb, uint8_t cr) {
+                    _y = y;
+                    _cb = cb;
+                    _cr = cr;
+                }
+
+                /**
                  * Detect color blog in Jpeg frame
                  *
                  * @param decoder
