@@ -16,6 +16,7 @@
 #include "../traits/ConnectsToWiFi.h"
 #include "../traits/HasMDNS.h"
 #include "../traits/SavesToFilesystem.h"
+#include "./features/CloudStorageUploader.h"
 
 
 namespace Eloquent {
@@ -38,6 +39,7 @@ namespace Eloquent {
         public:
             camera_config_t config;
             camera_fb_t *frame;
+            Features::CloudStorageUploader cloudStorageUploader;
             
             /**
              *
@@ -161,6 +163,16 @@ namespace Eloquent {
                     return setErrorMessage("Save error: frame not found");
 
                 return SavesToFilesystem::saveTo(fs, filename, frame->buf, frame->len);
+            }
+
+            /**
+             * Upload current picture to https://esp32camstorage.eloquentarduino.com
+             *
+             * @param deviceToken
+             * @return
+             */
+            bool uploadToCloudStorage(String deviceToken) {
+                return setErrorMessage(cloudStorageUploader.upload(deviceToken, frame->buf, frame->len));
             }
 
             /**
