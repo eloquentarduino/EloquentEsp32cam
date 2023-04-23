@@ -40,6 +40,9 @@ namespace Eloquent {
             bool setErrorMessage(String error) {
                 _error = error;
 
+                if (error != "")
+                    ESP_LOGE("ERROR", "%s", error.c_str());
+
                 return isOk();
             }
         };

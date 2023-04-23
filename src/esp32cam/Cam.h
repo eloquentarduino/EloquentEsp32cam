@@ -17,6 +17,7 @@
 #include "../traits/HasMDNS.h"
 #include "../traits/SavesToFilesystem.h"
 #include "./features/CloudStorageUploader.h"
+#include "./features/StoresPictures.h"
 
 
 namespace Eloquent {
@@ -40,11 +41,13 @@ namespace Eloquent {
             camera_config_t config;
             camera_fb_t *frame;
             Features::CloudStorageUploader cloudStorageUploader;
+            Features::StoresPictures<Cam> storage;
             
             /**
              *
              */
-            Cam() {
+            Cam() :
+                storage(this) {
                 highQuality();
                 vga();
                 debounce(0);
@@ -191,6 +194,9 @@ namespace Eloquent {
         };
     }
 }
+
+
+static Eloquent::Esp32cam::Cam camera;
 
 
 #endif //ELOQUENTESP32CAM_CAM_H

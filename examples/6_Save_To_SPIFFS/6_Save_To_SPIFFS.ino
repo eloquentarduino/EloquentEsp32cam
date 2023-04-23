@@ -1,10 +1,13 @@
-#include <FS.h>
+/**
+ * Example 6: Store pictures to SPIFFS
+ * This sketch shows how to save a picture on the SPIFFS
+ * filesystem using automatic incrementing file naming.
+ *
+ * BE SURE TO SET "TOOLS > CORE DEBUG LEVEL = DEBUG"
+ * to turn on debug messages
+ */
 #include <SPIFFS.h>
 #include "esp32cam.h"
-
-
-Eloquent::Esp32cam::Cam cam;
-uint32_t counter = 1;
 
 
 void setup() {
@@ -12,22 +15,17 @@ void setup() {
     delay(3000);
     Serial.println("Init");
 
-    // see 3_Get_Your_First_Picture for more details
-    cam.aithinker();
-    cam.highQuality();
-    cam.vga();
+    camera.m5wide();
+    camera.vga();
+    camera.highQuality();
 
-    while (!cam.begin())
-        Serial.println(cam.getErrorMessage());
+    while (!camera.begin())
+        Serial.println(camera.getErrorMessage());
 
-    /**
-     * Initialize the filesystem
-     * If something goes wrong, print an error message
-     */
-    while (!SPIFFS.begin(true))
-        Serial.println("Cannot init SPIFFS Card");
+    while (!camera.storage.spiffs())
+        Serial.println(camera.getErrorMessage());
 
-    Serial.println("Enter 'capture' in the Serial Monitor");
+    Serial.println("OK");
 }
 
 
@@ -35,21 +33,16 @@ void loop() {
     if (!Serial.available())
         return;
 
-    if (Serial.readStringUntil('\n') != "capture")
-        return;
-
-    if (!cam.capture()) {
-        Serial.println(cam.getErrorMessage());
+    if (Serial.readStringUntil('\n') != "capture") {
+        Serial.println("Only 'capture'");
         return;
     }
 
-    String filename = String("/picture_") + counter + ".jpg";
+    if (!camera.capture()) {
+        Serial.println(camera.getErrorMessage());
+        return;
+    }
 
-    if (cam.saveTo(SPIFFS, filename)) {
-        Serial.println(filename + " saved to disk");
-        counter += 1;
-    }
-    else {
-        Serial.println(cam.getErrorMessage());
-    }
+    Serial.println("Capture ok, saving...");
+    camera.storage.save();
 }
