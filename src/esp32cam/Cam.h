@@ -92,7 +92,7 @@ namespace Eloquent {
                 sensor = esp_camera_sensor_get();
                 sensor->set_framesize(sensor, _framesize);
 
-                return true;
+                return autoconnect();
             }
 
             /**

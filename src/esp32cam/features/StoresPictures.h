@@ -21,6 +21,7 @@ namespace Eloquent {
              template<typename Camera>
             class StoresPictures : public HasErrorMessage {
             public:
+                String lastFilename;
 
                 /**
                  *
@@ -133,6 +134,8 @@ namespace Eloquent {
                         filename = getNextFilename();
 
                     ESP_LOGI("Storage", "Storing picture to %s://%s", getDriverName(), filename.c_str());
+
+                    lastFilename = filename;
 
                     auto file = fs->open(filename, "wb");
                     unsigned int bytes = file.write(cam->frame->buf, cam->frame->len);

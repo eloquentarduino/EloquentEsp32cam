@@ -7,6 +7,8 @@
 
 
 #include <WiFi.h>
+#include "../esp32cam/Cam.h"
+
 
 namespace Eloquent {
     namespace Esp32cam {
@@ -15,6 +17,37 @@ namespace Eloquent {
          */
         class ConnectsToWiFi {
         public:
+
+            /**
+             * Turn on automatic connect on begin()
+             */
+            void shouldAutoconnect() {
+                _shouldAutoconnect = true;
+            }
+
+            /**
+             * Turn off automatic connect on begin()
+             */
+            void shouldntAutoconnect() {
+                _shouldAutoconnect = false;
+            }
+
+            /**
+             * Autoconnect to WiFi on begin()
+             * @return
+             */
+            bool autoconnect() {
+                if (!_shouldAutoconnect)
+                    return true;
+
+#ifdef WIFI_SSID
+#ifdef WIFI_PASS
+                return connect(WIFI_SSID, WIFI_PASS);
+#endif
+#endif
+
+                return true;
+            }
 
             /**
              * Connect to WiFi network as client
@@ -31,7 +64,7 @@ namespace Eloquent {
                 uint16_t start = millis();
 
                 while (millis() - start < timeout) {
-                    if (WiFi.status() == WL_CONNECTED)
+                    if (isConnectedToWiFi())
                         return true;
 
                     delay(100);
@@ -60,6 +93,7 @@ namespace Eloquent {
             }
 
         protected:
+            bool _shouldAutoconnect = true;
         };
     }
 }
