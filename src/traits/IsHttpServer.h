@@ -11,7 +11,7 @@
 #include "./HasErrorMessage.h"
 
 
-#define SEND_RAW_LITERAL(x) server.sendContent(F(R"===( x )==="));
+//#define SEND_RAW_LITERAL(x) server.sendContent(F(R"===( x )==="));
 
 
 namespace Eloquent {
@@ -36,7 +36,7 @@ namespace Eloquent {
                 /**
                  * Handle HTTP client
                  */
-                void handle() {
+                virtual void handle() {
                     server.handleClient();
                 }
 

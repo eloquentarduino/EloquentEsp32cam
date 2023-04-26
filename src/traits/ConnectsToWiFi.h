@@ -7,6 +7,7 @@
 
 
 #include <WiFi.h>
+#include <ESPmDNS.h>
 #include "../esp32cam/Cam.h"
 
 
@@ -64,13 +65,25 @@ namespace Eloquent {
                 uint16_t start = millis();
 
                 while (millis() - start < timeout) {
-                    if (isConnectedToWiFi())
+                    if (isConnectedToWiFi()) {
+                        mDNS("esp32cam");
                         return true;
+                    }
 
                     delay(100);
                 }
 
                 return false;
+            }
+
+            /**
+             * Set mDNS hostname
+             *
+             * @param hostname
+             * @return
+             */
+            bool mDNS(const char *hostname) {
+                return MDNS.begin(hostname);
             }
 
             /**

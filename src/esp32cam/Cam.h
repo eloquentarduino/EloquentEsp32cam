@@ -14,7 +14,6 @@
 #include "../traits/ConfiguresImageSensor.h"
 #include "../traits/Debounces.h"
 #include "../traits/ConnectsToWiFi.h"
-#include "../traits/HasMDNS.h"
 #include "../traits/SavesToFilesystem.h"
 #include "./features/CloudStorageUploader.h"
 #include "./features/StoresPictures.h"
@@ -33,7 +32,6 @@ namespace Eloquent {
                 public SetModelPins,
                 public ConfiguresImageSensor,
                 public Debounces,
-                public HasMDNS,
                 public SavesToFilesystem,
                 public ConnectsToWiFi {
             
@@ -139,8 +137,10 @@ namespace Eloquent {
                 free();
                 frame = esp_camera_fb_get();
 
-                if (!captured())
-                    return setErrorMessage("Capture error");
+                if (!captured()) {
+                    ESP_LOGE("Camera", "Cannot capture frame");
+                    return setErrorMessage("Cannot capture frame");
+                }
 
                 return touch();
             }
@@ -156,7 +156,7 @@ namespace Eloquent {
             }
 
             /**
-             *
+             * @deprecated 2.0.0
              * @param fs
              * @param filename
              * @return
