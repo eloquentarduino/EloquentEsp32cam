@@ -15,7 +15,7 @@ void setup() {
     delay(3000);
     Serial.println("Init");
 
-    camera.m5wide();
+    camera.aithinker();
     camera.vga();
     camera.highQuality();
 

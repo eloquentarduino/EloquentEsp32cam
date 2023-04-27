@@ -1,53 +1,46 @@
-#include <FS.h>
-#include <SD_MMC.h>
-#include <SPI.h>
+/**
+ * Example 8: Browse images over HTTP
+ * This sketch shows how to access the pictures stored
+ * on the SD/SPIFFS from the browser
+ */
+
+// Replace with your WiFi credentials
+#define WIFI_SSID "SSID"
+#define WIFI_PASS "PASSWORD"
+
 #include "esp32cam.h"
 #include "esp32cam/http/ImageBrowser.h"
 
-// Replace with your WiFi credentials
-#define WIFI_SSID "Your SSID"
-#define WIFI_PASS "Your password"
 
-// 80 is the port to listen to
-// You can change it to whatever you want, 80 is the default for HTTP
-Eloquent::Esp32cam::Cam cam;
-Eloquent::Esp32cam::Http::ImageBrowser browser(SD_MMC, 80);
-
-
+/**
+ *
+ */
 void setup() {
     Serial.begin(115200);
     delay(3000);
     Serial.println("Init");
 
     // see 3_Get_Your_First_Picture for more details
-    cam.aithinker();
-    cam.highQuality();
-    cam.qvga();
+    camera.aithinker();
+    camera.highQuality();
+    camera.qvga();
 
-    while (!cam.begin())
-        Serial.println(cam.getErrorMessage());
+    while (!camera.begin())
+        Serial.println(camera.getErrorMessage());
 
-    while (!SD_MMC.begin() || SD_MMC.cardType() == CARD_NONE)
-        Serial.println("Cannot init SD Card");
-
-    while (!cam.connect(WIFI_SSID, WIFI_PASS))
-        Serial.println(cam.getErrorMessage());
-
-    //Initialize image browser web server
+    // Initialize image browser server
     // If something goes wrong, print the error message
-    while (!browser.begin())
-        Serial.println(browser.getErrorMessage());
-
-    // set max number of files displayed on a single page
-    browser.setMaxNumFilesPerPage(30);
-
-    cam.viewAt("esp32cam");
+    while (!imageBrowser.begin())
+        Serial.println(imageBrowser.getErrorMessage());
 
     // display the IP address of the camera
-    Serial.println(browser.getWelcomeMessage());
+    Serial.println(imageBrowser.getWelcomeMessage());
 }
 
 
+/**
+ *
+ */
 void loop() {
-    browser.handle();
+    imageBrowser.handle();
 }
