@@ -19,7 +19,7 @@ namespace Eloquent {
                  * @param callback
                  */
                 template<typename Callback>
-                bool configureSensor(Callback callback) {
+                bool configure(Callback callback) {
                     if (sensor != NULL) {
                         callback(sensor);
 
@@ -35,7 +35,7 @@ namespace Eloquent {
                  * @param flip
                  */
                 bool vflip(bool flip = true) {
-                    return configureSensor([flip](sensor_t *sensor) {
+                    return configure([flip](sensor_t *sensor) {
                         sensor->set_vflip(sensor, flip);
                     });
                 }
@@ -46,7 +46,7 @@ namespace Eloquent {
                  * @param mirror
                  */
                 bool hmirror(bool mirror = true) {
-                    return configureSensor([mirror](sensor_t *sensor) {
+                    return configure([mirror](sensor_t *sensor) {
                         sensor->set_hmirror(sensor, mirror);
                     });
                 }
@@ -97,7 +97,7 @@ namespace Eloquent {
                  * @param brightness
                  */
                 bool setBrightness(int8_t brightness) {
-                    return configureSensor([brightness](sensor_t *sensor) {
+                    return configure([brightness](sensor_t *sensor) {
                         sensor->set_brightness(sensor, brightness);
                     });
                 }
@@ -139,7 +139,7 @@ namespace Eloquent {
                  * @param saturation
                  */
                 bool setSaturation(int8_t saturation) {
-                    return configureSensor([saturation](sensor_t *sensor) {
+                    return configure([saturation](sensor_t *sensor) {
                         sensor->set_saturation(sensor, saturation);
                     });
                 }
@@ -165,7 +165,7 @@ namespace Eloquent {
                  * @return
                  */
                 bool setAutomaticWhiteBalance(bool enable) {
-                    return configureSensor([enable](sensor_t *sensor) {
+                    return configure([enable](sensor_t *sensor) {
                         sensor->set_whitebal(sensor, enable);
                     });
                 }
@@ -191,7 +191,7 @@ namespace Eloquent {
                  * @return
                  */
                 bool setGainControl(bool enable) {
-                    return configureSensor([enable](sensor_t *sensor) {
+                    return configure([enable](sensor_t *sensor) {
                         sensor->set_gain_ctrl(sensor, enable);
                     });
                 }
@@ -217,7 +217,7 @@ namespace Eloquent {
                  * @return
                  */
                 bool setExposureControl(bool enable) {
-                    return configureSensor([enable](sensor_t *sensor) {
+                    return configure([enable](sensor_t *sensor) {
                         sensor->set_exposure_ctrl(sensor, enable);
                     });
                 }
@@ -243,7 +243,7 @@ namespace Eloquent {
                  * @return
                  */
                 bool setAutomaticWhiteBalanceGain(bool enable) {
-                    return configureSensor([enable](sensor_t *sensor) {
+                    return configure([enable](sensor_t *sensor) {
                         sensor->set_awb_gain(sensor, enable);
                     });
                 }
@@ -270,7 +270,7 @@ namespace Eloquent {
                  * @return
                  */
                 bool setAutomaticGainControl(bool enable) {
-                    return configureSensor([enable](sensor_t *sensor) {
+                    return configure([enable](sensor_t *sensor) {
                         sensor->set_gain_ctrl(sensor, enable);
                     });
                 }
@@ -281,7 +281,7 @@ namespace Eloquent {
                  * @return
                  */
                 bool setManualGain(uint8_t gain) {
-                    return configureSensor([gain](sensor_t *sensor) {
+                    return configure([gain](sensor_t *sensor) {
                         sensor->set_agc_gain(sensor, gain);
                     });
                 }
@@ -292,7 +292,7 @@ namespace Eloquent {
                  * @return
                  */
                 bool setManualExposure(uint16_t exposure) {
-                    return configureSensor([exposure](sensor_t *sensor) {
+                    return configure([exposure](sensor_t *sensor) {
                         sensor->set_aec_value(sensor, exposure);
                     });
                 }
@@ -319,7 +319,7 @@ namespace Eloquent {
                  * @return
                  */
                 bool setAutomaticExposureControl(bool enable) {
-                    return configureSensor([enable](sensor_t *sensor) {
+                    return configure([enable](sensor_t *sensor) {
                         sensor->set_aec2(sensor, enable);
                     });
                 }
@@ -346,7 +346,7 @@ namespace Eloquent {
                  * @return
                  */
                 bool setDCW(bool enable) {
-                    return configureSensor([enable](sensor_t *sensor) {
+                    return configure([enable](sensor_t *sensor) {
                         sensor->set_dcw(sensor, enable);
                     });
                 }
@@ -373,7 +373,7 @@ namespace Eloquent {
                  * @return
                  */
                 bool setBPC(bool enable) {
-                    return configureSensor([enable](sensor_t *sensor) {
+                    return configure([enable](sensor_t *sensor) {
                         sensor->set_bpc(sensor, enable);
                     });
                 }
@@ -400,7 +400,7 @@ namespace Eloquent {
                  * @return
                  */
                 bool setWPC(bool enable) {
-                    return configureSensor([enable](sensor_t *sensor) {
+                    return configure([enable](sensor_t *sensor) {
                         sensor->set_wpc(sensor, enable);
                     });
                 }
@@ -427,7 +427,7 @@ namespace Eloquent {
                  * @return
                  */
                 bool setLensCorrection(bool enable) {
-                    return configureSensor([enable](sensor_t *sensor) {
+                    return configure([enable](sensor_t *sensor) {
                         sensor->set_lenc(sensor, enable);
                     });
                 }
@@ -454,7 +454,7 @@ namespace Eloquent {
                  * @return
                  */
                 bool setRawGamma(bool enable) {
-                    return configureSensor([enable](sensor_t *sensor) {
+                    return configure([enable](sensor_t *sensor) {
                         sensor->set_raw_gma(sensor, enable);
                     });
                 }
@@ -465,7 +465,7 @@ namespace Eloquent {
                  * @return
                  */
                 bool setGainCeiling(uint8_t ceiling) {
-                    return configureSensor([ceiling](sensor_t *sensor) {
+                    return configure([ceiling](sensor_t *sensor) {
                         sensor->set_gainceiling(sensor, (gainceiling_t) ceiling);
                     });
                 }
@@ -475,7 +475,7 @@ namespace Eloquent {
                  * @return
                  */
                 bool noSpecialEffect() {
-                    return configureSensor([](sensor_t *sensor) {
+                    return configure([](sensor_t *sensor) {
                         sensor->set_special_effect(sensor, 0);
                     });
                 }
@@ -485,7 +485,7 @@ namespace Eloquent {
                  * @return
                  */
                 bool negative() {
-                    return configureSensor([](sensor_t *sensor) {
+                    return configure([](sensor_t *sensor) {
                         sensor->set_special_effect(sensor, 1);
                     });
                 }
@@ -495,7 +495,7 @@ namespace Eloquent {
                  * @return
                  */
                 bool grayscale() {
-                    return configureSensor([](sensor_t *sensor) {
+                    return configure([](sensor_t *sensor) {
                         sensor->set_special_effect(sensor, 2);
                     });
                 }
@@ -505,7 +505,7 @@ namespace Eloquent {
                  * @return
                  */
                 bool redTint() {
-                    return configureSensor([](sensor_t *sensor) {
+                    return configure([](sensor_t *sensor) {
                         sensor->set_special_effect(sensor, 3);
                     });
                 }
@@ -515,7 +515,7 @@ namespace Eloquent {
                  * @return
                  */
                 bool greenTint() {
-                    return configureSensor([](sensor_t *sensor) {
+                    return configure([](sensor_t *sensor) {
                         sensor->set_special_effect(sensor, 4);
                     });
                 }
@@ -525,7 +525,7 @@ namespace Eloquent {
                  * @return
                  */
                 bool blueTint() {
-                    return configureSensor([](sensor_t *sensor) {
+                    return configure([](sensor_t *sensor) {
                         sensor->set_special_effect(sensor, 5);
                     });
                 }
@@ -535,7 +535,7 @@ namespace Eloquent {
                  * @return
                  */
                 bool sepia() {
-                    return configureSensor([](sensor_t *sensor) {
+                    return configure([](sensor_t *sensor) {
                         sensor->set_special_effect(sensor, 6);
                     });
                 }

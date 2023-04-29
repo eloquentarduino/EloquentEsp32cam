@@ -1,17 +1,11 @@
 /**
  * Example 2: Camera Configuration
  * This sketch shows the available sensor configurations for the
- * Esp32 camera.
+ * Esp32 camera.sensor.
  * It does nothing: it's only a reference of the available methods
  */
 
-#include "esp32cam.h"
-
-
-/**
- * Instantiate the camera
- */
-Eloquent::Esp32cam::Cam cam;
+#include "esp32camera.h"
 
 
 void setup() {
@@ -20,63 +14,63 @@ void setup() {
      * are available for modification
      */
 
-    cam.vflip();
-    cam.hmirror();
+    camera.sensor.vflip();
+    camera.sensor.hmirror();
 
-    cam.lowestBrightness(); // set brightness = -2
-    cam.lowBrightness(); // set brightness = -1
-    cam.highBrightness(); // set brightness = +1
-    cam.highestBrightness(); // set brightness = +2
-    cam.setBrightness(0);
+    camera.sensor.lowestBrightness(); // set brightness = -2
+    camera.sensor.lowBrightness(); // set brightness = -1
+    camera.sensor.highBrightness(); // set brightness = +1
+    camera.sensor.highestBrightness(); // set brightness = +2
+    camera.sensor.setBrightness(0);
 
-    cam.lowestSaturation(); // set saturation = -2
-    cam.lowSaturation(); // set saturation = -1
-    cam.highSaturation(); // set saturation = +1
-    cam.highestSaturation(); // set saturation = +2
-    cam.setSaturation(0);
+    camera.sensor.lowestSaturation(); // set saturation = -2
+    camera.sensor.lowSaturation(); // set saturation = -1
+    camera.sensor.highSaturation(); // set saturation = +1
+    camera.sensor.highestSaturation(); // set saturation = +2
+    camera.sensor.setSaturation(0);
 
-    cam.negative();
-    cam.grayscale();
-    cam.redTint();
-    cam.greenTint();
-    cam.blueTint();
-    cam.sepia();
+    camera.sensor.negative();
+    camera.sensor.grayscale();
+    camera.sensor.redTint();
+    camera.sensor.greenTint();
+    camera.sensor.blueTint();
+    camera.sensor.sepia();
 
-    cam.enableAutomaticWhiteBalance();
-    cam.disableAutomaticWhiteBalance();
+    camera.sensor.enableAutomaticWhiteBalance();
+    camera.sensor.disableAutomaticWhiteBalance();
 
-    cam.enableGainControl();
-    cam.disableGainControl();
+    camera.sensor.enableGainControl();
+    camera.sensor.disableGainControl();
 
-    cam.enableExposureControl();
-    cam.disableExposureControl();
+    camera.sensor.enableExposureControl();
+    camera.sensor.disableExposureControl();
 
-    cam.enableAutomaticWhiteBalanceGain();
-    cam.disableAutomaticWhiteBalanceGain();
+    camera.sensor.enableAutomaticWhiteBalanceGain();
+    camera.sensor.disableAutomaticWhiteBalanceGain();
 
-    cam.enableAutomaticGainControl();
-    cam.disableAutomaticGainControl();
+    camera.sensor.enableAutomaticGainControl();
+    camera.sensor.disableAutomaticGainControl();
 
-    cam.enableAutomaticExposureControl();
-    cam.disableAutomaticExposureControl();
+    camera.sensor.enableAutomaticExposureControl();
+    camera.sensor.disableAutomaticExposureControl();
 
-    cam.enableDCW();
-    cam.disableDCW();
+    camera.sensor.enableDCW();
+    camera.sensor.disableDCW();
 
-    cam.enableBPC();
-    cam.disableBPC();
+    camera.sensor.enableBPC();
+    camera.sensor.disableBPC();
 
-    cam.enableWPC();
-    cam.disableWPC();
+    camera.sensor.enableWPC();
+    camera.sensor.disableWPC();
 
-    cam.enableLensCorrection();
-    cam.disableLensCorrection();
+    camera.sensor.enableLensCorrection();
+    camera.sensor.disableLensCorrection();
 
-    cam.enableRawGamma();
-    cam.disableRawGamma();
+    camera.sensor.enableRawGamma();
+    camera.sensor.disableRawGamma();
 
     // custom configuration
-    cam.configureSensor([](sensor_t *sensor) {
+    camera.sensor.configure([](sensor_t *sensor) {
         // do whatever you want with the sensor
     });
 }

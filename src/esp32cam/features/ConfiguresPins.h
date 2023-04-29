@@ -5,6 +5,8 @@
 #ifndef ELOQUENTESP32CAM_SETMODELPINS_H
 #define ELOQUENTESP32CAM_SETMODELPINS_H
 
+
+#include <esp_camera.h>
 #include "../../traits/HasErrorMessage.h"
 
 
@@ -30,7 +32,7 @@ namespace Eloquent {
                 /**
                  *
                  */
-                void aithinker() {
+                bool aithinker() {
                     _pins.d0 = 5;
                     _pins.d1 = 18;
                     _pins.d2 = 19;
@@ -48,12 +50,14 @@ namespace Eloquent {
                     _pins.pwdn = 32;
                     _pins.reset = -1;
                     _pins.flashlight = 4;
+
+                    return true;
                 }
 
                 /**
                  *
                  */
-                void m5() {
+                bool m5() {
                     _pins.d0 = 32;
                     _pins.d1 = 35;
                     _pins.d2 = 34;
@@ -71,12 +75,14 @@ namespace Eloquent {
                     _pins.pwdn = -1;
                     _pins.reset = 15;
                     _pins.flashlight = 16;
+
+                    return true;
                 }
 
                 /**
                  *
                  */
-                void m5wide() {
+                bool m5wide() {
                     _pins.d0 = 32;
                     _pins.d1 = 35;
                     _pins.d2 = 34;
@@ -94,12 +100,14 @@ namespace Eloquent {
                     _pins.pwdn = -1;
                     _pins.reset = 15;
                     _pins.flashlight = 14;
+
+                    return true;
                 }
 
                 /**
                  *
                  */
-                void eye() {
+                bool eye() {
                     _pins.d0 = 34;
                     _pins.d1 = 13;
                     _pins.d2 = 14;
@@ -117,12 +125,14 @@ namespace Eloquent {
                     _pins.pwdn = -1;
                     _pins.reset = -1;
                     _pins.flashlight = 22;
+
+                    return true;
                 }
 
                 /**
                  *
                  */
-                void wrover() {
+                bool wrover() {
                     _pins.d0 = 4;
                     _pins.d1 = 5;
                     _pins.d2 = 18;
@@ -140,12 +150,14 @@ namespace Eloquent {
                     _pins.pwdn = -1;
                     _pins.reset = -1;
                     _pins.flashlight = -1;
+
+                    return true;
                 }
 
                 /**
                  *
                  */
-                void ttgoLCD() {
+                bool ttgoLCD() {
                     _pins.d0 = 34;
                     _pins.d1 = 13;
                     _pins.d2 = 26;
@@ -163,12 +175,14 @@ namespace Eloquent {
                     _pins.pwdn = -1;
                     _pins.reset = -1;
                     _pins.flashlight = -1;
+
+                    return true;
                 }
 
                 /**
                  *
                  */
-                void simcam() {
+                bool simcam() {
                     _pins.d0 = 11;
                     _pins.d1 = 9;
                     _pins.d2 = 8;
@@ -186,6 +200,15 @@ namespace Eloquent {
                     _pins.pwdn = -1;
                     _pins.reset = 18;
                     _pins.flashlight = -1;
+
+                    return true;
+                }
+
+                /**
+                 *
+                 */
+                void autodetect() {
+                    _pins.d0 = _pins.d1 = 0;
                 }
 
                 /**
@@ -195,29 +218,24 @@ namespace Eloquent {
                  */
                 bool begin() {
                     if (_pins.d0 == _pins.d1) {
-                        return setErrorMessage("Model not set", "MODEL");
+                        ESP_LOGW("Model not set, trying to auto-detect", "ConfiguresPins");
+
+                        bool foundModel =
+                                probe("AiThinker", [this]() { aithinker(); }) ||
+                                probe("Esp-Eye", [this]() { eye(); }) ||
+                                probe("M5", [this]() { m5(); }) ||
+                                probe("M5Wide", [this]() { m5wide(); }) ||
+                                probe("Wrover", [this]() { wrover(); }) ||
+                                probe("TTGO LCD", [this]() { ttgoLCD(); }) ||
+                                probe("SimCam", [this]() { simcam(); });
+
+                        return foundModel ? setErrorMessage("") : setErrorMessage("Cannot detect model", "ConfiguresPins");
                     }
 
-                    auto config = cam->getConfig();
+                    camera_config_t *config = cam->getConfig();
+                    assign(config);
 
-                    config->pin_d0 = _pins.d0;
-                    config->pin_d1 = _pins.d1;
-                    config->pin_d2 = _pins.d2;
-                    config->pin_d3 = _pins.d3;
-                    config->pin_d4 = _pins.d4;
-                    config->pin_d5 = _pins.d5;
-                    config->pin_d6 = _pins.d6;
-                    config->pin_d7 = _pins.d7;
-                    config->pin_xclk = _pins.xclk;
-                    config->pin_pclk = _pins.pclk;
-                    config->pin_vsync = _pins.vsync;
-                    config->pin_href = _pins.href;
-                    config->pin_sscb_sda = _pins.sscb_sda;
-                    config->pin_sscb_scl = _pins.sscb_scl;
-                    config->pin_pwdn = _pins.pwdn;
-                    config->pin_reset = _pins.reset;
-
-                    return setErrorMessage("");
+                    return esp_camera_init(config) == ESP_OK ? setErrorMessage("") : setErrorMessage("Cannot init camera");
                 }
 
             protected:
@@ -241,6 +259,75 @@ namespace Eloquent {
                     int8_t reset;
                     int8_t flashlight;
                 } _pins;
+
+
+                /**
+                 *
+                 * @tparam PinAssignment
+                 * @param model
+                 * @param pinAssignment
+                 * @return
+                 */
+                template<typename PinAssignment>
+                bool probe(const char *model, PinAssignment pinAssignment) {
+                    ESP_LOGD("ConfiguresPins", "Probing camera model %s", model);
+                    pinAssignment();
+
+                    camera_config_t *config = cam->getConfig();
+
+                    assign(config);
+
+                    if (esp_camera_init(config) != ESP_OK)
+                        return setErrorMessage("Probe failed", "ConfiguresPins");
+
+                    ESP_LOGI("ConfiguresPins", "Probe succeded");
+
+                    return setErrorMessage("");
+                }
+
+
+                /**
+                 *
+                 * @return
+                 */
+                bool testPins() {
+                    // default config
+                    camera_config_t config;
+
+                    config.ledc_channel = LEDC_CHANNEL_0;
+                    config.ledc_timer = LEDC_TIMER_0;
+                    config.fb_count = 1;
+                    config.pixel_format = PIXFORMAT_JPEG;
+                    config.frame_size = FRAMESIZE_QQVGA;
+                    config.jpeg_quality = 30;
+                    config.xclk_freq_hz = 20000000;
+                    assign(&config);
+
+                    return esp_camera_init(&config) == ESP_OK;
+                }
+
+                /**
+                 *
+                 * @param config
+                 */
+                void assign(camera_config_t *config) {
+                    config->pin_d0 = _pins.d0;
+                    config->pin_d1 = _pins.d1;
+                    config->pin_d2 = _pins.d2;
+                    config->pin_d3 = _pins.d3;
+                    config->pin_d4 = _pins.d4;
+                    config->pin_d5 = _pins.d5;
+                    config->pin_d6 = _pins.d6;
+                    config->pin_d7 = _pins.d7;
+                    config->pin_xclk = _pins.xclk;
+                    config->pin_pclk = _pins.pclk;
+                    config->pin_vsync = _pins.vsync;
+                    config->pin_href = _pins.href;
+                    config->pin_sscb_sda = _pins.sscb_sda;
+                    config->pin_sscb_scl = _pins.sscb_scl;
+                    config->pin_pwdn = _pins.pwdn;
+                    config->pin_reset = _pins.reset;
+                }
             };
         }
     }

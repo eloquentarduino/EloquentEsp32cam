@@ -68,9 +68,6 @@ namespace Eloquent {
              * @return
              */
             bool begin() {
-                if (!model.begin())
-                    return setErrorMessage(model.getErrorMessage());
-
                 config.ledc_channel = LEDC_CHANNEL_0;
                 config.ledc_timer = LEDC_TIMER_0;
                 config.fb_count = 1;
@@ -79,8 +76,8 @@ namespace Eloquent {
                 config.jpeg_quality = quality.quality;
                 config.xclk_freq_hz = xclk.freq;
 
-                if (esp_camera_init(&config) != ESP_OK)
-                    return setErrorMessage("Init error", "Camera");
+                if (!model.begin())
+                    return setErrorMessage(model.getErrorMessage());
 
                 sensor_t *sensor = esp_camera_sensor_get();
                 sensor->set_framesize(sensor, resolution.framesize);
@@ -133,8 +130,7 @@ namespace Eloquent {
                 frame = esp_camera_fb_get();
 
                 if (!captured()) {
-                    ESP_LOGE("Camera", "Cannot capture frame");
-                    return setErrorMessage("Cannot capture frame");
+                    return setErrorMessage("Cannot capture frame", "Camera");
                 }
 
                 return touch();
@@ -155,6 +151,7 @@ namespace Eloquent {
              *
              * @param deviceToken
              * @return
+             * @deprecated
              */
             bool uploadToCloudStorage(String deviceToken) {
                 return setErrorMessage(cloudStorageUploader.upload(deviceToken, frame->buf, frame->len));

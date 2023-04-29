@@ -19,9 +19,9 @@ void setup() {
     Serial.println("Init");
 
     // see 3_Get_Your_First_Picture for more details
-    camera.aithinker();
-    camera.vga();
-    camera.highQuality();
+    camera.model.autodetect();
+    camera.resolution.vga();
+    camera.quality.high();
 
     // if connected to the internet, try to get time from NTP
     // (these are the defaults, so you can remove them)
@@ -30,14 +30,16 @@ void setup() {
     camera.ntp.server("pool.ntp.org");
 
     // init camera
-    while (!camera.begin())
+    while (!camera.begin()) {
         Serial.println(camera.getErrorMessage());
+        delay(1000);
+    }
 
     // init storage
     while (!camera.storage.spiffs())
         Serial.println(camera.getErrorMessage());
 
-    Serial.println("OK");
+    Serial.println("Init OK. Enter 'capture' to capture a new picture");
 }
 
 
