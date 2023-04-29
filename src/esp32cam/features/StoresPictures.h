@@ -15,7 +15,7 @@ namespace Eloquent {
     namespace Esp32cam {
         namespace Features {
             /**
-             * Synctatic sugar to save pictures to different
+             * Syntactic sugar to save pictures to different
              * filesystems with incrementing filename
              */
              template<typename Camera>
@@ -93,15 +93,22 @@ namespace Eloquent {
                 String getNextFilename() {
                     Preferences prefs;
                     unsigned long uuid;
-                    char buf[15];
+                    char counter[15];
+                    String datetime;
 
+                    // use incremental counter
                     prefs.begin("storage", false);
                     uuid = prefs.getULong("uuid", 0);
                     prefs.putULong("uuid", uuid + 1);
                     prefs.end();
-                    sprintf(buf, "%010lu", uuid);
+                    sprintf(counter, "%010lu", uuid);
 
-                    return String("/") + (ns  != "" ? ns + "/" : "") + buf + ".jpg";
+                    // append timestamp, if available
+                    if (cam->ntp.refresh()) {
+                        datetime = String("_") + cam->ntp.getDateTime();
+                    }
+
+                    return String("/") + (ns != "" ? ns + "/" : "") + counter + datetime + ".jpg";
                 }
 
                 /**

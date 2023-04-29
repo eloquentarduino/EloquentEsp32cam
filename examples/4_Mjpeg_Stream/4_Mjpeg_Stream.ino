@@ -1,20 +1,18 @@
 /**
- * Example 4: Mjpeg Stream
- * This sketch shows how to access the live camera feed
- * from a browser using HTTP as an mjpeg Stream
+ * Example 6: Store pictures to SPIFFS
+ * This sketch shows how to save a picture on the SPIFFS
+ * filesystem using automatic incrementing file naming.
+ *
+ * BE SURE TO SET "TOOLS > CORE DEBUG LEVEL = DEBUG"
+ * to turn on debug messages
  */
-
-// Replace with your WiFi credentials
 #define WIFI_SSID "SSID"
 #define WIFI_PASS "PASSWORD"
 
+#include <SPIFFS.h>
 #include "esp32cam.h"
-#include "esp32cam/http/MjpegStream.h"
 
 
-/**
- *
- */
 void setup() {
     Serial.begin(115200);
     delay(3000);
@@ -22,28 +20,44 @@ void setup() {
 
     // see 3_Get_Your_First_Picture for more details
     camera.aithinker();
+    camera.vga();
     camera.highQuality();
-    camera.qvga();
 
+    // if connected to the internet, try to get time from NTP
+    // (these are the defaults, so you can remove them)
+    camera.ntp.gmt(0);
+    camera.ntp.daylight(false);
+    camera.ntp.server("pool.ntp.org");
+
+    // init camera
     while (!camera.begin())
         Serial.println(camera.getErrorMessage());
 
-    // Initialize mjpeg server
-    // If something goes wrong, print the error message
-    while (!mjpegStream.begin())
-        Serial.println(mjpegStream.getErrorMessage());
+    // init storage
+    while (!camera.storage.spiffs())
+        Serial.println(camera.getErrorMessage());
 
-    // Display the IP address of the camera
-    // html preview of the mjpeg stream is available at http://<ip>/
-    // mjpeg stream is available at http://<ip>/mjpeg
-    // jpeg still picture is available at http://<ip>/jpeg
-    Serial.println(mjpegStream.getWelcomeMessage());
+    Serial.println("OK");
 }
 
 
-/**
- *
- */
 void loop() {
-    mjpegStream.handle();
+    // await for "capture" from the Serial Monitor
+    if (!Serial.available())
+        return;
+
+    if (Serial.readStringUntil('\n') != "capture") {
+        Serial.println("Only 'capture'");
+        return;
+    }
+
+    // capture picture
+    if (!camera.capture()) {
+        Serial.println(camera.getErrorMessage());
+        return;
+    }
+
+    // save to disk
+    Serial.println("Capture ok, saving...");
+    camera.storage.save();
 }

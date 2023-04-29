@@ -8,15 +8,18 @@
 #include <esp_camera.h>
 #include <FS.h>
 #include "../traits/HasErrorMessage.h"
-#include "../traits/SetFrameSize.h"
-#include "../traits/SetJpegQuality.h"
-#include "../traits/SetModelPins.h"
-#include "../traits/ConfiguresImageSensor.h"
 #include "../traits/Debounces.h"
-#include "../traits/ConnectsToWiFi.h"
 #include "../traits/SavesToFilesystem.h"
+#include "./features/ConfiguresPins.h"
+#include "./features/SetsResolution.h"
+#include "./features/ConfiguresImageSensor.h"
 #include "./features/CloudStorageUploader.h"
 #include "./features/StoresPictures.h"
+#include "./features/ConnectsToWiFi.h"
+#include "./features/SyncsTime.h"
+#include "./features/SetsJpegQuality.h"
+#include "./features/SetsClockFreq.h"
+
 
 
 namespace Eloquent {
@@ -27,42 +30,37 @@ namespace Eloquent {
          */
         class Cam :
                 public HasErrorMessage,
-                public SetFrameSize,
-                public SetJpegQuality,
-                public SetModelPins,
-                public ConfiguresImageSensor,
-                public Debounces,
-                public SavesToFilesystem,
-                public ConnectsToWiFi {
+                public Debounces {
             
         public:
             camera_config_t config;
             camera_fb_t *frame;
+            Features::ConfiguresPins<Cam> model;
+            Features::SetsResolution resolution;
+            Features::ConfiguresImageSensor sensor;
             Features::CloudStorageUploader cloudStorageUploader;
             Features::StoresPictures<Cam> storage;
+            Features::ConnectsToWiFi wifi;
+            Features::SyncsTime<Cam> ntp;
+            Features::SetsJpegQuality quality;
+            Features::SetsClockFreq xclk;
             
             /**
              *
              */
             Cam() :
-                storage(this) {
-                highQuality();
-                vga();
+                model(this),
+                storage(this),
+                ntp(this) {
                 debounce(0);
             }
 
             /**
-             * Set clock speed to 1MHz
+             *
+             * @return
              */
-            inline void slowClock() {
-                config.xclk_freq_hz = 10000000;
-            }
-
-            /**
-             * Set clock speed to 2MHz
-             */
-            inline void fastClock() {
-                config.xclk_freq_hz = 20000000;
+            camera_config_t* getConfig() {
+                return &config;
             }
 
             /**
@@ -70,43 +68,40 @@ namespace Eloquent {
              * @return
              */
             bool begin() {
-                if (!hasPinsSet())
-                    return setErrorMessage("You must set a model");
+                if (!model.begin())
+                    return setErrorMessage(model.getErrorMessage());
 
-                setPins(&config);
                 config.ledc_channel = LEDC_CHANNEL_0;
                 config.ledc_timer = LEDC_TIMER_0;
                 config.fb_count = 1;
                 config.pixel_format = PIXFORMAT_JPEG;
-                config.frame_size = _framesize;
-                config.jpeg_quality = _jpegQuality;
-
-                if (!config.xclk_freq_hz)
-                    config.xclk_freq_hz = 20000000;
+                config.frame_size = resolution.framesize;
+                config.jpeg_quality = quality.quality;
+                config.xclk_freq_hz = xclk.freq;
 
                 if (esp_camera_init(&config) != ESP_OK)
-                    return setErrorMessage("Init error");
+                    return setErrorMessage("Init error", "Camera");
 
-                sensor = esp_camera_sensor_get();
-                sensor->set_framesize(sensor, _framesize);
+                sensor_t *sensor = esp_camera_sensor_get();
+                sensor->set_framesize(sensor, resolution.framesize);
 
-                return autoconnect();
+                return (wifi.autoconnect() && ntp.begin());
             }
 
             /**
              * Turn flashlight on
              */
             inline void flashlightOn() {
-                if (_pins.flashlight >= 0)
-                    digitalWrite(_pins.flashlight, HIGH);
+                //if (_pins.flashlight >= 0)
+                //    digitalWrite(_pins.flashlight, HIGH);
             }
 
             /**
              * Turn flashlight off
              */
             inline void flashlightOff() {
-                if (_pins.flashlight >= 0)
-                    digitalWrite(_pins.flashlight, LOW);
+                //if (_pins.flashlight >= 0)
+                //    digitalWrite(_pins.flashlight, LOW);
             }
 
             /**
@@ -156,19 +151,6 @@ namespace Eloquent {
             }
 
             /**
-             * @deprecated 2.0.0
-             * @param fs
-             * @param filename
-             * @return
-             */
-            bool saveTo(fs::FS &fs, String filename) {
-                if (!this->captured())
-                    return setErrorMessage("Save error: frame not found");
-
-                return SavesToFilesystem::saveTo(fs, filename, frame->buf, frame->len);
-            }
-
-            /**
              * Upload current picture to https://esp32camstorage.eloquentarduino.com
              *
              * @param deviceToken
@@ -176,18 +158,6 @@ namespace Eloquent {
              */
             bool uploadToCloudStorage(String deviceToken) {
                 return setErrorMessage(cloudStorageUploader.upload(deviceToken, frame->buf, frame->len));
-            }
-
-            /**
-             * Get HTTP address of camera
-             * @param port
-             * @return
-             */
-            String getAddress(uint16_t port = 80) {
-                return
-                String("http://")
-                + this->getIP()
-                + (port != 80 ? String(':') + port : "");
             }
 
         protected:

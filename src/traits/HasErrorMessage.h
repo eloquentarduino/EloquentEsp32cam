@@ -37,11 +37,11 @@ namespace Eloquent {
              *
              * @param error
              */
-            bool setErrorMessage(String error) {
+            bool setErrorMessage(String error, const char *channel = "ERROR") {
                 _error = error;
 
                 if (error != "")
-                    ESP_LOGE("ERROR", "%s", error.c_str());
+                    ESP_LOGE(channel, "%s", error.c_str());
 
                 return isOk();
             }
