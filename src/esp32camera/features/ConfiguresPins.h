@@ -285,27 +285,6 @@ namespace Eloquent {
                     return setErrorMessage("");
                 }
 
-
-                /**
-                 *
-                 * @return
-                 */
-                bool testPins() {
-                    // default config
-                    camera_config_t config;
-
-                    config.ledc_channel = LEDC_CHANNEL_0;
-                    config.ledc_timer = LEDC_TIMER_0;
-                    config.fb_count = 1;
-                    config.pixel_format = PIXFORMAT_JPEG;
-                    config.frame_size = FRAMESIZE_QQVGA;
-                    config.jpeg_quality = 30;
-                    config.xclk_freq_hz = 20000000;
-                    assign(&config);
-
-                    return esp_camera_init(&config) == ESP_OK;
-                }
-
                 /**
                  *
                  * @param config

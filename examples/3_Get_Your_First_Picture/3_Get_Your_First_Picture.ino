@@ -1,7 +1,10 @@
 /**
  * Example 3: Get your First picture
  * This sketch shows the basic code you need to take a picture
- * from your Esp32 camera
+ * from your Esp32 camera.
+ *
+ * Open the Serial Monitor and enter 'capture' (without quotes)
+ * to capture a new image
  *
  * BE SURE TO SET "TOOLS > CORE DEBUG LEVEL = DEBUG"
  * to turn on debug messages
@@ -83,20 +86,27 @@ void setup() {
  *
  */
 void loop() {
-    /**
-     * Try to capture a frame
-     * If something goes wrong, print the error message
-     */
+    // await for "capture" from the Serial Monitor
+    if (!Serial.available())
+        return;
+
+    if (Serial.readStringUntil('\n') != "capture") {
+        Serial.println("Only 'capture'");
+        return;
+    }
+
+    // capture picture
     if (!camera.capture()) {
         Serial.println(camera.getErrorMessage());
         return;
     }
 
-    Serial.print("Jpeg size: ");
-    Serial.println(camera.getSizeInBytes());
-
-    /**
-     * Do whatever you want with the captured frame.
-     * See next examples.
-     */
+    // print image info
+    Serial.println("Capture OK");
+    Serial.printf(
+            "JPEG size in bytes: %d. Width: %dpx. Height: %dpx.\n",
+            camera.getSizeInBytes(),
+            camera.resolution.getWidth(),
+            camera.resolution.getHeight()
+    );
 }

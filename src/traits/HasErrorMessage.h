@@ -34,6 +34,7 @@ namespace Eloquent {
             String _error;
 
             /**
+             * Set error message
              *
              * @param error
              */
@@ -44,6 +45,17 @@ namespace Eloquent {
                     ESP_LOGE(channel, "%s", error.c_str());
 
                 return isOk();
+            }
+
+            /**
+             * Clear error message
+             *
+             * @return
+             */
+            bool clearError() {
+                _error = "";
+
+                return true;
             }
         };
     }

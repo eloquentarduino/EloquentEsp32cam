@@ -46,7 +46,7 @@ namespace Eloquent {
             Features::SetsJpegQuality quality;
             Features::SetsClockFreq xclk;
             Features::BrownoutDetector brownout;
-            
+
             /**
              *
              */

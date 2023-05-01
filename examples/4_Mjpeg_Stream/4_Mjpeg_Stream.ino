@@ -40,7 +40,7 @@ void setup() {
     camera.resolution.vga();
     camera.quality.high();
 
-    // init camera
+    // Init camera
     while (!camera.begin())
         Serial.println(camera.getErrorMessage());
 

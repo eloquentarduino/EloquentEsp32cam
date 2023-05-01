@@ -191,7 +191,7 @@ namespace Eloquent {
                  * Get width of captured image
                  * @return
                  */
-                uint16_t getWidth() {
+                size_t getWidth() {
                     switch (framesize) {
                         case FRAMESIZE_96X96:
                             return 96;
@@ -246,7 +246,7 @@ namespace Eloquent {
                  * Get height of captured image
                  * @return
                  */
-                uint16_t getHeight() {
+                size_t getHeight() {
                     switch (framesize) {
                         case FRAMESIZE_96X96:
                             return 96;

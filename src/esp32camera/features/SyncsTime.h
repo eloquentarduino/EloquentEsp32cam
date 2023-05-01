@@ -83,10 +83,13 @@ namespace Eloquent {
                  * Initialize
                  */
                 bool begin() {
-                    if (!cam->wifi.isConnected())
-                        return setErrorMessage("WiFi not connected, can't sync time", "NTP");
+                    if (!cam->wifi.isConnected()) {
+                        ESP_LOGW("NTP", "WiFi not connected, can't sync time");
+                        return true;
+                    }
 
                     configTime(_gmtOffset * 3600, _daylightOffset * 3600, (const char *) _server.c_str());
+                    ESP_LOGD("NTP", "Time synced (if available)");
 
                     return refresh();
                 }
