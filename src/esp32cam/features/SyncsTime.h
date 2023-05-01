@@ -2,8 +2,8 @@
 // Created by Simone on 13/11/22.
 //
 
-#ifndef ELOQUENTESP32CAM_NTPCLIENT_H
-#define ELOQUENTESP32CAM_NTPCLIENT_H
+#ifndef ELOQUENTESP32CAM_SYNCS_TIME_H
+#define ELOQUENTESP32CAM_SYNCS_TIME_H
 
 #include "../../traits/HasErrorMessage.h"
 
@@ -41,21 +41,21 @@ namespace Eloquent {
                 }
 
                 /**
-                 *
+                 * Short for gmt + 0
                  */
                 inline void westernEurope() {
                     gmt(0);
                 }
 
                 /**
-                 *
+                 * Short for gmt + 1
                  */
                 inline void centralEurope() {
                     gmt(1);
                 }
 
                 /**
-                 *
+                 * Short for gmt + 2
                  */
                 inline void easternEurope() {
                     gmt(2);
@@ -92,7 +92,7 @@ namespace Eloquent {
                 }
 
                 /**
-                 *
+                 * Get date as string
                  * @return
                  */
                 String getDate() {
@@ -100,7 +100,7 @@ namespace Eloquent {
                 }
 
                 /**
-                 *
+                 * Get datetime as string
                  * @return
                  */
                 String getDateTime() {
@@ -108,7 +108,8 @@ namespace Eloquent {
                 }
 
                 /**
-                 *
+                 * Format datetime
+                 * 
                  * @param fmt
                  * @return
                  */
@@ -125,6 +126,7 @@ namespace Eloquent {
 
                 /**
                  * Update time
+                 * 
                  * @return
                  */
                 bool refresh() {
@@ -143,4 +145,4 @@ namespace Eloquent {
     }
 }
 
-#endif //ELOQUENTESP32CAM_NTPCLIENT_H
+#endif //ELOQUENTESP32CAM_SYNCS_TIME_H

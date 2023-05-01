@@ -82,7 +82,7 @@ namespace Eloquent {
                 sensor_t *sensor = esp_camera_sensor_get();
                 sensor->set_framesize(sensor, resolution.framesize);
 
-                return (wifi.autoconnect() && ntp.begin());
+                return wifi.autoconnect() && ntp.begin();
             }
 
             /**
@@ -111,10 +111,10 @@ namespace Eloquent {
 
 
             /**
-             * Get Jpeg size
+             * Get frame size in bytes
              * @return
              */
-            inline uint16_t getFileSize() {
+            inline uint16_t getSizeInBytes() {
                 return captured() ? frame->len : 0;
             }
 

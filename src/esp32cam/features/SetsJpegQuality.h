@@ -24,21 +24,21 @@ namespace Eloquent {
                  * Quality = 30
                  */
                 void low() {
-                    setQuality(30);
+                    set(30);
                 }
 
                 /**
                  * Quality = 20
                  */
                 void high() {
-                    setQuality(20);
+                    set(20);
                 }
 
                 /**
                  * Quality = 10
                  */
                 void best() {
-                    setQuality(10);
+                    set(10);
                 }
 
                 /**
@@ -46,7 +46,7 @@ namespace Eloquent {
                  *
                  * @param q
                  */
-                void setQuality(uint8_t q) {
+                void set(uint8_t q) {
                     quality = q > 10 ? q : 10;
                 }
             };
