@@ -52,7 +52,6 @@ namespace Eloquent {
                 }
 
 
-
             protected:
                 uint16_t _maxNumFiles;
 
@@ -82,6 +81,10 @@ namespace Eloquent {
                     const uint16_t page = argInt("page", 0);
                     const uint16_t perPage = argInt("perPage", _maxNumFiles);
                     const uint16_t offset = page * perPage;
+
+                    // empty list
+                    if (!file)
+                        server.send(200, "text/plain", "");
 
                     while (file) {
                         // only list jpeg files

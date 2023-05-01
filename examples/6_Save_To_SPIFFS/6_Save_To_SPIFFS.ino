@@ -46,7 +46,7 @@ void setup() {
     while (!camera.storage.spiffs())
         Serial.println(camera.getErrorMessage());
 
-    Serial.println("Init OK. Enter 'capture' to capture a new picture");
+    Serial.println("Camera OK. Enter 'capture' to capture a new picture");
 }
 
 

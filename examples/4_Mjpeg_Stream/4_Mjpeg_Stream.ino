@@ -50,6 +50,7 @@ void setup() {
 
     Serial.println("Camera OK");
     Serial.println("MjpegStream OK");
+    Serial.println(mjpegStream.getWelcomeMessage());
 }
 
 
