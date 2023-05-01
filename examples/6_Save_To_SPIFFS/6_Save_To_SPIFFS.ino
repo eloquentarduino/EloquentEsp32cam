@@ -1,16 +1,23 @@
 /**
- * Example 6: Store pictures to SPIFFS
- * This sketch shows how to save a picture on the SPIFFS
+ * Example 6: Store pictures to SD Card
+ * This sketch shows how to save a picture on the SD Card
  * filesystem using automatic incrementing file naming.
+ *
+ * Open the Serial Monitor and enter 'capture' (without quotes)
+ * to capture a new image and save it to disk
  *
  * BE SURE TO SET "TOOLS > CORE DEBUG LEVEL = DEBUG"
  * to turn on debug messages
  */
+
+// if you define WIFI_SSID and WIFI_PASS before importing the library
+// the camera will automatically connect and synchronize the NTP server
+// for filename timestamping.
 #define WIFI_SSID "SSID"
 #define WIFI_PASS "PASSWORD"
 
 #include <SPIFFS.h>
-#include "esp32cam.h"
+#include "esp32camera.h"
 
 
 void setup() {

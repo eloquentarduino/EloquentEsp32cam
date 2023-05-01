@@ -45,7 +45,7 @@ namespace Eloquent {
                  * @return
                  */
                 String getWelcomeMessage() {
-                    if (!camera.isConnectedToWiFi()) {
+                    if (!camera.wifi.isConnected()) {
                         setErrorMessage("WiFi not connected");
                         return "WiFi not connected";
                     }
@@ -84,7 +84,7 @@ namespace Eloquent {
                  * @return
                  */
                 bool startServer() {
-                    if (!camera.isConnectedToWiFi())
+                    if (!camera.wifi.isConnected())
                         return setErrorMessage("WiFi not connected");
 
                     server.begin(httpPort);

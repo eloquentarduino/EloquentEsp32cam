@@ -19,6 +19,7 @@
 #include "./features/SyncsTime.h"
 #include "./features/SetsJpegQuality.h"
 #include "./features/SetsClockFreq.h"
+#include "./features/BrownoutDetector.h"
 
 
 
@@ -44,6 +45,7 @@ namespace Eloquent {
             Features::SyncsTime<Cam> ntp;
             Features::SetsJpegQuality quality;
             Features::SetsClockFreq xclk;
+            Features::BrownoutDetector brownout;
             
             /**
              *
@@ -75,6 +77,8 @@ namespace Eloquent {
                 config.frame_size = resolution.framesize;
                 config.jpeg_quality = quality.quality;
                 config.xclk_freq_hz = xclk.freq;
+
+                brownout.begin();
 
                 if (!model.begin())
                     return setErrorMessage(model.getErrorMessage());

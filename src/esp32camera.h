@@ -6,6 +6,6 @@
 #define ELOQUENTESP32CAM_ESP32CAM_H
 
 #include "./defines.h"
-#include "./esp32cam/Cam.h"
+#include "./esp32camera/Cam.h"
 
 #endif //ELOQUENTESP32CAM_ESP32CAM_H

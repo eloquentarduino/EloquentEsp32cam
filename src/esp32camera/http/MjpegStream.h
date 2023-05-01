@@ -43,9 +43,9 @@ namespace Eloquent {
 
                             client.println(F("Content-Type: image/jpeg"));
                             client.print(F("Content-Length: "));
-                            client.println(camera.getFileSize());
+                            client.println(camera.getSizeInBytes());
                             client.println();
-                            client.write((const char *) camera.frame->buf, camera.getFileSize());
+                            client.write((const char *) camera.frame->buf, camera.getSizeInBytes());
                             client.println(F("\r\n--frame"));
                         }
                     });
@@ -62,7 +62,7 @@ namespace Eloquent {
                         client.println(F("Content-Type: image/jpeg"));
                         client.println(F("Access-Control-Allow-Origin: *"));
                         client.println();
-                        client.write((const char *) camera.frame->buf, camera.getFileSize());
+                        client.write((const char *) camera.frame->buf, camera.getSizeInBytes());
                     });
 
                     return startServer();
