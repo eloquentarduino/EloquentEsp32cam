@@ -1,46 +1,44 @@
-//
-// Created by Simone on 29/12/22.
-//
+/**
+ * Run person detection on camera frame
+ * Assumes a JPEG decoder named `jpeg` is available
+ * at compile time
+ */
 
 #ifndef ELOQUENTESP32CAM_PERSONDETECTION_H
 #define ELOQUENTESP32CAM_PERSONDETECTION_H
 
-#define MAX_RESOLUTION_1024x768
 #define PERSON_DETECTION_ARENA_SIZE 70000L
 
 #include <EloquentTinyML.h>
 #include <eloquent_tinyml/tensorflow/person_detection.h>
-#include "../JpegDecoderGray.h"
 #include "../../traits/HasErrorMessage.h"
-#include "../../traits/BenchmarksCode.h"
+#include "../Cam.h"
+#include "../features/Benchmark.h"
 
 
 namespace Eloquent {
     namespace Esp32cam {
-        namespace Applications {
-
+        namespace TinyML {
             /**
              * Perform person detection
              */
-            class PersonDetector : public HasErrorMessage, public BenchmarksCode {
+            class PersonDetection : public HasErrorMessage {
             public:
                 bool isPerson;
-                Cam *cam;
-                JpegDecoderGray jpeg;
-                Eloquent::TinyML::TensorFlow::PersonDetection<1024/8, 768/8> person;
+                Features::Benchmark benchmark;
+                Eloquent::TinyML::TensorFlow::PersonDetection<1024/8, 768/8> model;
 
                 /**
                  *
                  * @param camera
                  */
-                PersonDetector(Cam& camera) :
-                    cam(&camera),
+                PersonDetection() :
                     isPerson(false) {
-
                 }
 
                 /**
-                 * Check person
+                 * Check if person is detected
+                 *
                  * @return
                  */
                 operator bool() const {
@@ -52,12 +50,13 @@ namespace Eloquent {
                  * @return
                  */
                 bool begin() {
-                    cam->grayscale();
-                    cam->xga();
+                    if (!camera.resolution.isXGA())
+                        return setErrorMessage("Resolution must be XGA");
 
-                    person.begin();
+                    if (!model.begin())
+                        return setErrorMessage(model.getErrorMessage());
 
-                    return setErrorMessage(person.isOk() ? "" : person.getErrorMessage());
+                    return clearError();
                 }
 
                 /**
@@ -66,7 +65,7 @@ namespace Eloquent {
                  * @param confidence
                  */
                 inline void minConfidence(uint8_t confidence) {
-                    person.setDetectionAbsoluteThreshold(confidence);
+                    model.setDetectionAbsoluteThreshold(confidence);
                 }
 
                 /**
@@ -74,27 +73,29 @@ namespace Eloquent {
                  * @return
                  */
                 bool detect() {
-                    startBenchmark();
+                    benchmark.start();
 
-                    if (!jpeg.decode(*cam)) {
-                        stopBenchmark();
+                    if (!jpeg.decode()) {
+                        benchmark.stop();
+
                         return setErrorMessage(jpeg.getErrorMessage());
                     }
 
-                    isPerson = person.detectPerson(jpeg.gray.pixels);
-                    stopBenchmark();
+                    isPerson = model.detectPerson(jpeg.gray.pixels);
+                    benchmark.stop();
 
-                    if (!person.isOk()) {
-                        return setErrorMessage(person.getErrorMessage());
+                    if (!model.isOk()) {
+                        return setErrorMessage(model.getErrorMessage());
                     }
 
-                    return setErrorMessage("");
+                    return clearError();
                 }
-
-            protected:
             };
         }
     }
 }
+
+
+Eloquent::Esp32cam::TinyML::PersonDetection personDetection;
 
 #endif //ELOQUENTESP32CAM_PERSONDETECTION_H

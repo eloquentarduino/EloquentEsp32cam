@@ -296,6 +296,14 @@ namespace Eloquent {
                             return 0;
                     }
                 }
+
+                /**
+                 *
+                 * @return
+                 */
+                bool isXGA() {
+                    return framesize == FRAMESIZE_XGA;
+                }
             };
         }
     }

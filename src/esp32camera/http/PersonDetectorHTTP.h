@@ -8,7 +8,7 @@
 
 #include <WebServer.h>
 #include "../Cam.h"
-#include "../apps/PersonDetector.h"
+#include "../tinyml/PersonDetection.h"
 #include "./features/DisplaysJpegFeed.h"
 #include "./features/Resources.h"
 

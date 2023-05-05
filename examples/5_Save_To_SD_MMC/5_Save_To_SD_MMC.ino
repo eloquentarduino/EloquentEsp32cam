@@ -46,7 +46,8 @@ void setup() {
     while (!camera.storage.sdmmc())
         Serial.println(camera.getErrorMessage());
 
-    Serial.println("Camera OK. Enter 'capture' to capture a new picture");
+    Serial.println("Camera OK");
+    Serial.println("Enter 'capture' to capture a new picture");
 }
 
 
