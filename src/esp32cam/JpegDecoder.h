@@ -27,7 +27,7 @@ struct JpegDecoding {
  * @param data
  * @return
  */
-unsigned char pjegConsume(unsigned char* dest, unsigned char chunkSize, unsigned char *read, void *data) {
+unsigned char pjpegConsume(unsigned char* dest, unsigned char chunkSize, unsigned char *read, void *data) {
     JpegDecoding *decoding = (JpegDecoding*) data;
 
     if (decoding->cam->frame == NULL) {
