@@ -84,6 +84,14 @@ namespace Eloquent {
                      * @param next
                      */
                     void chain(RegionOfInterest& next) {
+                        RegionOfInterest *roi = this;
+
+                        while (roi->_next != NULL)
+                            roi = roi->_next;
+
+                        roi->_next = &next;
+                        return;
+
                         if (_next == NULL)
                             _next = &next;
                         else

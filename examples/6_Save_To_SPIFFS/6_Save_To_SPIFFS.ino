@@ -1,6 +1,6 @@
 /**
- * Example 6: Store pictures to SD Card
- * This sketch shows how to save a picture on the SD Card
+ * Example 6: Store pictures to SPIFFS
+ * This sketch shows how to save a picture on the SPIFFS
  * filesystem using automatic incrementing file naming.
  *
  * Open the Serial Monitor and enter 'capture' (without quotes)
