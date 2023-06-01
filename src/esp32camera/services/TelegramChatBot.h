@@ -255,7 +255,7 @@ namespace Eloquent {
 
 
 #ifdef TELEGRAM_TOKEN
-static Eloquent::Esp32cam::Services::TelegramChatBot telegram(TELEGRAM_TOKEN, TELEGRAM_CHAT_ID);
+static Eloquent::Esp32cam::Services::TelegramChatBot telegramChat(TELEGRAM_TOKEN, TELEGRAM_CHAT_ID);
 #endif
 
 

@@ -1,5 +1,5 @@
 /**
- * Example 6: Store pictures to SD Card
+ * Example 5: Store pictures to SD Card
  * This sketch shows how to save a picture on the SD Card
  * filesystem using automatic incrementing file naming.
  *

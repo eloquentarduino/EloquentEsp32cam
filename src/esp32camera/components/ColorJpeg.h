@@ -57,7 +57,9 @@ namespace Eloquent {
              */
             class ColorJpeg : public HasErrorMessage {
             public:
+
                 pjpeg_image_info_t image;
+
                 struct {
 #ifdef MAX_PIXELS
                     uint8_t pixels[MAX_PIXELS];
@@ -74,7 +76,7 @@ namespace Eloquent {
                 /**
                  *
                  */
-                ColorJpeg() {
+                ColorJpeg() : lastDecodedAt(0) {
                     gray.allocated = 0;
                     gray.length = 0;
                     gray.width = 0;
@@ -177,11 +179,22 @@ namespace Eloquent {
                     red.height = height;
 
                     benchmark.stop();
+                    lastDecodedAt = millis();
 
                     return clearError();
                 }
 
+                /**
+                 * Test if decoding was successful
+                 *
+                 * @return
+                 */
+                inline bool decoded() {
+                    return isOk() && (millis() - lastDecodedAt) < 10;
+                }
+
             protected:
+                size_t lastDecodedAt;
 
                 /**
                  * Consume JPEG bytes

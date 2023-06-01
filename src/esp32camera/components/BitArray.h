@@ -5,6 +5,7 @@
 namespace Eloquent {
     namespace Esp32cam {
         namespace Components {
+
             /**
              * Efficiently store bit arrays
              */
@@ -21,7 +22,7 @@ namespace Eloquent {
                 }
 
                 /**
-                 * Set bit at position
+                 * Set bit at given index
                  */
                 void set(uint16_t idx, bool value) {
                     if (idx >= lengthInBits)
@@ -38,7 +39,7 @@ namespace Eloquent {
                 }
 
                 /**
-                 * Get bit at position
+                 * Get bit at given index
                  */
                 bool get(uint16_t idx) {
                     if (idx >= lengthInBits)

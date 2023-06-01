@@ -39,8 +39,8 @@ void setup() {
         Serial.println(camera.getErrorMessage());
 
     // Init bot
-    while (!telegram.begin())
-        Serial.println(telegram.getErrorMessage());
+    while (!telegramChat.begin())
+        Serial.println(telegramChat.getErrorMessage());
 
     Serial.println("Camera OK");
     Serial.println("Telegram OK");
@@ -54,7 +54,7 @@ void loop() {
         return;
 
     if (Serial.readStringUntil('\n') != "capture") {
-        Serial.println("Only 'capture'");
+        Serial.println("I understand only 'capture'");
         return;
     }
 
@@ -66,6 +66,6 @@ void loop() {
 
     // send via Telegram
     Serial.println("Capture OK. Sending to Telegram... ");
-    Serial.println(telegram.sendText("Motion detected") ? "Text OK" : "Text ERROR");
-    Serial.println(telegram.sendPicture() ? "Picture OK" : "Picture ERROR");
+    Serial.println(telegramChat.sendText("Motion detected") ? "Text OK" : "Text ERROR");
+    Serial.println(telegramChat.sendPicture() ? "Picture OK" : "Picture ERROR");
 }
