@@ -1,5 +1,5 @@
 /**
- * Example 8: Browse images over HTTP
+ * Example 7: Browse images over HTTP
  * This sketch shows how to access the pictures stored
  * on the SD/SPIFFS from the browser.
  * This example uses SPIFFS filesystem, see
