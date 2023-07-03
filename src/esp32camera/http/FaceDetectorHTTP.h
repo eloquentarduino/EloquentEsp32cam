@@ -8,7 +8,7 @@
 
 #include <WebServer.h>
 #include "../Cam.h"
-#include "../apps/FaceDetector.h"
+#include "../tinyml/FaceDetection.h"
 #include "./features/DisplaysJpegFeed.h"
 #include "./features/DrawsBBoxesOnImage.h"
 

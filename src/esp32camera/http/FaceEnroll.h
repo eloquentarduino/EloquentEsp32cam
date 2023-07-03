@@ -6,7 +6,7 @@
 #define ELOQUENTESP32CAM_FACE_ENROLL_SERVER_H
 
 #include <WebServer.h>
-#include "../apps/FaceDetector.h"
+#include "../tinyml/FaceDetection.h"
 
 
 namespace Eloquent {

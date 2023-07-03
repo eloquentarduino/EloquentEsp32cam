@@ -12,52 +12,17 @@
 #include "../Cam.h"
 #include "../../traits/HasErrorMessage.h"
 #include "../../traits/BenchmarksCode.h"
+#include "./FaceBBox.h"
 
 
 namespace Eloquent {
     namespace Esp32cam {
-        namespace Applications {
-
-            /**
-             * Face bounding box
-             */
-            class FaceBBox {
-            public:
-                uint16_t left;
-                uint16_t right;
-                uint16_t top;
-                uint16_t bottom;
-                uint16_t width;
-                uint16_t height;
-                uint16_t x;
-                uint16_t y;
-                uint16_t cx;
-                uint16_t cy;
-
-                /**
-                 * Convert to JSON
-                 *
-                 * @return
-                 */
-                String toJson() {
-                    return String("{\"left\":")
-                        + left
-                        + ", \"right\":"
-                        + right
-                        + ", \"top\":"
-                        + top
-                        + ", \"bottom\":"
-                        + bottom
-                        + "}";
-                }
-            };
-
+        namespace TinyML {
             /**
              * Detect faces in frames
              */
-            class FaceDetector : public HasErrorMessage, public BenchmarksCode {
+            class FaceDetection : public HasErrorMessage, public BenchmarksCode {
             public:
-                Cam *cam;
                 mtmn_config_t mtmn;
                 box_array_t *boxes;
                 int8_t id;
@@ -69,11 +34,11 @@ namespace Eloquent {
                  * Constructor
                  * @param cam
                  */
-                FaceDetector(Cam &cam) :
-                        cam(&cam),
+                FaceDetector() :
                         boxes(NULL),
                         _maxFaces(7),
                         _confimTimes(5) {
+
                     person = dl_matrix3du_alloc(1, FACE_WIDTH, FACE_HEIGHT, 3);
 
                     mtmn.type = FAST;
@@ -119,7 +84,7 @@ namespace Eloquent {
                     read_face_id_from_flash(&_ids);
                     read_face_id_from_flash_with_name(&_names);
 
-                    return setErrorMessage("");
+                    return clearError();
                 }
 
                 /**
@@ -133,7 +98,7 @@ namespace Eloquent {
                     face_id_init(&_ids, _maxFaces, _confimTimes);
                     //read_face_id_from_flash(&_ids);
 
-                    return setErrorMessage("");
+                    return clearError();
                 }
 
                 /**
@@ -189,7 +154,7 @@ namespace Eloquent {
                  */
                 bool detect() {
                     free();
-                    setErrorMessage("");
+                    clearError();
                     startBenchmark();
 
                     if (!allocate()) {
@@ -201,9 +166,10 @@ namespace Eloquent {
                     stopBenchmark();
 
                     if (boxes != NULL)
-                        return setErrorMessage("");
+                        return clearError();
 
                     boxes = NULL;
+
                     return false;
                 }
 
@@ -341,5 +307,8 @@ namespace Eloquent {
         }
     }
 }
+
+
+Eloquent::Esp32cam::TinyML::FaceDetection faceDetection;
 
 #endif //ELOQUENTESP32CAM_FACEDETECTION_H

@@ -39,12 +39,21 @@ namespace Eloquent {
                 }
 
                 /**
+                 * Set connection timeout in seconds
+                 *
+                 * @param timeout
+                 */
+                void setConnectionTimeout(size_t timeout) {
+                    _connectionTimeout = timeout * 1000;
+                }
+
+                /**
                  * Autoconnect to WiFi on begin()
                  * @return
                  */
                 bool autoconnect() {
                     if (!_shouldAutoconnect)
-                        return setErrorMessage("");
+                        return clearError();
 
 #ifdef WIFI_SSID
 #ifdef WIFI_PASS
@@ -53,7 +62,7 @@ namespace Eloquent {
 #endif
 #endif
 
-                    return setErrorMessage("");
+                    return clearError();
                 }
 
                 /**
@@ -64,11 +73,14 @@ namespace Eloquent {
                  * @param timeout
                  * @return
                  */
-                bool connect(const char *ssid, const char *password, uint16_t timeout = 20000) {
+                bool connect(const char *ssid, const char *password, uint16_t timeout = 0) {
                     WiFi.mode(WIFI_STA);
                     WiFi.begin(ssid, password);
 
                     uint16_t start = millis();
+
+                    if (!timeout)
+                        timeout = _connectionTimeout;
 
                     while (millis() - start < timeout) {
                         if (isConnected()) {
@@ -113,6 +125,7 @@ namespace Eloquent {
 
             protected:
                 bool _shouldAutoconnect = true;
+                size_t _connectionTimeout = 20000UL;
             };
         }
     }
