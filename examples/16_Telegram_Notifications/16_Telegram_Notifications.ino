@@ -54,7 +54,7 @@ void loop() {
         return;
 
     if (Serial.readStringUntil('\n') != "capture") {
-        Serial.println("I understand only 'capture'");
+        Serial.println("I only understand 'capture'");
         return;
     }
 
@@ -66,6 +66,6 @@ void loop() {
 
     // send via Telegram
     Serial.println("Capture OK. Sending to Telegram... ");
-    Serial.println(telegramChat.sendText("Motion detected") ? "Text OK" : "Text ERROR");
+    Serial.println(telegramChat.sendText("New picture") ? "Text OK" : "Text ERROR");
     Serial.println(telegramChat.sendPicture() ? "Picture OK" : "Picture ERROR");
 }

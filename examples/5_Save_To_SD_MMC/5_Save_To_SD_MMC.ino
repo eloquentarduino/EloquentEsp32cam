@@ -47,6 +47,7 @@ void setup() {
         Serial.println(camera.getErrorMessage());
 
     Serial.println("Camera OK");
+    Serial.println("SDCard OK");
     Serial.println("Enter 'capture' to capture a new picture");
 }
 
@@ -57,7 +58,7 @@ void loop() {
         return;
 
     if (Serial.readStringUntil('\n') != "capture") {
-        Serial.println("Only 'capture'");
+        Serial.println("I only understand 'capture'");
         return;
     }
 

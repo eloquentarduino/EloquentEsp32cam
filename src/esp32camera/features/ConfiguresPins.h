@@ -45,8 +45,8 @@ namespace Eloquent {
                     _pins.pclk = 22;
                     _pins.vsync = 25;
                     _pins.href = 23;
-                    _pins.sscb_sda = 26;
-                    _pins.sscb_scl = 27;
+                    _pins.sccb_sda = 26;
+                    _pins.sccb_scl = 27;
                     _pins.pwdn = 32;
                     _pins.reset = -1;
                     _pins.flashlight = 4;
@@ -70,8 +70,8 @@ namespace Eloquent {
                     _pins.pclk = 21;
                     _pins.vsync = 22;
                     _pins.href = 26;
-                    _pins.sscb_sda = 25;
-                    _pins.sscb_scl = 23;
+                    _pins.sccb_sda = 25;
+                    _pins.sccb_scl = 23;
                     _pins.pwdn = -1;
                     _pins.reset = 15;
                     _pins.flashlight = 16;
@@ -95,8 +95,8 @@ namespace Eloquent {
                     _pins.pclk = 21;
                     _pins.vsync = 25;
                     _pins.href = 26;
-                    _pins.sscb_sda = 22;
-                    _pins.sscb_scl = 23;
+                    _pins.sccb_sda = 22;
+                    _pins.sccb_scl = 23;
                     _pins.pwdn = -1;
                     _pins.reset = 15;
                     _pins.flashlight = 14;
@@ -120,8 +120,8 @@ namespace Eloquent {
                     _pins.pclk = 25;
                     _pins.vsync = 5;
                     _pins.href = 27;
-                    _pins.sscb_sda = 18;
-                    _pins.sscb_scl = 23;
+                    _pins.sccb_sda = 18;
+                    _pins.sccb_scl = 23;
                     _pins.pwdn = -1;
                     _pins.reset = -1;
                     _pins.flashlight = 22;
@@ -145,8 +145,8 @@ namespace Eloquent {
                     _pins.pclk = 22;
                     _pins.vsync = 25;
                     _pins.href = 23;
-                    _pins.sscb_sda = 26;
-                    _pins.sscb_scl = 27;
+                    _pins.sccb_sda = 26;
+                    _pins.sccb_scl = 27;
                     _pins.pwdn = -1;
                     _pins.reset = -1;
                     _pins.flashlight = -1;
@@ -170,8 +170,8 @@ namespace Eloquent {
                     _pins.pclk = 25;
                     _pins.vsync = 5;
                     _pins.href = 27;
-                    _pins.sscb_sda = 18;
-                    _pins.sscb_scl = 23;
+                    _pins.sccb_sda = 18;
+                    _pins.sccb_scl = 23;
                     _pins.pwdn = -1;
                     _pins.reset = -1;
                     _pins.flashlight = -1;
@@ -195,10 +195,36 @@ namespace Eloquent {
                     _pins.pclk = 13;
                     _pins.vsync = 6;
                     _pins.href = 7;
-                    _pins.sscb_sda = 4;
-                    _pins.sscb_scl = 5;
+                    _pins.sccb_sda = 4;
+                    _pins.sccb_scl = 5;
                     _pins.pwdn = -1;
                     _pins.reset = 18;
+                    _pins.flashlight = -1;
+
+                    return true;
+                }
+
+                /**
+                 * 
+                 * @return
+                 */
+                bool xiao() {
+                    _pins.d0 = 15;
+                    _pins.d1 = 17;
+                    _pins.d2 = 18;
+                    _pins.d3 = 16;
+                    _pins.d4 = 14;
+                    _pins.d5 = 12;
+                    _pins.d6 = 11;
+                    _pins.d7 = 48;
+                    _pins.xclk = 10;
+                    _pins.pclk = 13;
+                    _pins.vsync = 38;
+                    _pins.href = 47;
+                    _pins.sccb_sda = 40;
+                    _pins.sccb_scl = 39;
+                    _pins.pwdn = -1;
+                    _pins.reset = -1;
                     _pins.flashlight = -1;
 
                     return true;
@@ -253,8 +279,8 @@ namespace Eloquent {
                     int8_t pclk;
                     int8_t vsync;
                     int8_t href;
-                    int8_t sscb_sda;
-                    int8_t sscb_scl;
+                    int8_t sccb_sda;
+                    int8_t sccb_scl;
                     int8_t pwdn;
                     int8_t reset;
                     int8_t flashlight;
@@ -302,8 +328,8 @@ namespace Eloquent {
                     config->pin_pclk = _pins.pclk;
                     config->pin_vsync = _pins.vsync;
                     config->pin_href = _pins.href;
-                    config->pin_sscb_sda = _pins.sscb_sda;
-                    config->pin_sscb_scl = _pins.sscb_scl;
+                    config->pin_sccb_sda = _pins.sccb_sda;
+                    config->pin_sccb_scl = _pins.sccb_scl;
                     config->pin_pwdn = _pins.pwdn;
                     config->pin_reset = _pins.reset;
                 }

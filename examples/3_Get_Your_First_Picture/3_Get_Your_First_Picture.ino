@@ -25,6 +25,7 @@ void setup() {
      * Allowed values are:
      *
      *  - aithinker
+     *  - xiao
      *  - m5
      *  - m5wide
      *  - eye
@@ -91,7 +92,7 @@ void loop() {
         return;
 
     if (Serial.readStringUntil('\n') != "capture") {
-        Serial.println("Only 'capture'");
+        Serial.println("I only understand 'capture'");
         return;
     }
 
