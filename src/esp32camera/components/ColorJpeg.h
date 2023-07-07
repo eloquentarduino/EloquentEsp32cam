@@ -61,11 +61,7 @@ namespace Eloquent {
                 pjpeg_image_info_t image;
 
                 struct {
-#ifdef MAX_PIXELS
-                    uint8_t pixels[MAX_PIXELS];
-#else
                     uint8_t *pixels;
-#endif
                     size_t allocated;
                     size_t length;
                     size_t width;
@@ -90,15 +86,9 @@ namespace Eloquent {
                     red.width = 0;
                     red.height = 0;
 
-#ifdef MAX_PIXELS
-                    memset(gray.pixels, 0, MAX_PIXELS);
-                    memset(red.pixels, 0, MAX_PIXELS);
-                    memset(blue.pixels, 0, MAX_PIXELS);
-#else
                     gray.pixels = NULL;
                     blue.pixels = NULL;
                     red.pixels = NULL;
-#endif
                 }
 
                 /**
@@ -120,6 +110,25 @@ namespace Eloquent {
                 }
 
                 /**
+                 * Get decoded image width
+                 *
+                 * @return
+                 */
+                inline size_t getDecodedWidth() {
+                    return image.m_width / 8;
+                }
+
+                /**
+                 * Get decoded image height
+                 *
+                 * @return
+                 */
+                inline size_t getDecodedHeight() {
+                    return image.m_height / 8;
+                }
+
+
+                /**
                  * Decode jpeg
                  * @return
                  */
@@ -129,7 +138,6 @@ namespace Eloquent {
                     if (!camera.frame || !camera.frame->len)
                         return setErrorMessage("No frame to decode", "ColorJpeg");
 
-#ifndef MAX_PIXELS
                     size_t requiredBytes = camera.resolution.getWidth() * camera.resolution.getHeight() / 64;
 
                     if (gray.allocated != requiredBytes) {
@@ -144,7 +152,6 @@ namespace Eloquent {
                         blue.allocated = requiredBytes;
                         red.allocated = requiredBytes;
                     }
-#endif
 
                     // reset offset at every decoding
                     pjpegOffset = 0;

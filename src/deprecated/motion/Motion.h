@@ -6,8 +6,8 @@
 #define ELOQUENTESP32CAM_MOTION_H
 
 
-#include "../Cam.h"
-#include "../components/BitMatrix.h"
+#include "../../esp32camera/Cam.h"
+#include "../../esp32camera/components/BitMatrix.h"
 #include "../../traits/HasErrorMessage.h"
 
 

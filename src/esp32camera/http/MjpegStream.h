@@ -4,6 +4,8 @@
 
 #include "../Cam.h"
 #include "../../traits/IsHttpServer.h"
+#include "../components/ColorJpeg.h"
+#include "../../extra/Thread.h"
 
 
 namespace Eloquent {
@@ -17,16 +19,28 @@ namespace Eloquent {
             public:
 
                 /**
+                 *
+                 */
+                MjpegStream() :
+                        _thread("MjpegStreamHttp", 6000) {
+                }
+
+                /**
                  * Init server
+                 * @param port
                  * @return
                  */
-                bool begin() {
+                bool begin(uint16_t port = 80) {
+                    httpServer.setHttpPort(port);
+
                     on("/", [this]() {
-                        server.send(200, "text/html", "<img src=\"/mjpeg\" />");
+                        html.open([this]() {
+                            html.image("/mjpeg");
+                        });
                     });
 
                     on("/mjpeg", [this]() {
-                        WiFiClient client = server.client();
+                        WiFiClient client = httpServer.server.client();
 
                         client.println(F("HTTP/1.1 200 OK"));
                         client.println(F("Content-Type: multipart/x-mixed-replace;boundary=frame"));
@@ -34,12 +48,15 @@ namespace Eloquent {
                         client.println(F("\r\n--frame"));
 
                         while (true) {
-                            if (!camera.capture()) {
-                                continue;
-                            }
-
                             if (!client.connected())
                                 break;
+
+                            if (!camera.capture())
+                                continue;
+
+                            // many debuggers need the decoded jpeg to work properly
+                            // hooking here would be difficult, so always decode the frame
+                            jpeg.decode();
 
                             client.println(F("Content-Type: image/jpeg"));
                             client.print(F("Content-Length: "));
@@ -47,16 +64,18 @@ namespace Eloquent {
                             client.println();
                             client.write((const char *) camera.frame->buf, camera.getSizeInBytes());
                             client.println(F("\r\n--frame"));
+                            delay(1);
+                            yield();
                         }
                     });
 
                     on("/jpeg", [this]() {
                         if (!camera.capture()) {
-                            serverError("Cannot capture frame");
+                            httpServer.abortByServer("Cannot capture frame");
                             return;
                         }
 
-                        WiFiClient client = server.client();
+                        WiFiClient client = httpServer.server.client();
 
                         client.println(F("HTTP/1.1 200 OK"));
                         client.println(F("Content-Type: image/jpeg"));
@@ -65,10 +84,11 @@ namespace Eloquent {
                         client.write((const char *) camera.frame->buf, camera.getSizeInBytes());
                     });
 
-                    return startServer();
+                    return startServer(_thread);
                 }
 
             protected:
+                Eloquent::Extra::Thread _thread;
 
                 /**
                  * Get server name

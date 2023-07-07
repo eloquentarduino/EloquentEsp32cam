@@ -44,7 +44,7 @@ void setup() {
     while (!camera.begin())
         Serial.println(camera.getErrorMessage());
 
-    // init mjper http server
+    // init mjpeg http server
     while (!mjpegStream.begin())
         Serial.println(mjpegStream.getErrorMessage());
 
@@ -55,6 +55,5 @@ void setup() {
 
 
 void loop() {
-    // serve requests
-    mjpegStream.handle();
+    // server runs in a task, no need to do anything here
 }

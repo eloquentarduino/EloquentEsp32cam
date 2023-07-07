@@ -9,6 +9,9 @@
 #include <WiFi.h>
 #include <WebServer.h>
 #include "./HasErrorMessage.h"
+#include "../extra/HttpServer.h"
+#include "../extra/Thread.h"
+#include "../extra/HtmlBuilder.h"
 
 
 //#define SEND_RAW_LITERAL(x) server.sendContent(F(R"===( x )==="));
@@ -22,22 +25,21 @@ namespace Eloquent {
              */
             class IsHttpServer : public HasErrorMessage {
             public:
-                WebServer server;
-
+                Eloquent::Extra::HttpServer httpServer;
 
                 /**
-                 * Set web server port
-                 * @param port
+                 * Constructor
                  */
-                void setHttpPort(uint16_t port) {
-                    httpPort = port;
-                }
+                IsHttpServer() :
+                    html(&httpServer.server) {
+
+                    }
 
                 /**
                  * Handle HTTP client
                  */
                 virtual void handle() {
-                    server.handleClient();
+                    httpServer.handle();
                 }
 
                 /**
@@ -50,20 +52,17 @@ namespace Eloquent {
                         return "WiFi not connected";
                     }
 
-                    IPAddress ipAddr = WiFi.localIP();
-                    String ip = String(ipAddr[0]) + '.' + ipAddr[1] + '.' + ipAddr[2] + '.' + ipAddr[3];
                     String more = getMoreWelcomeMessage();
 
                     return
                         String(getServerName())
                         + String(F(" available at http://"))
-                        + ip
-                        + (httpPort != 80 ? String(':') + httpPort : "")
+                        + httpServer.getAddress()
                         + (more != "" ? "\n" + more : "");
                 }
 
             protected:
-                uint16_t httpPort = 80;
+                Eloquent::Extra::HtmlBuilder html;
 
                 /**
                  * Get server name for debug
@@ -87,102 +86,26 @@ namespace Eloquent {
                     if (!camera.wifi.isConnected())
                         return setErrorMessage("WiFi not connected");
 
-                    server.begin(httpPort);
-
-                    return true;
+                    return httpServer.start();
                 }
 
                 /**
-                 * Add GET route handler
-                 * @tparam Callback
-                 * @param route
-                 * @param callback
+                 * Start server in a thread
+                 * @param thread
                  */
-                template<typename Callback>
-                void on(const char *route, Callback callback) {
-                    ESP_LOGD("HttpServer", "Registering route GET %s::%s", getServerName(), route);
-                    server.on(route, HTTP_GET, callback);
+                bool startServer(Eloquent::Extra::Thread thread) {
+                    if (!camera.wifi.isConnected())
+                        return setErrorMessage("WiFi not connected");
+
+                    return httpServer.startInThread(thread);
                 }
 
                 /**
-                 * Add POST route handler
-                 * @tparam Callback
-                 * @param route
-                 * @param callback
+                 * Short for httpServer.on()
                  */
-                template<typename Callback>
-                void onPOST(const char *route, Callback callback) {
-                    ESP_LOGD("HttpServer", "Registering route POST %s::%s", getServerName(), route);
-                    server.on(route, HTTP_POST, callback);
-                }
-
-                /**
-                 * Abort with server error message
-                 * @param message
-                 */
-                void serverError(String message) {
-                    server.send(500, "text/plain", message);
-                }
-
-                /**
-                 * Abort with client error message
-                 * @param message
-                 */
-                void clientError(String message) {
-                    server.send(400, "text/plain", message);
-                }
-
-                /**
-                 * Return success response
-                 */
-                void ok() {
-                    server.send(200, "text/plain", "OK");
-                }
-
-                /**
-                 * Stop condition
-                 */
-                void sendChunks() {
-
-                }
-
-                /**
-                 * Send each of the arguments
-                 * @tparam T
-                 * @tparam Args
-                 * @param first
-                 * @param args
-                 */
-                template<typename T, typename... Args>
-                void sendChunks(T first, Args... args) {
-                    server.sendContent(String(first));
-                    sendChunks(args...);
-                }
-
-                /**
-                 * Get int argument
-                 * @param name
-                 * @param fallback
-                 * @return
-                 */
-                int argInt(const char* name, int fallback) {
-                    if (!server.hasArg(name))
-                        return fallback;
-
-                    return server.arg(name).toInt();
-                }
-
-                /**
-                 *
-                 * @param name
-                 * @param fallback
-                 * @return
-                 */
-                String arg(const char *name, const char *fallback = "") {
-                    if (!server.hasArg(name))
-                        return fallback;
-
-                    return server.arg(name);
+                template<typename Handler>
+                void on(const char* path, Handler handler) {
+                    httpServer.on(path, handler);
                 }
 
                 /**
@@ -190,21 +113,14 @@ namespace Eloquent {
                  */
                 void fetch() {
                     //const char *baseUrl = "http://192.168.243.152:9080/";
-                    const char *baseUrl = "https://eloquentarduino.com/arduino/libraries/eloquentesp32cam/lib-assets/";
+                    /*const char *baseUrl = "https://eloquentarduino.com/arduino/libraries/eloquentesp32cam/lib-assets/";
 
                     server.sendContent(F("<head><title>"));
                     server.sendContent(getServerName());
                     server.sendContent(F("</title></head><body><script src=\""));
                     server.sendContent(baseUrl);
                     server.sendContent(getServerName());
-                    server.sendContent(F(".js\"></script></body>"));
-                }
-
-                /**
-                 * On main page fetch remote content
-                 */
-                virtual void onIndex() {
-                    fetch();
+                    server.sendContent(F(".js\"></script></body>"));*/
                 }
             };
         }
