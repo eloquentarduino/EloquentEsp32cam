@@ -1,8 +1,3 @@
-/**
- * Example 3: Get your First picture
- * This sketch shows the basic code you need to take a picture
- * from your Esp32 camera
- */
 #define MAX_RESOLUTION_VGA
 
 #include "esp32cam.h"

@@ -1,10 +1,6 @@
 /**
- * Example 2: Camera Configuration
- * This sketch shows the available sensor configurations for the
- * Esp32 camera.
- * It does nothing: it's only a reference of the available methods
+ * Include the EloquentEsp32Cam library
  */
-
 #include "esp32cam.h"
 
 

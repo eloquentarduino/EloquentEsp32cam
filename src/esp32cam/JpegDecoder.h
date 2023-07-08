@@ -83,10 +83,10 @@ namespace Eloquent {
 
                 startBenchmark();
 
-                if (status = pjpeg_decode_init(&jpeg, pjpegConsume, (void *) &decoding, 1)) {
+                if (pjpeg_decode_init(&jpeg, pjegConsume, (void *) &decoding, 1)) {
                     stopBenchmark();
 
-                    return this->setErrorMessage(String("Jpeg decode error: ") + status);
+                    return this->setErrorMessage("Jpeg decode error");
                 }
 
                 while ((status = pjpeg_decode_mcu()) != PJPG_NO_MORE_BLOCKS) {
