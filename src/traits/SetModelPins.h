@@ -174,6 +174,29 @@ namespace Eloquent {
                 _pins.flashlight = -1;
             }
 
+            /**
+             *
+             */
+            void xiao() {
+                _pins.d0 = 15;
+                _pins.d1 = 17;
+                _pins.d2 = 18;
+                _pins.d3 = 16;
+                _pins.d4 = 14;
+                _pins.d5 = 12;
+                _pins.d6 = 11;
+                _pins.d7 = 48;
+                _pins.xclk = 10;
+                _pins.pclk = 13;
+                _pins.vsync = 38;
+                _pins.href = 47;
+                _pins.sscb_sda = 40;
+                _pins.sscb_scl = 39;
+                _pins.pwdn = -1;
+                _pins.reset = -1;
+                _pins.flashlight = 21;
+            }
+
         protected:
             struct {
                 int8_t d0 = 0;
@@ -213,8 +236,8 @@ namespace Eloquent {
                 config->pin_pclk = _pins.pclk;
                 config->pin_vsync = _pins.vsync;
                 config->pin_href = _pins.href;
-                config->pin_sscb_sda = _pins.sscb_sda;
-                config->pin_sscb_scl = _pins.sscb_scl;
+                config->pin_sccb_sda = _pins.sscb_sda;
+                config->pin_sccb_scl = _pins.sscb_scl;
                 config->pin_pwdn = _pins.pwdn;
                 config->pin_reset = _pins.reset;
 
