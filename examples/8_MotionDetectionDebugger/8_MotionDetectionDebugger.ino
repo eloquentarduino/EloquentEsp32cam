@@ -1,5 +1,5 @@
-#define WIFI_SSID "Novanetworks_Spagro2017"
-#define WIFI_PASS "AGRIMAG01"
+#define WIFI_SSID "SSID"
+#define WIFI_PASS "PASSWORD"
 #define HOSTNAME "esp32cam"
 
 #include "esp32camera.h"
@@ -12,22 +12,28 @@ void setup() {
     delay(3000);
     Serial.println("Init");
 
-    // see 3_Get_Your_First_Picture for more details
-    camera.model.m5wide();
+    camera.model.aithinker();
     camera.resolution.vga();
     camera.quality.high();
 
+    camera.sensor.disableAllAutomaticControls();
+
     motionDetection.shouldBlurBeforeDetection(false);
-    motionDetection.shouldSmoothDetectionNoise(false);
+    motionDetection.shouldSmoothDetectionNoise(true);
     motionDetection.shouldOnlyUpdateBackground(true);
+    motionDetection.setHistoryWeight(0.9);
+    motionDetection.setPixelDeltaThreshold(20);
+    motionDetection.setCountThreshold(0.15);
 
-    // Init camera
-    while (!camera.begin())
+    if (!camera.begin()) {
         Serial.println(camera.getErrorMessage());
+        ESP.restart();
+    }
 
-    // init mjper http server
-    while (!motionDebugger.begin())
+    if (!motionDebugger.begin()) {
         Serial.println(motionDebugger.getErrorMessage());
+        ESP.restart();
+    }
 
     Serial.println("Camera OK");
     Serial.println("MotionDebugger OK");

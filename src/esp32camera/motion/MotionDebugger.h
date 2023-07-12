@@ -9,6 +9,10 @@
 #define MOTION_DEBUGGER_STACK_SIZE 6000
 #endif
 
+#ifndef MOTION_DEBUGGER_MOTION_STACK_SIZE
+#define MOTION_DEBUGGER_MOTION_STACK_SIZE 15000
+#endif
+
 #ifndef MOTION_DEBUGGER_WEBSOCKET_STACK_SIZE
 #define MOTION_DEBUGGER_WEBSOCKET_STACK_SIZE 10000
 #endif
@@ -18,6 +22,9 @@
 #include "../../traits/IsHttpServer.h"
 #include "../../extra/Thread.h"
 #include "../http/MjpegStream.h"
+#include "../../extra/ascii.h"
+#include "../../extra/JsonBuilder.h"
+#include "../js/MotionDebugger.js.h"
 
 
 namespace Eloquent {
@@ -30,14 +37,17 @@ namespace Eloquent {
             class MotionDebugger : public Trait::IsHttpServer {
             public:
                 WebSocketsServer webSocket;
+                bool isWsConnected;
 
                 /**
                  *
                  */
                 MotionDebugger() :
                         webSocket(82),
+                        isWsConnected(false),
                         _mainThread("MotionDebuggerHttp", MOTION_DEBUGGER_STACK_SIZE),
-                        _webSocketThread("MotionDebuggerWebSocketThread", MOTION_DEBUGGER_WEBSOCKET_STACK_SIZE) {
+                        _motionThread("Motion", MOTION_DEBUGGER_MOTION_STACK_SIZE),
+                        _webSocketThread("MotionDebuggerWebSocket", MOTION_DEBUGGER_WEBSOCKET_STACK_SIZE) {
 
                 }
 
@@ -46,14 +56,37 @@ namespace Eloquent {
                  * @return
                  */
                 bool begin() {
+                    // start MJPEG stream
                     if (!mjpegStream.begin(81))
                         return setErrorMessage(mjpegStream.getErrorMessage());
+
+                    // run motion detection in his own thread
+                    _motionThread
+                        .withArgs((void*) this)
+                        .run([](void *args) {
+                            MotionDebugger *self = (MotionDebugger*) args;
+
+                            while (!self->isWsConnected)
+                                delay(1);
+
+                            ESP_LOGI("MotionDebugger", "Motion detection STARTED");
+
+                            while (true) {
+                                motionDetection.update();
+                                delay(10);
+                                yield();
+                            }
+                        });
 
                     // index page
                     on("/", [this]() {
                         html.open([this]() {
-                            html.image(":81/mjpeg");
+                            html.svelteApp();
                         });
+                    });
+
+                    on("/app.js", [this]() {
+                        httpServer.server.send(200, "application/javascript", JS_APP);
                     });
 
                     setupWebsocket();
@@ -63,6 +96,7 @@ namespace Eloquent {
 
             protected:
                 Eloquent::Extra::Thread _mainThread;
+                Eloquent::Extra::Thread _motionThread;
                 Eloquent::Extra::Thread _webSocketThread;
 
                 /**
@@ -74,49 +108,45 @@ namespace Eloquent {
                 }
 
                 /**
+                 * Display more info
+                 */
+                String getMoreWelcomeMessage() override {
+                    return 
+                        String(F(" - :81/mjpeg -> MJPEG stream\n"))
+                        + String(F(" - :82 -> WebSocket server"))
+                    ;
+                }
+
+                /**
                  * Listen for WebSocket connections
                  */
                 void setupWebsocket() {
                     webSocket.begin();
                     webSocket.onEvent([this](uint8_t num, WStype_t type, uint8_t * payload, size_t length) {
-                        // on connection, continously stream motion background + mask
+                        // on websocket connection, continously stream motion background + mask
                         if (type == WStype_CONNECTED) {
+                            isWsConnected = true;
+                            delay(2000);
+
                             while (true) {
-                                if (motionDetection.update()) {
-                                    const uint16_t width = motionDetection.foregroundMask.getCols();
-                                    const uint16_t height = motionDetection.foregroundMask.getRows();
+                                if (motionDetection.isOk()) {
+                                    const uint16_t width = jpeg.getDecodedWidth();
+                                    const uint16_t height = jpeg.getDecodedHeight();
                                     
-                                    String txt = 
-                                        String("{\"width\":") + 
-                                        width +
-                                        ", \"height\": " +
-                                        height +
-                                        ", \"detected\": " +
-                                        (motionDetection.detected() ? "true" : "false") +
-                                        ", \"benchmark\":" +
-                                        motionDetection.benchmark.inMillis() +
-                                        ", \"background\":[";
+                                    Eloquent::Extra::JsonBuilder json(100);
 
-                                    webSocket.sendTXT(num, txt);
+                                    json.object();
+                                    json.add("width", width);
+                                    json.add("height", height);
+                                    json.add("detected", motionDetection.detected());
+                                    json.add("benchmark", motionDetection.benchmark.inMillis());
+                                    json.add("mask", motionDetection.foregroundMask.array.toASCII());
+                                    json.prop("background");
+                                    json.raw('"');
 
-                                    // send JSON-encoded background image
-                                    size_t i = 0;
-
-                                    for (size_t y = 0; y < height; y++) {
-                                        String row;
-
-                                        // allocate space for a row of values
-                                        row.reserve(4 * width + 2);
-
-                                        for (uint16_t x = 0; x < width; x++) {
-                                            row += motionDetection.background[i++];
-                                            row += ',';
-                                        }
-
-                                        webSocket.sendTXT(num, row);
-                                    }
-
-                                    webSocket.sendTXT(num, "]}\n");
+                                    webSocket.sendTXT(num, json.toString());
+                                    sendBackground(num, width, height);
+                                    webSocket.sendTXT(num, "\"}\n");
                                 }
                             }
                         }
@@ -132,6 +162,30 @@ namespace Eloquent {
                                 yield();
                             }
                         });
+                }
+
+                /**
+                 * 
+                 */
+                void sendBackground(uint8_t num, uint16_t width, uint16_t height) {
+                    String row;
+                    size_t i = 0;
+
+                    row.reserve(width + 1);
+
+                    for (size_t y = 0; y < height; y++) {
+                        row = "";
+
+                        for (uint16_t x = 0; x < width; x++) {
+                            const uint8_t pixel = motionDetection.background[i];
+                            const uint8_t pos = (pixel >> 2) & 0x3F; 
+
+                            row += SIMPLIFIED_ASCII_ALPHABET[pos];
+                            i += 1;
+                        }
+
+                        webSocket.sendTXT(num, row);
+                    }
                 }
             };
         }

@@ -52,8 +52,53 @@ namespace Eloquent {
                     _server->sendContent("\" />");
                 }
 
+                /**
+                 * Declare JS env variable
+                 */
+                template<typename T>
+                void jsEnv(String key, T value, String converter = "") {
+                    _server->sendContent(F("<script>window.ENV = window.ENV || {}; window.ENV."));
+                    _server->sendContent(key);
+                    _server->sendContent(F(" = `"));
+                    _server->sendContent(String(value));
+                    _server->sendContent(F('`'));
+
+                    if (converter != "")
+                        _server->sendContent(converter);
+
+                    _server->sendContent(F("</script>"));
+                }
+
+                /**
+                 * Create svelte app container
+                 * (also load TailwindCSS)
+                 */
+                void svelteApp() {
+                    _server->sendContent(F("<div id=\"app\"></div>"));
+                    _server->sendContent(F("<script src=\"/app.js\"></script>"));
+                    _server->sendContent(F("<script src=\"https://cdn.tailwindcss.com\"></script>"));
+                }
+
+                /**
+                 * Get absolute URL for path
+                 */
+                String getAbsoluteURL(String path) {
+                    return getIP() + path;
+                }
+
             protected:
                 WebServer *_server;
+
+                /**
+                 * Get IP address as string
+                 *
+                 * @return
+                 */
+                String getIP() {
+                    IPAddress ip = WiFi.localIP();
+
+                    return String(ip[0]) + '.' + ip[1] + '.' + ip[2] + '.' + ip[3];
+                }
         };
     }
 }

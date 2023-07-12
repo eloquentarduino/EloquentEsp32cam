@@ -7,7 +7,7 @@
 
 #include "../../traits/HasErrorMessage.h"
 #include "../features/Benchmark.h"
-#include "../components/BitMatrix.h"
+#include "../../extra/BitMatrix.h"
 
 
 namespace Eloquent {
@@ -19,7 +19,7 @@ namespace Eloquent {
             class MotionDetection : public HasErrorMessage {
             public:
                 uint8_t *background;
-                Components::BitMatrix foregroundMask;
+                Extra::BitMatrix foregroundMask;
                 Features::Benchmark benchmark;
 
                 /**
@@ -34,6 +34,7 @@ namespace Eloquent {
                     _shouldBlur(true),
                     _shouldMorph(true),
                     _onlyBackground(true) {
+                        setErrorMessage("Not started");
                 }
 
                 /**
@@ -122,6 +123,8 @@ namespace Eloquent {
                  * @return
                  */
                 bool update() {
+                    clearError();
+
                     if (!jpeg.gray.length)
                         return setErrorMessage("No JPEG decoded frame to perform motion detection on");
 
@@ -147,29 +150,23 @@ namespace Eloquent {
                         return false;
                     }
 
-//                    const size_t width = foregroundMask.getRows();
-//                    const size_t height = foregroundMask.getCols();
-//
-//                    for (int i = 0; i < getPixCount(); i++) {
-//                        Serial.print(background[i]);
-//                        Serial.print(',');
-//
-//                        if (i % width == width - 1)
-//                            Serial.println();
-//                    }
-//
-//                    delay(5000);
-
                     // running
                     benchmark.start();
 
-                    for (size_t i = 0, pixCount = getPixCount(); i < pixCount; i++) {
+                    foregroundMask.array.setEach([this](size_t i) {
                         const uint8_t curr = jpeg.gray.pixels[i];
                         const uint8_t old = background[i];
-                        const bool foreground = isForeground(i, curr, old);
+                        
+                        return isForeground(i, curr, old);
+                    });
 
-                        foregroundMask.set(i, foreground);
-                    }
+                    // for (size_t i = 0, pixCount = getPixCount(); i < pixCount; i++) {
+                    //     const uint8_t curr = jpeg.gray.pixels[i];
+                    //     const uint8_t old = background[i];
+                    //     const bool foreground = isForeground(i, curr, old);
+
+                    //     foregroundMask.set(i, foreground);
+                    // }
 
                     if (_shouldMorph)
                         morph();
@@ -181,7 +178,7 @@ namespace Eloquent {
 
                     benchmark.stop();
 
-                    return true;
+                    return clearError();
                 }
 
                 /**
@@ -189,37 +186,10 @@ namespace Eloquent {
                  * @return
                  */
                 bool detected() {
-                    const size_t width = foregroundMask.getRows();
-                    const size_t height = foregroundMask.getCols();
                     const size_t sum = foregroundMask.sum();
                     const size_t thresh = getAbsCountThresh();
 
-                    Serial.printf("%lu forground over %lu\n", sum, thresh);
-
                     return sum > thresh;
-                }
-
-                void debug() {
-                    const size_t width = foregroundMask.getRows();
-                    const size_t height = foregroundMask.getCols();
-
-                    for (int i = 0; i < getPixCount(); i++) {
-                        Serial.print(background[i]);
-                        Serial.print(',');
-
-                        if (i % width == width - 1)
-                            Serial.println();
-                    }
-
-                    Serial.println("\n\n");
-
-                    for (int i = 0; i < getPixCount(); i++) {
-                        Serial.print(foregroundMask.get(i) ? 255 : 0);
-                        Serial.print(',');
-
-                        if (i % width == width - 1)
-                            Serial.println();
-                    }
                 }
 
             protected:
@@ -240,12 +210,16 @@ namespace Eloquent {
                     const size_t jpegWidth = jpeg.getDecodedWidth();
                     const size_t jpegHeight = jpeg.getDecodedHeight();
 
+                    if (jpegWidth == 0 || jpegHeight == 0)
+                        return setErrorMessage("JPEG decoding failed");
+
                     if (foregroundMask.getRows() != jpegWidth
                         || foregroundMask.getCols() != jpegHeight) {
 
                         if (!foregroundMask.resize(jpegWidth, jpegHeight))
                             return setErrorMessage("Cannot allocate memory for foreground mask");
 
+                        ESP_LOGI("MotionDetection", "Allocating %d x %d bytes for background", (int) jpegWidth, (int) jpegHeight);
                         free(background);
                         background = (uint8_t *) calloc(jpegWidth * jpegHeight, sizeof(uint8_t));
 
@@ -278,7 +252,7 @@ namespace Eloquent {
                  *
                  */
                 void updateAllPixels() {
-                    const float a = isTraining() ? 0.5 : _alpha;
+                    const float a = isTraining() ? 0.75 : _alpha;
 
                     for (size_t i = 0, pixCount = getPixCount(); i < pixCount; i++)
                         background[i] = a * background[i] + (1 - a) * jpeg.gray.pixels[i];
@@ -288,11 +262,12 @@ namespace Eloquent {
                  * Update pixels based on mask
                  */
                 void updateMasked() {
-                    for (size_t i = 0, pixCount = getPixCount(); i < pixCount; i++) {
-                        const float a = foregroundMask.get(i) ? sqrt(_alpha) : _alpha;
+                    foregroundMask.array.forEach([this](size_t i, bool isForeground) {
+                        const float a = isForeground ? sqrt(_alpha) : _alpha;
+                        const uint16_t pixel = a * background[i] + (1 - a) * jpeg.gray.pixels[i];
 
-                        background[i] = a * background[i] + (1 - a) * jpeg.gray.pixels[i];
-                    }
+                        background[i] = pixel > 255 ? 255 : pixel;
+                    });
                 }
 
                 /**

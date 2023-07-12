@@ -107,21 +107,6 @@ namespace Eloquent {
                 void on(const char* path, Handler handler) {
                     httpServer.on(path, handler);
                 }
-
-                /**
-                 * Render remote HTML
-                 */
-                void fetch() {
-                    //const char *baseUrl = "http://192.168.243.152:9080/";
-                    /*const char *baseUrl = "https://eloquentarduino.com/arduino/libraries/eloquentesp32cam/lib-assets/";
-
-                    server.sendContent(F("<head><title>"));
-                    server.sendContent(getServerName());
-                    server.sendContent(F("</title></head><body><script src=\""));
-                    server.sendContent(baseUrl);
-                    server.sendContent(getServerName());
-                    server.sendContent(F(".js\"></script></body>"));*/
-                }
             };
         }
     }

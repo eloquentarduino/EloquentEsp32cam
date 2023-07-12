@@ -540,6 +540,16 @@ namespace Eloquent {
                     });
                 }
 
+                /**
+                 * 
+                 */
+                void disableAllAutomaticControls() {
+                    disableAutomaticWhiteBalance();
+                    disableAutomaticWhiteBalanceGain();
+                    disableAutomaticExposureControl();
+                    disableAutomaticGainControl();
+                }
+
             protected:
             };
         }
