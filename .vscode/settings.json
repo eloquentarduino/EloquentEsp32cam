@@ -1,0 +1,12 @@
+{
+    "files.associations": {
+        "__config": "cpp",
+        "__threading_support": "cpp",
+        "thread": "cpp",
+        "version": "cpp",
+        "*.tcc": "cpp",
+        "chrono": "cpp",
+        "mutex": "cpp",
+        "stop_token": "cpp"
+    }
+}

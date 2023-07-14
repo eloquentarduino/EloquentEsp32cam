@@ -1,17 +1,19 @@
 #ifndef ELOQUENTESP32CAM_MJPEG_STREAM_H
 #define ELOQUENTESP32CAM_MJPEG_STREAM_H
 
+#ifndef MJPEG_STACK_SIZE
+#define MJPEG_STACK_SIZE 5000
+#endif
+
 
 #include "../Cam.h"
 #include "../../traits/IsHttpServer.h"
-#include "../components/ColorJpeg.h"
-#include "../../extra/Thread.h"
+
 
 
 namespace Eloquent {
     namespace Esp32cam {
         namespace Http {
-
             /**
              * ESP32 camera MJPEG streaming web server
              */
@@ -22,7 +24,7 @@ namespace Eloquent {
                  *
                  */
                 MjpegStream() :
-                        _thread("MjpegStreamHttp", 6000) {
+                    IsHttpServer("MjpegStream") {
                 }
 
                 /**
@@ -31,71 +33,79 @@ namespace Eloquent {
                  * @return
                  */
                 bool begin(uint16_t port = 80) {
-                    httpServer.setHttpPort(port);
+                    if (!camera.wifi.isConnected())
+                        return setErrorMessage("WiFi not connected");
 
-                    on("/", [this]() {
-                        html.open([this]() {
-                            html.image("/mjpeg");
-                        });
+                    httpServerThread.httpServer.setHttpPort(port);
+
+                    // render index HTML
+                    httpServerThread.httpServer.on("/", [this]() {
+                        httpServerThread.httpServer.webServer.send(200, "text/html", "<img src=\"/mjpeg\">");
                     });
 
-                    on("/mjpeg", [this]() {
-                        WiFiClient client = httpServer.server.client();
-
-                        client.println(F("HTTP/1.1 200 OK"));
-                        client.println(F("Content-Type: multipart/x-mixed-replace;boundary=frame"));
-                        client.println(F("Access-Control-Allow-Origin: *"));
-                        client.println(F("\r\n--frame"));
-
-                        while (true) {
-                            if (!client.connected())
-                                break;
-
-                            if (!camera.capture())
-                                continue;
-
-                            // many debuggers need the decoded jpeg to work properly
-                            // hooking here would be difficult, so always decode the frame
-                            jpeg.decode();
-
-                            client.println(F("Content-Type: image/jpeg"));
-                            client.print(F("Content-Length: "));
-                            client.println(camera.getSizeInBytes());
-                            client.println();
-                            client.write((const char *) camera.frame->buf, camera.getSizeInBytes());
-                            client.println(F("\r\n--frame"));
-                            delay(1);
-                            yield();
-                        }
+                    // serve MJPEG stream
+                    httpServerThread.httpServer.addMultipartGetHandler("/mjpeg", [this](WiFiClient client) {
+                        sendMjpeg(client);
                     });
 
-                    on("/jpeg", [this]() {
-                        if (!camera.capture()) {
-                            httpServer.abortByServer("Cannot capture frame");
-                            return;
-                        }
+                    // serve JPEG frame
+                    httpServerThread.httpServer.addGetHandlerWithTest(
+                        // route
+                        "/jpeg",
+                        // test
+                        []() { return camera.capture(); },
+                        // error message on fail
+                        "Cannot capture frame",
+                        // success function
+                        [this]() { sendJpeg(); }
+                    );
 
-                        WiFiClient client = httpServer.server.client();
-
-                        client.println(F("HTTP/1.1 200 OK"));
-                        client.println(F("Content-Type: image/jpeg"));
-                        client.println(F("Access-Control-Allow-Origin: *"));
-                        client.println();
-                        client.write((const char *) camera.frame->buf, camera.getSizeInBytes());
-                    });
-
-                    return startServer(_thread);
+                    return httpServerThread.begin();
                 }
 
             protected:
-                Eloquent::Extra::Thread _thread;
-
+            
                 /**
                  * Get server name
                  * @return
                  */
                 const char * getServerName() override {
                     return "MjpegStream";
+                }
+
+                /**
+                 * 
+                 */
+                void sendJpeg() {
+                    WiFiClient client = httpServerThread.httpServer.webServer.client();
+
+                    client.println(F("HTTP/1.1 200 OK"));
+                    client.println(F("Content-Type: image/jpeg"));
+                    client.println(F("Access-Control-Allow-Origin: *"));
+                    client.println();
+                    client.write((const char *) camera.frame->buf, camera.getSizeInBytes());
+                }
+
+                /**
+                 * 
+                 */
+                template<typename Client>
+                void sendMjpeg(Client client) {
+                    if (!camera.capture())
+                        return;
+
+                    #if defined(ELOQUENTESP32CAM_JPEG_DECODER)
+                    // many debuggers need the decoded jpeg to work properly
+                    // hooking here would be difficult, so always decode the frame
+                    // even if not stricly necessary for the MJPEG to work
+                    jpeg.decode();
+                    #endif
+
+                    client.println(F("Content-Type: image/jpeg"));
+                    client.print(F("Content-Length: "));
+                    client.println(camera.getSizeInBytes());
+                    client.println();
+                    client.write((const char *) camera.frame->buf, camera.getSizeInBytes());
                 }
             };
         }

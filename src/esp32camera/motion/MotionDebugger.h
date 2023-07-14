@@ -17,10 +17,10 @@
 #define MOTION_DEBUGGER_WEBSOCKET_STACK_SIZE 10000
 #endif
 
-#include <WebSocketsServer.h>
 #include "./MotionDetection.h"
 #include "../../traits/IsHttpServer.h"
-#include "../../extra/Thread.h"
+#include "../../extra/esp32/Thread.h"
+#include "../../extra/esp32/WebSocketThread.h"
 #include "../http/MjpegStream.h"
 #include "../../extra/ascii.h"
 #include "../../extra/JsonBuilder.h"
@@ -36,18 +36,17 @@ namespace Eloquent {
              */
             class MotionDebugger : public Trait::IsHttpServer {
             public:
-                WebSocketsServer webSocket;
+                Eloquent::Extra::Esp32::WebSocketThread webSocketThread;
                 bool isWsConnected;
 
                 /**
                  *
                  */
                 MotionDebugger() :
-                        webSocket(82),
+                        webSocketThread("MotionDebuggerWebSocket", 82),
                         isWsConnected(false),
                         _mainThread("MotionDebuggerHttp", MOTION_DEBUGGER_STACK_SIZE),
-                        _motionThread("Motion", MOTION_DEBUGGER_MOTION_STACK_SIZE),
-                        _webSocketThread("MotionDebuggerWebSocket", MOTION_DEBUGGER_WEBSOCKET_STACK_SIZE) {
+                        _motionThread("Motion", MOTION_DEBUGGER_MOTION_STACK_SIZE) {
 
                 }
 
@@ -73,7 +72,6 @@ namespace Eloquent {
 
                             while (true) {
                                 motionDetection.update();
-                                delay(10);
                                 yield();
                             }
                         });
@@ -95,9 +93,8 @@ namespace Eloquent {
                 }
 
             protected:
-                Eloquent::Extra::Thread _mainThread;
-                Eloquent::Extra::Thread _motionThread;
-                Eloquent::Extra::Thread _webSocketThread;
+                Eloquent::Extra::Esp32::Thread _mainThread;
+                Eloquent::Extra::Esp32::Thread _motionThread;
 
                 /**
                  * Get server name
@@ -121,45 +118,35 @@ namespace Eloquent {
                  * Listen for WebSocket connections
                  */
                 void setupWebsocket() {
-                    webSocket.begin();
-                    webSocket.onEvent([this](uint8_t num, WStype_t type, uint8_t * payload, size_t length) {
-                        // on websocket connection, continously stream motion background + mask
-                        if (type == WStype_CONNECTED) {
-                            isWsConnected = true;
-                            delay(2000);
+                    webSocketThread
+                        .withStackSize(MOTION_DEBUGGER_WEBSOCKET_STACK_SIZE)
+                        .begin([this](uint8_t num, WStype_t type, uint8_t * payload, size_t length) {
+                            // on websocket connection, continously stream motion background + mask
+                            if (type == WStype_CONNECTED) {
+                                isWsConnected = true;
+                                delay(2000);
 
-                            while (true) {
-                                if (motionDetection.isOk()) {
-                                    const uint16_t width = jpeg.getDecodedWidth();
-                                    const uint16_t height = jpeg.getDecodedHeight();
-                                    
-                                    Eloquent::Extra::JsonBuilder json(100);
+                                while (true) {
+                                    if (motionDetection.isOk()) {
+                                        const uint16_t width = jpeg.getDecodedWidth();
+                                        const uint16_t height = jpeg.getDecodedHeight();
+                                        
+                                        Eloquent::Extra::JsonBuilder json(100);
 
-                                    json.object();
-                                    json.add("width", width);
-                                    json.add("height", height);
-                                    json.add("detected", motionDetection.detected());
-                                    json.add("benchmark", motionDetection.benchmark.inMillis());
-                                    json.add("mask", motionDetection.foregroundMask.array.toASCII());
-                                    json.prop("background");
-                                    json.raw('"');
+                                        json.object();
+                                        json.add("width", width);
+                                        json.add("height", height);
+                                        json.add("detected", motionDetection.detected());
+                                        json.add("benchmark", motionDetection.benchmark.inMillis());
+                                        json.add("mask", motionDetection.foregroundMask.array.toASCII());
+                                        json.prop("background");
+                                        json.raw('"');
 
-                                    webSocket.sendTXT(num, json.toString());
-                                    sendBackground(num, width, height);
-                                    webSocket.sendTXT(num, "\"}\n");
+                                        webSocketThread.webSocket.sendTXT(num, json.toString());
+                                        sendBackground(num, width, height);
+                                        webSocketThread.webSocket.sendTXT(num, "\"}\n");
+                                    }
                                 }
-                            }
-                        }
-                    });
-
-                    _webSocketThread
-                        .withArgs((void*) &webSocket)
-                        .run([](void *args) {
-                            WebSocketsServer *webSocket = (WebSocketsServer*) args;
-
-                            while (true) {
-                                webSocket->loop();
-                                yield();
                             }
                         });
                 }
@@ -184,7 +171,7 @@ namespace Eloquent {
                             i += 1;
                         }
 
-                        webSocket.sendTXT(num, row);
+                        webSocketThread.webSocket.sendTXT(num, row);
                     }
                 }
             };

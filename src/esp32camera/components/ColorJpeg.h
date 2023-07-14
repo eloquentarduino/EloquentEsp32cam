@@ -5,6 +5,8 @@
 #ifndef ELOQUENTESP32CAM_COLORJPEG_H
 #define ELOQUENTESP32CAM_COLORJPEG_H
 
+#define ELOQUENTESP32CAM_JPEG_DECODER 1
+
 
 #include <stdio.h>
 #include <stdlib.h>

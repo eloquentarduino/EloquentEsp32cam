@@ -7,14 +7,9 @@
 
 
 #include <WiFi.h>
-#include <WebServer.h>
 #include "./HasErrorMessage.h"
-#include "../extra/HttpServer.h"
-#include "../extra/Thread.h"
-#include "../extra/HtmlBuilder.h"
-
-
-//#define SEND_RAW_LITERAL(x) server.sendContent(F(R"===( x )==="));
+#include "../extra/esp32/HttpServerThread.h"
+#include "../extra/esp32/HtmlBuilder.h"
 
 
 namespace Eloquent {
@@ -25,13 +20,15 @@ namespace Eloquent {
              */
             class IsHttpServer : public HasErrorMessage {
             public:
-                Eloquent::Extra::HttpServer httpServer;
+                Eloquent::Extra::Esp32::HttpServerThread httpServerThread;
+                Eloquent::Extra::Esp32::HtmlBuilder html;
 
                 /**
                  * Constructor
                  */
-                IsHttpServer() :
-                    html(&httpServer.server) {
+                IsHttpServer(const char* serverName) :
+                    httpServerThread(serverName),
+                    html(&httpServerThread.httpServer.webServer) {
 
                     }
 
@@ -39,7 +36,7 @@ namespace Eloquent {
                  * Handle HTTP client
                  */
                 virtual void handle() {
-                    httpServer.handle();
+                    httpServerThread.httpServer.handle();
                 }
 
                 /**
@@ -57,12 +54,11 @@ namespace Eloquent {
                     return
                         String(getServerName())
                         + String(F(" available at http://"))
-                        + httpServer.getAddress()
+                        + httpServerThread.httpServer.getAddress()
                         + (more != "" ? "\n" + more : "");
                 }
 
             protected:
-                Eloquent::Extra::HtmlBuilder html;
 
                 /**
                  * Get server name for debug
@@ -76,36 +72,6 @@ namespace Eloquent {
                  */
                 virtual String getMoreWelcomeMessage() {
                     return "";
-                }
-
-                /**
-                 * Start server
-                 * @return
-                 */
-                bool startServer() {
-                    if (!camera.wifi.isConnected())
-                        return setErrorMessage("WiFi not connected");
-
-                    return httpServer.start();
-                }
-
-                /**
-                 * Start server in a thread
-                 * @param thread
-                 */
-                bool startServer(Eloquent::Extra::Thread thread) {
-                    if (!camera.wifi.isConnected())
-                        return setErrorMessage("WiFi not connected");
-
-                    return httpServer.startInThread(thread);
-                }
-
-                /**
-                 * Short for httpServer.on()
-                 */
-                template<typename Handler>
-                void on(const char* path, Handler handler) {
-                    httpServer.on(path, handler);
                 }
             };
         }
