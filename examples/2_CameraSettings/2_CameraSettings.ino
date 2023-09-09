@@ -14,6 +14,54 @@ void setup() {
      * are available for modification
      */
 
+    // set model
+    camera.pinout.aithinker();
+    camera.pinout.m5();
+    camera.pinout.m5_wide();
+    camera.pinout.eye();
+    camera.pinout.ttgo_lcd();
+    camera.pinout.simcam();
+    camera.pinout.xiao_s3();
+    camera.pinout.wroom_s3();
+
+    // you can disable the brownout detector, if you need
+    camera.brownout.disable();
+
+    // XCLK speed is 10MHz
+    camera.xclk.slow();
+    // XCLK speed is 20MHz
+    camera.xclk.fast();
+
+    // set resolution
+    camera.resolution.yolo(); // 96x96
+    camera.resolution.qqvga();
+    camera.resolution.qcif();
+    camera.resolution.hqvga();
+    camera.resolution.face(); // 240x240
+    camera.resolution.qvga();
+    camera.resolution.cif();
+    camera.resolution.hvga();
+    camera.resolution.vga();
+    camera.resolution.svga();
+    camera.resolution.xga();
+    camera.resolution.hd();
+    camera.resolution.sxga();
+    camera.resolution.uxga();
+    camera.resolution.fhd();
+    camera.resolution.p_hd();
+    camera.resolution.p_3mp();
+    camera.resolution.qxga();
+    camera.resolution.wqxga();
+    camera.resolution.p_fhd();
+    camera.resolution.qsxga();
+
+    // set jpeg quality
+    camera.quality.worst(); // 64
+    camera.quality.low();   // 30
+    camera.quality.high();  // 20
+    camera.quality.best();  // 10
+
+    // configure image sensor
     camera.sensor.vflip();
     camera.sensor.hmirror();
 

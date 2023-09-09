@@ -1,5 +1,6 @@
 {
     "files.associations": {
+        "*.embeddedhtml": "html",
         "__config": "cpp",
         "__threading_support": "cpp",
         "thread": "cpp",
@@ -7,6 +8,27 @@
         "*.tcc": "cpp",
         "chrono": "cpp",
         "mutex": "cpp",
-        "stop_token": "cpp"
+        "stop_token": "cpp",
+        "__locale": "cpp",
+        "cstdlib": "cpp",
+        "__bit_reference": "cpp",
+        "__hash_table": "cpp",
+        "__split_buffer": "cpp",
+        "array": "cpp",
+        "deque": "cpp",
+        "initializer_list": "cpp",
+        "span": "cpp",
+        "string": "cpp",
+        "string_view": "cpp",
+        "unordered_map": "cpp",
+        "vector": "cpp",
+        "format": "cpp",
+        "locale": "cpp",
+        "bitset": "cpp",
+        "algorithm": "cpp",
+        "compare": "cpp",
+        "cstdint": "cpp",
+        "queue": "cpp",
+        "random": "cpp"
     }
 }

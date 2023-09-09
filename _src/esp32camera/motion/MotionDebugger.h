@@ -59,6 +59,9 @@ namespace Eloquent {
                     if (!mjpegStream.begin(81))
                         return setErrorMessage(mjpegStream.getErrorMessage());
 
+                    if (!motionDetectionWebSocket.begin(82))
+                        return setErrorMessage("Cannot start MotionDetectionWebSocket");
+
                     // run motion detection in his own thread
                     _motionThread
                         .withArgs((void*) this)
@@ -78,6 +81,8 @@ namespace Eloquent {
 
                     // index page
                     on("/", [this]() {
+                        motionDetection.reset();
+
                         html.open([this]() {
                             html.svelteApp();
                         });

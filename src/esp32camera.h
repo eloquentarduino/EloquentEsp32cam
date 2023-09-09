@@ -1,11 +1,6 @@
-//
-// Created by Simone on 05/11/22.
-//
+#ifndef ELOQUENT_ESP32CAM
+#define ELOQUENT_ESP32CAM
 
-#ifndef ELOQUENTESP32CAM_ESP32CAM_H
-#define ELOQUENTESP32CAM_ESP32CAM_H
+#include "./esp32camera/camera/Camera.h"
 
-#include "./defines.h"
-#include "./esp32camera/Cam.h"
-
-#endif //ELOQUENTESP32CAM_ESP32CAM_H
+#endif

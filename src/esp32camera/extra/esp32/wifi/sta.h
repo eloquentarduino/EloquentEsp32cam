@@ -15,14 +15,14 @@ namespace Eloquent {
                 /**
                  * Connect to WiFi in Station mode
                  */
-                class WifiSta {
+                class Sta {
                     public:
                         Exception exception;
 
                         /**
                          * Constructor
                          */
-                        WifiSta() :
+                        Sta() :
                             exception("WiFi") {
 
                         }
@@ -98,7 +98,7 @@ namespace Eloquent {
 }
 
 namespace e {
-    static Eloquent::Extra::Esp32::Wifi::WifiSta wifiSta;
+    static Eloquent::Extra::Esp32::Wifi::Sta wifiSta;
 }
 
 #endif

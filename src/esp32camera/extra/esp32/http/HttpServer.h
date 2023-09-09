@@ -4,7 +4,9 @@
 #include <WiFi.h>
 #include <WebServer.h>
 #include "../../error/Exception.h"
+#include "../wifi/WifiSta.h"
 
+using namespace e;
 using Eloquent::Extra::Error::Exception;
 
 
@@ -63,8 +65,22 @@ namespace Eloquent {
                          * @return
                          */
                         Exception& begin() {
-                            // @todo if not connected
-                            // return exception.set("Not connected to WiFi");
+                            if (!wifiSta.isConnected())
+                                return exception.set("Not connected to WiFi");
+
+                            // add /app.js endpoint, if exists
+                            #ifdef AUTOLOAD_JAVASCRIPT_SPA
+                            on("/app.js", [this]() {
+                                webServer.send(200, "text/javascript", JAVASCRIPT_SPA);
+                            });
+                            #endif
+
+                            // render Alpine.js SPA, if exists
+                            #ifdef IS_ALPINE_SPA
+                            on("/", [this]() {
+                                webServer.send(200, "text/html", ALPINE_SPA);
+                            });
+                            #endif
 
                             webServer.begin(port);
 

@@ -100,6 +100,14 @@ namespace Eloquent {
                 }
 
                 /**
+                 * Reset background model
+                 * (a.k.a. restart training)
+                 */
+                inline void reset() {
+                    _epoch = 0;
+                }
+
+                /**
                  * Test if model is still training
                  *
                  * @return

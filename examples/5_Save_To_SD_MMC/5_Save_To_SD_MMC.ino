@@ -16,38 +16,88 @@
 #define WIFI_SSID "SSID"
 #define WIFI_PASS "PASSWORD"
 
-#include <SD_MMC.h>
 #include "esp32camera.h"
+#include "esp32camera/extra/esp32/wifi/sta.h"
+#include "esp32camera/extra/esp32/fs/sdmmc.h"
+
+using namespace e;
 
 
 void setup() {
-    Serial.begin(115200);
     delay(3000);
-    Serial.println("Init");
+    Serial.begin(115200);
+    Serial.println("___SAVE PIC TO SD CARD___");
 
-    // see 3_Get_Your_First_Picture for more details
-    camera.model.autodetect();
+    // camera settings
+    // replace with your own model!
+    camera.pinout.wroom_s3();
+    camera.brownout.disable();
+    camera.xclk.slow();
     camera.resolution.vga();
     camera.quality.high();
+    camera.rateLimit.atMost(33).fps();
 
+    // sdmmc.h includes NTP object, too for filename timestamping
     // if connected to the internet, try to get time from NTP
-    // (these are the defaults, so you can remove them)
-    camera.ntp.gmt(0);
-    camera.ntp.daylight(false);
-    camera.ntp.server("pool.ntp.org");
+    ntp.offsetFromGreenwhich(0);
+    // or any of
+    ntp.cst();
+    ntp.ist();
+    ntp.eest();
+    ntp.cest();
+    ntp.bst();
+    ntp.west();
+    ntp.cet();
+    ntp.gmt();
+    ntp.edt();
+    ntp.pdt();
+    
+    ntp.isntDaylight();
+    ntp.isDaylight();
+    ntp.server("pool.ntp.org");
 
-    // init camera
-    while (!camera.begin()) {
-        Serial.println(camera.getErrorMessage());
-        delay(1000);
+    /**
+     * Initialize the camera
+     * If something goes wrong, print the error message
+     */
+    while (!camera.begin().isOk())
+        Serial.println(camera.exception.toString());
+
+    /**
+     * Initialize SD card
+     * If something goes wrong, print the error message.
+     */
+    // you can configure each pin (if needed)
+    sdmmc.pinout.clk(39);
+    sdmmc.pinout.cmd(38);
+    sdmmc.pinout.d0(40); 
+    // or leverage the list of builtin modules
+    sdmmc.pinout.freenove_camera_s3();
+    
+    while (!sdmmc.begin().isOk())
+        Serial.println(sdmmc.exception.toString());
+
+    /**
+     * Connect to WiFi to sync NTP
+     * If something goes wrong, print the error message
+     */
+    while (!wifiSta.connect().isOk())
+      Serial.println(wifiSta.exception.toString());
+
+    /**
+     * Configure NTP service
+     * If something goes wrong, print the error message
+     */
+    while (!ntp.begin().isOk())
+      Serial.println(ntp.exception.toString());
+
+    while (true) {
+      sdmmc.saveCurrentFrame();
+      delay(4000);
     }
 
-    // init storage
-    while (!camera.storage.sdmmc())
-        Serial.println(camera.getErrorMessage());
-
     Serial.println("Camera OK");
-    Serial.println("SDCard OK");
+    Serial.println("SD card OK");
     Serial.println("Enter 'capture' to capture a new picture");
 }
 
@@ -58,17 +108,35 @@ void loop() {
         return;
 
     if (Serial.readStringUntil('\n') != "capture") {
-        Serial.println("I only understand 'capture'");
+        Serial.println("I only understand 'capture' (without quotes)");
         return;
     }
 
     // capture picture
-    if (!camera.capture()) {
-        Serial.println(camera.getErrorMessage());
+    if (!camera.capture().isOk()) {
+        Serial.println(camera.exception.toString());
         return;
     }
 
     // save to disk
     Serial.println("Capture ok, saving...");
-    camera.storage.save();
+
+    /**
+     * If you don't supply a name, an incremental (sorted) filename
+     * (that persists across reboots) will be used.
+     * If NTP is available, the current timestamp will 
+     * also be appended.
+     */
+    if (!sdmmc.saveCurrentFrame().isOk()) {
+        Serial.println(sdmmc.exception.toString());
+        return;
+    }
+
+    // or you can supply your own filename
+    if (!sdmmc.saveCurrentFrameAs("/picture.jpg").isOk()) {
+        Serial.println(sdmmc.exception.toString());
+        return;
+    }
+
+    Serial.println("Enter 'capture' to capture a new picture");
 }

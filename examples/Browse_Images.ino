@@ -1,49 +1,41 @@
 /**
- * Example 4: View camera MJPEG stream
- * Start an HTTP server to access the live video feed
- * of the camera from the browser.
+ * Example 4: Browse images
+ * Start an HTTP server to access the stored images from the browser.
  *
  * Endpoints are:
- *  - / -> displays a webpage with the stream
- *  - /mjpeg -> displays the raw MJPEG stream
- *  - /jpeg -> captures a still image
- *
- *  The /mjpeg stream is handy if you want to open the
- *  stream from VLC or Python
+ *  - / -> displays a webpage with the browser files
  *
  * BE SURE TO SET "TOOLS > CORE DEBUG LEVEL = DEBUG"
  * to turn on debug messages
  */
 
-// if you define WIFI_SSID and WIFI_PASS before importing the library, 
+// if you define WIFI_SSID and WIFI_PASS before importing the library
 // you can call connect() instead of connect(ssid, pass)
 //
 // If you set HOSTNAME and your router supports mDNS, you can access
 // the camera at http://{HOSTNAME}.local
-
+// esp32cam is the default
 #define WIFI_SSID "Novanetworks_Spagro2017"
 #define WIFI_PASS "AGRIMAG01"
 #define HOSTNAME "esp32cam"
 
 
 #include "esp32camera.h"
-#include "esp32camera/extra/esp32/wifi/sta.h"
-#include "esp32camera/mjpeg.h"
+#include "esp32camera/extra/esp32/fs/SpiffsFilesystem.h"
+#include "esp32camera/browser/ImageBrowserServer.h"
 
-// this will import all global variables under the e(loquent) namespace
 using namespace e;
 
 
 void setup() {
     delay(3000);
     Serial.begin(115200);
-    Serial.println("___MJPEG STREAM SERVER___");
+    Serial.println("___IMAGE BROWSER SERVER___");
 
     // camera settings
-    // replace with your own model!
-    camera.pinout.xiao_s3();
     camera.brownout.disable();
     camera.xclk.fast();
+    camera.pinout.m5wide();
     camera.resolution.vga();
     camera.quality.high();
 
@@ -51,16 +43,20 @@ void setup() {
     while (!camera.begin().isOk())
         Serial.println(camera.exception.toString());
 
+    // init filesystem
+    while (!spiffsFS.begin().isOk())
+        Serial.println(spiffsFS.exception.toString());
+
     // connect to WiFi
     while (!wifiSta.connect().isOk())
-      Serial.println(wifiSta.exception.toString());
+        Serial.println(wifiSta.exception.toString());
 
-    // init mjpeg http server
-    while (!mjpeg.begin().isOk())
-        Serial.println(mjpeg.exception.toString());
+    // init image browser http server
+    while (!imageBrowserServer.begin().isOk())
+        Serial.println(imageBrowserServer.exception.toString());
 
     Serial.println("Camera OK");
-    Serial.println("MjpegStream OK");
+    Serial.println("ImageBrowser OK");
 }
 
 

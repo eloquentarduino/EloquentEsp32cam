@@ -11,103 +11,53 @@
  */
 #include "esp32camera.h"
 
+// all esp32camera objects (e.g. `camera`) 
+// are scoped under the `e` namespace
+using namespace e;
+
 
 /**
  *
  */
 void setup() {
-    Serial.begin(115200);
     delay(3000);
-    Serial.println("Init");
+    Serial.begin(115200);
+    Serial.println("___GET YOUR FIRST PICTURE___");
 
-    /**
-     * Configure camera model
-     * Allowed values are:
-     *
-     *  - aithinker
-     *  - xiao
-     *  - m5
-     *  - m5wide
-     *  - eye
-     *  - wrover
-     *  - ttgoLCD
-     *  - simcam
-     *
-     *  Default is aithinker
-     */
-    camera.model.aithinker();
-
-    /**
-     * Configure camera resolution
-     * Allowed values are:
-     *
-     * - _96x96
-     * - qqvga
-     * - qcif
-     * - hqvga
-     * - _240x240
-     * - qvga
-     * - cif
-     * - hvga
-     * - vga
-     * - svga
-     * - xga
-     * - hd
-     * - sxga
-     * - uxga
-     *
-     * Default is vga
-     */
+    // camera settings
+    // replace with your own model!
+    camera.pinout.xiao_s3();
+    camera.brownout.disable();
+    camera.xclk.slow();
     camera.resolution.vga();
-
-    /**
-     * Configure JPEG quality
-     * Allowed values are:
-     *
-     *  - low (30)
-     *  - high (20)
-     *  - best (10)
-     *  - set(quality), ranging from 10 (best) to 64 (lowest)
-     *
-     *  Default is high
-     */
     camera.quality.high();
+    camera.rateLimit.atMost(33).fps();
 
     /**
      * Initialize the camera
      * If something goes wrong, print the error message
      */
-    while (!camera.begin())
-        Serial.println(camera.getErrorMessage());
+    while (!camera.begin().isOk())
+        Serial.println(camera.exception.toString());
 
-    Serial.println("Camera OK");
+    Serial.println("Camera init OK");
 }
 
 /**
  *
  */
 void loop() {
-    // await for "capture" from the Serial Monitor
-    if (!Serial.available())
-        return;
-
-    if (Serial.readStringUntil('\n') != "capture") {
-        Serial.println("I only understand 'capture'");
-        return;
-    }
-
     // capture picture
-    if (!camera.capture()) {
-        Serial.println(camera.getErrorMessage());
+    if (!camera.capture().isOk()) {
+        Serial.println(camera.exception.toString());
         return;
     }
 
     // print image info
-    Serial.println("Capture OK");
     Serial.printf(
-            "JPEG size in bytes: %d. Width: %dpx. Height: %dpx.\n",
-            camera.getSizeInBytes(),
-            camera.resolution.getWidth(),
-            camera.resolution.getHeight()
+        "JPEG size in bytes: %d. Width: %dpx. Height: %dpx.\n",
+        camera.getSizeInBytes(),
+        camera.resolution.getWidth(),
+        camera.resolution.getHeight()
     );
 }
