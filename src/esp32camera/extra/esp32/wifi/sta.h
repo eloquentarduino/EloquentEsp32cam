@@ -3,9 +3,9 @@
 
 #include <WiFi.h>
 #include <ESPmDNS.h>
-#include "../../error/Exception.h"
+#include "../../exception.h"
 
-using Eloquent::Extra::Error::Exception;
+using Eloquent::Extra::Exception;
 
 
 namespace Eloquent {
@@ -48,6 +48,7 @@ namespace Eloquent {
                         Exception& connect(const char *ssid, const char* password, size_t timeout = 20000) {
                             ESP_LOGI("WiFi", "Connecting to %s...", ssid);
                             WiFi.mode(WIFI_STA);
+                            WiFi.disconnect();
                             WiFi.begin(ssid, password);
 
                             timeout += millis();
@@ -85,12 +86,11 @@ namespace Eloquent {
                          *
                          * @return
                          */
-                        String getIP() const {
+                        String ip() const {
                             IPAddress ip = WiFi.localIP();
 
                             return String(ip[0]) + '.' + ip[1] + '.' + ip[2] + '.' + ip[3];
                         }
-
                 };
             }
         }
@@ -98,7 +98,7 @@ namespace Eloquent {
 }
 
 namespace e {
-    static Eloquent::Extra::Esp32::Wifi::Sta wifiSta;
+    static Eloquent::Extra::Esp32::Wifi::Sta wifi;
 }
 
 #endif

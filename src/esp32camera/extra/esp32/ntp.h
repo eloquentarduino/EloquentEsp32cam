@@ -1,10 +1,12 @@
 #ifndef ELOQUENT_EXTRA_ESP32_NTP
 #define ELOQUENT_EXTRA_ESP32_NTP
 
-#include <WiFi.h>
-#include "../error/Exception.h"
+#include "../exception.h"
+#include "./wifi/sta.h"
 
-using Eloquent::Extra::Error::Exception;
+using namespace e;
+using Eloquent::Extra::Exception;
+
 
 namespace Eloquent {
     namespace Extra {
@@ -71,7 +73,7 @@ namespace Eloquent {
                      * Configure NTP
                      */
                     Exception& begin() {
-                        if (WiFi.status() != WL_CONNECTED)
+                        if (!wifi.isConnected())
                             return exception.set("You need WiFi connection to sync NTP");
 
                         configTime(gmtOffset, daylightOffset, (const char *) serverName.c_str());
@@ -97,8 +99,10 @@ namespace Eloquent {
                     String format(const char *fmt) {
                         char buf[32];
 
-                        if (!!exception)
+                        if (!!exception) {
+                            ESP_LOGE("NTP", "Bad time. Empty filename will be returned");
                             return "";
+                        }
 
                         strftime(buf, sizeof(buf), fmt, &timeinfo);
 
@@ -109,21 +113,24 @@ namespace Eloquent {
                      * Get date as string
                      */
                     String date() {
-                        return format("%d-%m-%Y");
+                        return format("%Y%m%d");
                     }
 
                     /**
                      * Get datetime as string
                      */
                     String datetime() {
-                        return format("%d-%m-%YT%H:%M:%S");
+                        return format("%Y%m%dT%H%M%S");
                     }
 
                     /**
-                     * Get datetime as string
+                     * Get datetime as valid string
                      */
-                    String filenameDatetime() {
-                        return format("%Y%m%d_%H%M%S");
+                    String filename(bool autorefresh = true) {
+                        if (autorefresh)
+                            refresh();
+
+                        return format("%Y%m%dT%H%M%S");
                     }
 
                     // synctactic sugar
@@ -141,7 +148,6 @@ namespace Eloquent {
                     uint16_t gmtOffset;
                     uint16_t daylightOffset;
                     String serverName;
-                    
             };
         }
     }

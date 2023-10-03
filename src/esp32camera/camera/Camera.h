@@ -8,10 +8,11 @@
 #include "./Resolution.h"
 #include "./Pinout.h"
 #include "./Sensor.h"
-#include "../extra/error/Exception.h"
+#include "./Converter565.h"
+#include "../extra/exception.h"
 #include "../extra/time/RateLimit.h"
 
-using Eloquent::Extra::Error::Exception;
+using Eloquent::Extra::Exception;
 using Eloquent::Extra::Time::RateLimit;
 
 namespace Eloquent {
@@ -33,12 +34,14 @@ namespace Eloquent {
                     Sensor sensor;
                     Exception exception;
                     RateLimit rateLimit;
+                    Converter565<Camera> rgb565;
 
                     /**
                      * Constructor
                      */
                     Camera() :
-                        exception("Camera") {
+                        exception("Camera"),
+                        rgb565(this) {
 
                     }
 
@@ -99,10 +102,6 @@ namespace Eloquent {
 
                         if (!hasFrame())
                             return exception.set("Cannot capture frame");
-
-                        #if defined(ELOQUENT_ESP32CAM_JPEGDECODER)
-                            jpeg.decode();
-                        #endif
 
                         return exception.clear();
                     }

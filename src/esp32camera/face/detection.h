@@ -4,7 +4,7 @@
 #include <human_face_detect_msr01.hpp>
 #include <human_face_detect_mnp01.hpp>
 #include "../camera/Camera.h"
-#include "../extra/error/Exception.h"
+#include "../extra/exception.h"
 #include "../extra/benchmark.h"
 #include "./msr_config.h"
 #include "./mnp_config.h"
@@ -12,7 +12,7 @@
 
 using namespace e;
 using Eloquent::Extra::Benchmark;
-using Eloquent::Extra::Error::Exception;
+using Eloquent::Extra::Exception;
 using Eloquent::Esp32cam::Camera::Camera;
 
 

@@ -1,18 +1,14 @@
 #ifndef ELOQUENT_ESP32CAM_MJPEG_SERVER
 #define ELOQUENT_ESP32CAM_MJPEG_SERVER
 
-#ifndef MJPEG_SERVER_STACK_SIZE
-#define MJPEG_SERVER_STACK_SIZE 5000
-#endif
-
 #include "./camera/Camera.h"
-#include "./extra/error/Exception.h"
-#include "./extra/esp32/wifi/WiFiSta.h"
-#include "./extra/esp32/http/HttpServerThread.h"
+#include "./extra/exception.h"
+#include "./extra/esp32/wifi/sta.h"
+#include "./extra/esp32/http/server.h"
 
 using namespace e;
-using Eloquent::Extra::Error::Exception;
-using Eloquent::Extra::Esp32::Http::HttpServerThread;
+using Eloquent::Extra::Exception;
+using Eloquent::Extra::Esp32::Http::HttpServer;
 
 namespace Eloquent {
     namespace Esp32cam {
@@ -22,88 +18,94 @@ namespace Eloquent {
         class Mjpeg {
             public:
                 Exception exception;
-                HttpServerThread httpServerThread;
+                HttpServer server;
 
                 /**
                  * Constructor
                  */
-                Server(uint8_t port = 80) :
+                Mjpeg() :
                     exception("MjpegStreamServer"),
-                    httpServerThread("MjpegStreamServer", port) {
+                    server("MjpegStreamServer", MJPEG_HTTP_PORT) {
 
                     }
 
                 /**
+                 * Debug self IP address
+                 */
+                String address() const {
+                    return String("MJPEG stream is available at http://") + wifi.ip() + ":" + String(MJPEG_HTTP_PORT);
+                }
+
+                /**
                  * Start server
                  */
-                Exception& begin(uint16_t port = 80) {
-                    if (!wifiSta.isConnected())
+                Exception& begin() {
+                    if (!wifi.isConnected())
                         return exception.set("WiFi not connected");
 
-                    httpServerThread.httpServer.setPort(port);
-
-                    // render index HTML
-                    httpServerThread.httpServer.on("/", [this]() {
-                        httpServerThread.httpServer.webServer.send(200, "text/html", "<img src=\"/mjpeg\">");
-                    });
-
-                    // serve MJPEG stream
-                    httpServerThread.httpServer.addMultipartGetHandler("/mjpeg", [this](WiFiClient client) {
-                        sendMjpeg(client);
-                    });
-
-                    // serve JPEG frame
-                    httpServerThread.httpServer.addGetHandlerWithTest(
-                        // route
-                        "/jpeg",
-                        // test
-                        []() { return camera.capture().isOk(); },
-                        // error message on fail
-                        "Cannot capture frame",
-                        // success function
-                        [this]() { sendJpeg(); }
-                    );
+                    onJpeg();
+                    onMjpeg();
 
                     // run in thread
-                    httpServerThread.thread.withStackSize(MJPEG_SERVER_STACK_SIZE);
+                    server.thread.withStackSize(5000);
 
-                    if (!httpServerThread.begin().isOk())
-                        return httpServerThread.exception;
+                    if (!server.begin().isOk())
+                        return exception.propagate(server);
 
                     return exception.clear();
                 }
 
             protected:
+
                 /**
-                 * 
+                 * Register / endpoint to get Mjpeg stream
                  */
-                void sendJpeg() {
-                    ESP_LOGI("MjpegStreamServer", "/jpeg");
+                void onMjpeg() {
+                    server.onGET("/", [this](WebServer *web) {
+                        WiFiClient client = web->client();
 
-                    WiFiClient client = httpServerThread.httpServer.webServer.client();
+                        client.println(F("HTTP/1.1 200 OK"));
+                        client.println(F("Content-Type: multipart/x-mixed-replace;boundary=frame"));
+                        client.println(F("Access-Control-Allow-Origin: *"));
+                        client.println(F("\r\n--frame"));
 
-                    client.println(F("HTTP/1.1 200 OK"));
-                    client.println(F("Content-Type: image/jpeg"));
-                    client.println(F("Access-Control-Allow-Origin: *"));
-                    client.print(F("Content-Length: "));
-                    client.println((unsigned int) camera.getSizeInBytes());
-                    client.println();
-                    client.write((const char *) camera.frame->buf, camera.getSizeInBytes());
+                        while (true) {
+                            if (!client.connected())
+                                continue;
+
+                            if (!camera.capture().isOk())
+                                continue;
+
+                            client.print("Content-Type: image/jpeg\r\nContent-Length: ");
+                            client.println(camera.frame->len);
+                            client.println();
+                            client.write((const char *) camera.frame->buf, camera.frame->len);
+                            client.println(F("\r\n--frame"));
+                            client.flush();
+                            delay(1);
+                            yield();
+                        }
+                    });
                 }
 
                 /**
-                 * 
+                 * Register /jpeg endpoint to get a single Jpeg
                  */
-                template<typename Client>
-                void sendMjpeg(Client client) {
-                    ESP_LOGI("MjpegStreamServer", "/mjpeg");
+                void onJpeg() {
+                    server.onGET("/jpeg", [this](WebServer *web) {
+                        if (!camera.capture().isOk())
+                            return server.serverError(camera.exception.toString());
 
-                    if (!camera.capture().isOk()) {
-                        httpServerThread.httpServer.abortByServer(camera.exception.toString());
-                        return;
-                    }
+                        WiFiClient client = web->client();
 
-                    // todo
+                        client.println(F("HTTP/1.1 200 OK"));
+                        client.println(F("Content-Type: image/jpeg"));
+                        client.println(F("Access-Control-Allow-Origin: *"));
+                        client.print(F("Content-Length: "));
+                        client.println((unsigned int) camera.frame->len);
+                        client.println();
+                        client.write((const char *) camera.frame->buf, camera.frame->len);
+                    });
                 }
         };
     }

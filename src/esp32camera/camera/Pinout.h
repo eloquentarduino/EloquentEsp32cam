@@ -176,6 +176,13 @@ namespace Eloquent {
                 }
 
                 /**
+                 * 
+                 */
+                void freenove_s3() {
+                    wroom_s3();
+                }
+
+                /**
                  *
                  */
                 void ttgo_lcd() {
@@ -242,6 +249,29 @@ namespace Eloquent {
                     pins.pwdn = -1;
                     pins.reset = -1;
                     pins.flashlight = -1;
+                }
+
+                /**
+                 * 
+                 */
+                void m5timer() {
+                    pins.d0 = 32;
+                    pins.d1 = 35;
+                    pins.d2 = 34;
+                    pins.d3 = 5;
+                    pins.d4 = 39;
+                    pins.d5 = 18;
+                    pins.d6 = 36;
+                    pins.d7 = 19;
+                    pins.xclk = 27;
+                    pins.pclk = 21;
+                    pins.vsync = 22;
+                    pins.href = 26;
+                    pins.sccb_sda = 25;
+                    pins.sccb_scl = 23;
+                    pins.pwdn = -1;
+                    pins.reset = 15;
+                    pins.flashlight = 2;
                 }
             };
         }

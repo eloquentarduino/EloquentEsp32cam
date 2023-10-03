@@ -29,6 +29,10 @@
         "compare": "cpp",
         "cstdint": "cpp",
         "queue": "cpp",
-        "random": "cpp"
+        "random": "cpp",
+        "ostream": "cpp",
+        "functional": "cpp",
+        "sstream": "cpp",
+        "stdexcept": "cpp"
     }
 }

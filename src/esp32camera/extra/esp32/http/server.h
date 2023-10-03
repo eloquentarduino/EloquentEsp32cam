@@ -3,11 +3,13 @@
 
 #include <WiFi.h>
 #include <WebServer.h>
-#include "../../error/Exception.h"
-#include "../wifi/WifiSta.h"
+#include "../../exception.h"
+#include "../wifi/sta.h"
+#include "../multiprocessing/thread.h"
 
 using namespace e;
-using Eloquent::Extra::Error::Exception;
+using Eloquent::Extra::Exception;
+using Eloquent::Extra::Esp32::Multiprocessing::Thread;
 
 
 namespace Eloquent {
@@ -20,15 +22,17 @@ namespace Eloquent {
                 class HttpServer {
                     public:
                         WebServer webServer;
+                        Thread thread;
                         Exception exception;
 
                         /**
                          * Constructor
                          */
                         HttpServer(const char* serverName, uint16_t serverPort = 80) :
-                            name(serverName),
                             port(serverPort),
-                            exception(serverName) {
+                            name(serverName),
+                            exception(serverName),
+                            thread(serverName) {
 
                             }
 
@@ -65,22 +69,20 @@ namespace Eloquent {
                          * @return
                          */
                         Exception& begin() {
-                            if (!wifiSta.isConnected())
+                            if (!wifi.isConnected())
                                 return exception.set("Not connected to WiFi");
 
-                            // add /app.js endpoint, if exists
-                            #ifdef AUTOLOAD_JAVASCRIPT_SPA
-                            on("/app.js", [this]() {
-                                webServer.send(200, "text/javascript", JAVASCRIPT_SPA);
-                            });
-                            #endif
+                            // run server in thread
+                            thread
+                                .withArgs((void*) this)
+                                .run([](void *args) {
+                                    HttpServer *httpServer = (HttpServer*) args;
 
-                            // render Alpine.js SPA, if exists
-                            #ifdef IS_ALPINE_SPA
-                            on("/", [this]() {
-                                webServer.send(200, "text/html", ALPINE_SPA);
-                            });
-                            #endif
+                                    while (true) {
+                                        httpServer->handle();
+                                        yield();
+                                    }
+                                });
 
                             webServer.begin(port);
 
@@ -114,7 +116,10 @@ namespace Eloquent {
                         template<typename Handler>
                         void onGET(const char *route, Handler handler) {
                             ESP_LOGI("HttpServer", "Registering route GET %s::%s", name, route);
-                            webServer.on(route, HTTP_GET, handler);
+
+                            webServer.on(route, HTTP_GET, [this, handler]() {
+                                handler(&webServer);
+                            });
                         }
 
                         /**
@@ -134,7 +139,7 @@ namespace Eloquent {
                          */
                         template<typename Test, typename Handler>
                         void addGetHandlerWithTest(const char* route, Test test, const char* errorMessage, Handler handler) {
-                            onGET(route, [this, test, handler, errorMessage, route]() {
+                            onGET(route, [this, test, handler, errorMessage, route]() {                                
                                 if (!test()) {
                                     ESP_LOGE("HttpServer", "Test did not pass for route %s", route);
                                     abortByServer(errorMessage);
@@ -182,12 +187,43 @@ namespace Eloquent {
                         }
 
                         /**
+                         * Send gzip'd javascript
+                         */
+                        //void gzipJs(const char* route, const uint8_t* gz) {
+                        //    gzip(route, "text/javascript", gz);
+                        //}
+
+                        /**
+                         * Send gzip'd content
+                         */
+                        // void gzip(const char* route, const char* contentType, const uint8_t* gz) {
+                        //     on(route, [this, route, contentType, gz]() {
+                        //         ESP_LOGI("HttpServer", "Registering gzip'd route GET %s::%s", name, route);
+                        //         webServer.on(route, HTTP_GET, [this, contentType, gz]() {
+                        //             WiFiClient client = webServer.client();
+
+                        //             client.println(F("HTTP/1.1 200 OK"));
+                        //             client.print(F("Content-Type: "));
+                        //             client.println(contentType);
+                        //             client.print(F("Content-Length: "));
+                        //             client.println(sizeof(gz));
+                        //             client.println(F("Content-Encoding: gzip\r\n\r\n"));
+                        //             client.write(gz, sizeof(gz));
+                        //         });
+                        //     });
+                        // }
+
+                        /**
                          * Abort with error message
                          * @param message
                          * @param contentType
                          * @param statusCode
                          */
                         void abort(String message, const char* contentType = "text/plain", uint16_t statusCode = 500) {
+                            const char *msg = message.c_str();
+
+                            ESP_LOGE("HttpServer", "Aborting request (%d): %s", statusCode, msg);
+
                             webServer.send(statusCode, contentType, message);
                         }
 
@@ -216,6 +252,16 @@ namespace Eloquent {
                          */
                         void abortByClient(String message, const char* contentType = "text/plain") {
                             abort(message, contentType, 400);
+                        }
+
+                        /**
+                         * Abort with server error message
+                         * 
+                         * @param message
+                         * @param contentType
+                         */
+                        void serverError(String message, const char* contentType = "text/plain") {
+                            abort(message, contentType, 500);
                         }
 
                         /**

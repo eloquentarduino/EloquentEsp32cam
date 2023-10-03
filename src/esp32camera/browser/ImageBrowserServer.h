@@ -8,14 +8,14 @@
 //#include "../assets/ImageBrowserServer.js.h"
 #include "../assets/ImageBrowserServer.alpine.h"
 #include "../camera/Camera.h"
-#include "../extra/error/Exception.h"
+#include "../extra/exception.h"
 #include "../extra/esp32/fs/Filesystem.h"
-#include "../extra/esp32/wifi/WiFiSta.h"
+#include "../extra/esp32/wifi/sta.h"
 #include "../extra/esp32/http/HttpServerThread.h"
 #include "../extra/esp32/html/HtmlBuilder.h"
 
 using namespace e;
-using Eloquent::Extra::Error::Exception;
+using Eloquent::Extra::Exception;
 using Eloquent::Extra::Esp32::Fs::Filesystem;
 using Eloquent::Extra::Esp32::Http::HttpServerThread;
 using Eloquent::Extra::Esp32::Html::HtmlBuilder;

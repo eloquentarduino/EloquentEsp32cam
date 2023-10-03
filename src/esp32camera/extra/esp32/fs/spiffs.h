@@ -1,10 +1,9 @@
-#ifndef ELOQUENT_ESP32CAM_CAMERA_SDMMC
-#define ELOQUENT_ESP32CAM_CAMERA_SDMMC
+#ifndef ELOQUENT_ESP32CAM_CAMERA_SPIFFS
+#define ELOQUENT_ESP32CAM_CAMERA_SPIFFS
 
 #include <FS.h>
-#include <SD_MMC.h>
+#include <SPIFFS.h>
 #include "../../exception.h"
-#include "./sdmmc_pins.h"
 #include "./write_session.h"
 
 
@@ -17,44 +16,44 @@ namespace Eloquent {
         namespace Esp32 {
             namespace Fs {
                 /**
-                 * Interact with the SD
+                 * Interact with SPIFFS
                  */
-                class SDMMC {
+                class Spiffs {
                 public:
                     Exception exception;
-                    Pinout pinout;
                     WriteSession session;
 
                     /**
                      * 
                      */
-                    SDMMC() : 
-                        exception("SDMMC"),
-                        root("/sdcard"), 
-                        freq(SDMMC_FREQ_DEFAULT), 
+                    Spiffs() : 
+                        exception("SPIFFS"),
+                        root("/spiffs"),
+                        partitionLabel(""),
+                        format(false),
                         maxFiles(5),
-                        session(&SD_MMC) {
+                        session(&SPIFFS) {
                     }
 
                     /**
                      * 
-                    */
+                     */
+                    void formatOnFail() {
+                        format = true;
+                    }
+
+                    /**
+                     * 
+                     */
                     void mountAt(String mountpoint) {
                         root = mountpoint;
                     }
 
                     /**
-                     * Set high read/write speed
-                    */
-                    void highSpeed() {
-                        speed(SDMMC_FREQ_HIGHSPEED);
-                    }
-
-                    /**
-                     * Set custom speed
+                     * Set partition label
                      */
-                    void speed(int speed) {
-                        freq = speed;
+                    void partition(String partition) {
+                        partitionLabel = partition;
                     }
 
                     /**
@@ -68,20 +67,10 @@ namespace Eloquent {
                      * Init SD
                      */
                     Exception& begin() {
-                        bool isOneBit = (pinout.pins.d1 == 0 && pinout.pins.d2 == 0);
-                        bool formatOnFailure = true;
+                        const char *part = partitionLabel != "" ? partitionLabel.c_str() : NULL;
 
-                        if (pinout.pins.clk != pinout.pins.cmd)
-                            SD_MMC.setPins(pinout.pins.clk, pinout.pins.cmd, pinout.pins.d0);
-
-                        if (!isOneBit)
-                            SD_MMC.setPins(pinout.pins.clk, pinout.pins.cmd, pinout.pins.d0, pinout.pins.d1, pinout.pins.d2, pinout.pins.d3);
-
-                        if (!SD_MMC.begin(root.c_str(), isOneBit, formatOnFailure, freq, maxFiles))
-                            return exception.set("Something went wrong with SD_MMC.begin()");
-
-                        if (SD_MMC.cardType() == CARD_NONE)
-                            return exception.set("Cannot detect any SD card");
+                        if (!SPIFFS.begin(format, root.c_str(), maxFiles, part))
+                            return exception.set("Something went wrong with SPIFFS.begin()");
 
                         return exception.clear();
                     }
@@ -104,8 +93,9 @@ namespace Eloquent {
                     }
 
                 protected:
+                    bool format;
                     String root;
-                    int freq;
+                    String partitionLabel;
                     uint8_t maxFiles;
                 };
             }
@@ -114,7 +104,7 @@ namespace Eloquent {
 }
 
 namespace e {
-    static Eloquent::Extra::Esp32::Fs::SDMMC sdmmc;
+    static Eloquent::Extra::Esp32::Fs::Spiffs spiffs;
 }
 
 #endif

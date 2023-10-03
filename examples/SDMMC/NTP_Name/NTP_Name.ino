@@ -1,18 +1,18 @@
 /**
- * Example 5: Store pictures to SD Card
+ * SDMMC file storage: NTP filename
+ * 
  * This sketch shows how to save a picture on the SD Card
- * filesystem using automatic incrementing file naming.
+ * filesystem by generating a filename using current time
  *
  * Open the Serial Monitor and enter 'capture' (without quotes)
- * to capture a new image and save it to disk
+ * to capture a new image and save it to SD
  *
- * BE SURE TO SET "TOOLS > CORE DEBUG LEVEL = DEBUG"
+ * BE SURE TO SET "TOOLS > CORE DEBUG LEVEL = INFO"
  * to turn on debug messages
  */
 
 // if you define WIFI_SSID and WIFI_PASS before importing the library
-// the camera will automatically connect and synchronize the NTP server
-// for filename timestamping.
+// you can call wifi.connect() instead of wifi.connect(ssid, password)
 #define WIFI_SSID "SSID"
 #define WIFI_PASS "PASSWORD"
 
@@ -32,12 +32,9 @@ void setup() {
     // replace with your own model!
     camera.pinout.wroom_s3();
     camera.brownout.disable();
-    camera.xclk.slow();
     camera.resolution.vga();
     camera.quality.high();
-    camera.rateLimit.atMost(33).fps();
 
-    // sdmmc.h includes NTP for filename timestamping
     // if connected to the internet, try to get time from NTP
     ntp.offsetFromGreenwhich(0);
     // or any of
@@ -51,54 +48,39 @@ void setup() {
     ntp.gmt();
     ntp.edt();
     ntp.pdt();
-    
+
+    // enable/disable daylight saving
     ntp.isntDaylight();
     ntp.isDaylight();
+    
     ntp.server("pool.ntp.org");
 
-    /**
-     * Initialize the camera
-     * If something goes wrong, print the error message
-     */
+    // you can configure each pin of SDMMC (if needed)
+    // (delete these lines if not sure)
+    sdmmc.pinout.clk(39);
+    sdmmc.pinout.cmd(38);
+    sdmmc.pinout.d0(40);
+
+    // init camera
     while (!camera.begin().isOk())
         Serial.println(camera.exception.toString());
 
-    /**
-     * Initialize SD card
-     * If something goes wrong, print the error message.
-     */
-    // you can configure each pin (if needed)
-    sdmmc.pinout.clk(39);
-    sdmmc.pinout.cmd(38);
-    sdmmc.pinout.d0(40); 
-    // or leverage the list of builtin modules
-    sdmmc.pinout.freenove_camera_s3();
-    
+    // init SD
     while (!sdmmc.begin().isOk())
         Serial.println(sdmmc.exception.toString());
 
-    /**
-     * Connect to WiFi to sync NTP
-     * If something goes wrong, print the error message
-     */
-    while (!wifiSta.connect().isOk())
-      Serial.println(wifiSta.exception.toString());
+    // connect to WiFi to sync NTP
+    while (!wifi.connect().isOk())
+      Serial.println(wifi.exception.toString());
 
-    /**
-     * Configure NTP service
-     * If something goes wrong, print the error message
-     */
+    // get NTP time
     while (!ntp.begin().isOk())
       Serial.println(ntp.exception.toString());
 
-    while (true) {
-      sdmmc.saveCurrentFrame();
-      delay(4000);
-    }
-
     Serial.println("Camera OK");
     Serial.println("SD card OK");
-    Serial.println("Enter 'capture' to capture a new picture");
+    Serial.println("NTP OK");
+    Serial.println("Enter 'capture' to capture a new picture and save to SD");
 }
 
 
@@ -118,25 +100,20 @@ void loop() {
         return;
     }
 
-    // save to disk
-    Serial.println("Capture ok, saving...");
-
-    /**
-     * If you don't supply a name, an incremental (sorted) filename
-     * (that persists across reboots) will be used.
-     * If NTP is available, the current timestamp will 
-     * also be appended.
-     */
-    if (!sdmmc.saveCurrentFrame().isOk()) {
-        Serial.println(sdmmc.exception.toString());
-        return;
+    // save under root directory
+    if (sdmmc.save(camera.frame).to(ntp.datetime(), "jpg").isOk()) {
+      Serial.print("File written to ");
+      Serial.println(sdmmc.session.lastFilename);
     }
+    else Serial.println(sdmmc.session.exception.toString());
 
-    // or you can supply your own filename
-    if (!sdmmc.saveCurrentFrameAs("/picture.jpg").isOk()) {
-        Serial.println(sdmmc.exception.toString());
-        return;
+    // save under nested directory
+    if (sdmmc.save(camera.frame).inside(ntp.date()).to(ntp.datetime(), "jpg").isOk()) {
+      Serial.print("File written to ");
+      Serial.println(sdmmc.session.lastFilename);
     }
-
+    else Serial.println(sdmmc.session.exception.toString());
+    
+    // restart the loop
     Serial.println("Enter 'capture' to capture a new picture");
 }
