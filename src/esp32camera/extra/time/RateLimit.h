@@ -26,8 +26,7 @@ namespace Eloquent {
                     operator bool() const {
                         const size_t now = millis();
 
-                        // handle timer overflow
-                        return debounceTime == 0 || (now - lastEvent) >= debounceTime || lastEvent >= now;
+                        return debounceTime == 0 || lastEvent == 0 || (now - lastEvent) >= debounceTime || lastEvent >= now;
                     }
 
                     /**
@@ -62,6 +61,13 @@ namespace Eloquent {
                      */
                     inline RateLimit& milliseconds() {
                         return *this;
+                    }
+
+                    /**
+                     * Set debounce unit
+                     */
+                    inline RateLimit& second() {
+                        return seconds();
                     }
 
                     /**
