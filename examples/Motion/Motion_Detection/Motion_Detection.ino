@@ -5,11 +5,9 @@
  * BE SURE TO SET "TOOLS > CORE DEBUG LEVEL = DEBUG"
  * to turn on debug messages
  */
-#include <esp32camera.h>
-#include <esp32camera/motion/detection.h>
+#include <eloquent_esp32cam.h>
+#include <eloquent_esp32cam/motion/detection.h>
 
-// all esp32camera objects (e.g. `camera`) 
-// are scoped under the `e` namespace
 using namespace e;
 
 
@@ -68,6 +66,12 @@ void loop() {
     }
 
     // detect motion
-    if (motion_detection.update(camera.rgb565))
+    if (!motion_detection.update(camera.rgb565).isOk()) {
+      Serial.println(motion_detection.exception.toString());
+      return;
+    }
+
+    // on motion, perform action
+    if (motion_detection.triggered())
       Serial.println("Motion detected");
 }

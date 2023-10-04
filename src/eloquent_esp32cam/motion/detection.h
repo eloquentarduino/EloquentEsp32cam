@@ -2,8 +2,10 @@
 #define ELOQUENT_ESP32CAM_MOTION_DETECTION
 
 #include <dl_image.hpp>
-#include "../extra/time/RateLimit.h"
+#include "../extra/exception.h"
+#include "../extra/time/rate_limit.h"
 
+using Eloquent::Extra::Exception;
 using Eloquent::Extra::Time::RateLimit;
 
 
@@ -16,6 +18,7 @@ namespace Eloquent {
             class Detection {
                 public:
                     float moving_ratio;
+                    Exception exception;
                     RateLimit rate_limiter;
                     
                     /**
@@ -26,7 +29,8 @@ namespace Eloquent {
                         _threshold(5),
                         _ratio(0.2),
                         _prev(NULL),
-                        moving_ratio(0) {
+                        moving_ratio(0),
+                        exception("MotionDetection") {
 
                         }
 
@@ -61,22 +65,29 @@ namespace Eloquent {
                     }
 
                     /**
+                     * Test if motion triggered
+                     */
+                    inline bool triggered() {
+                        return moving_ratio >= _ratio;
+                    }
+
+                    /**
                      * 
                      */
                     template<typename Frame>
-                    bool update(Frame& frame) {
+                    Exception& update(Frame& frame) {
                         if (_prev == NULL) {
                             _prev = (uint8_t*) malloc(frame.length);
                             memcpy(_prev, frame.data, frame.length);
 
-                            return false;
+                            return exception.set("First frame, can't detect motion").soft();
                         }
 
                         if (!rate_limiter) {
                             // update prev, but don't run prediction
                             memcpy(_prev, frame.data, frame.length);
 
-                            return false;
+                            return exception.set(rate_limiter.getRetryInMessage());
                         }
 
                         int movingPoints = dl::image::get_moving_point_number((uint16_t *) frame.data, (uint16_t*) _prev, frame.height, frame.width, _stride, _threshold);
@@ -84,12 +95,10 @@ namespace Eloquent {
                         memcpy(_prev, frame.data, frame.length);
                         ESP_LOGD("MotionDetection", "moving points: %d (%.2f)", movingPoints, movingRatio);
 
-                        if (moving_ratio < _ratio)
-                            return false;
+                        if (triggered())
+                            rate_limiter.touch();
 
-                        rate_limiter.touch();
-
-                        return true;
+                        return exception.clear();
                     }
 
                 protected:

@@ -115,6 +115,15 @@ namespace Eloquent {
                         lastEvent = millis();
                     }
 
+                    /**
+                     * Get informative text on when next event is allowed
+                     */
+                    String getRetryInMessage() {
+                        return String("Rate limit exceeded. Retry in ")
+                            + (debounceTime - (millis() - lastEvent))
+                            + "ms";
+                    }
+
                 protected:
                     size_t debounceTime;
                     size_t lastEvent;

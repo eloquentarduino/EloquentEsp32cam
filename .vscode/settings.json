@@ -33,6 +33,7 @@
         "ostream": "cpp",
         "functional": "cpp",
         "sstream": "cpp",
-        "stdexcept": "cpp"
+        "stdexcept": "cpp",
+        "__string": "cpp"
     }
 }

@@ -10,7 +10,7 @@
 #include "./Sensor.h"
 #include "./Converter565.h"
 #include "../extra/exception.h"
-#include "../extra/time/RateLimit.h"
+#include "../extra/time/rate_limit.h"
 
 using Eloquent::Extra::Exception;
 using Eloquent::Extra::Time::RateLimit;

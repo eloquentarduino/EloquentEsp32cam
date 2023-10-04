@@ -16,9 +16,9 @@
 #define WIFI_SSID "SSID"
 #define WIFI_PASS "PASSWORD"
 
-#include "esp32camera.h"
-#include "esp32camera/extra/esp32/ntp.h"
-#include "esp32camera/extra/esp32/fs/sdmmc.h"
+#include <eloquent_esp32cam.h>
+#include <eloquent_esp32cam/extra/esp32/ntp.h>
+#include <eloquent_esp32cam/extra/esp32/fs/sdmmc.h>
 
 using namespace e;
 

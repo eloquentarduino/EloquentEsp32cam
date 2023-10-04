@@ -2,6 +2,6 @@
 #define ELOQUENT_ESP32CAM
 #define MJPEG_HTTP_PORT 81
 
-#include "./esp32camera/camera/Camera.h"
+#include "./eloquent_esp32cam/camera/camera.h"
 
 #endif

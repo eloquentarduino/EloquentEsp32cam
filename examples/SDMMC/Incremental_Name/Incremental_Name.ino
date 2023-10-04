@@ -12,8 +12,8 @@
  * to turn on debug messages
  */
 
-#include "esp32camera.h"
-#include "esp32camera/extra/esp32/fs/sdmmc.h"
+#include <eloquent_esp32cam.h>
+#include <eloquent_esp32cam/extra/esp32/fs/sdmmc.h>
 
 using namespace e;
 

@@ -22,11 +22,9 @@
 #define WIFI_PASS "PASSWORD"
 #define HOSTNAME "esp32cam"
 
-#include "esp32camera.h"
-#include "esp32camera/mjpeg.h"
+#include <eloquent_esp32cam.h>
+#include <eloquent_esp32cam/mjpeg.h>
 
-
-// this will import all global variables under the e(loquent) namespace
 using namespace e;
 
 

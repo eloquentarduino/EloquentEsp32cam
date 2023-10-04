@@ -11,9 +11,10 @@ namespace Eloquent {
                 /**
                  * 
                  */
-                Exception(const char* tag) {
-                    this->tag = tag;
-                    this->message = "";
+                Exception(const char* tag) : 
+                    _tag(tag), 
+                    _message(""),
+                    _isSevere(true) {
                 }
 
                 /**
@@ -27,18 +28,36 @@ namespace Eloquent {
                  * Test if there's an exception
                  */
                 bool isOk() const {
-                    return message == "";
+                    return _message == "";
+                }
+
+                /**
+                 * Test if exception is severe
+                 */
+                bool isSevere() const {
+                    return _isSevere && !isOk();
+                }
+
+                /**
+                 * Mark error as not severe
+                 */
+                Exception& soft() {
+                    _isSevere = false;
+
+                    return *this;
                 }
 
                 /**
                  * Set exception message
                  */
                 Exception& set(String error) {
-                    this->message = error;
+                    _message = error;
+                    _isSevere = true;
 
-                    if (error.length() > 0)
-                        //ESP_LOGE(tag, error);
-                        log_e("[%s] %s", tag, error.c_str());
+                    if (error.length() > 0) {
+                        const char *c_str = error.c_str();
+                        ESP_LOGE(_tag, "%s", c_str);
+                    }
 
                     return *this;
                 }
@@ -47,9 +66,7 @@ namespace Eloquent {
                  * Clear exception
                  */
                 Exception& clear() {
-                    this->message = "";
-
-                    return *this;
+                    return set("");
                 }
 
                 /**
@@ -66,7 +83,7 @@ namespace Eloquent {
                  * Convert exception to string
                  */
                 String toString() {
-                    return message;
+                    return _message;
                 }
 
                 /**
@@ -77,8 +94,9 @@ namespace Eloquent {
                 }
 
             protected:
-                const char* tag;
-                String message;
+                const char* _tag;
+                bool _isSevere;
+                String _message;
         };
     }
 }
