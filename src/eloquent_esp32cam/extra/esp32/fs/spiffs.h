@@ -38,6 +38,13 @@ namespace Eloquent {
                     /**
                      * 
                      */
+                    fs::FS& fs() {
+                        return SPIFFS;
+                    }
+
+                    /**
+                     * 
+                     */
                     void formatOnFail() {
                         format = true;
                     }

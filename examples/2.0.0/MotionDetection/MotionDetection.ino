@@ -1,5 +1,5 @@
 /**
- * Example: Motion detection
+ * Motion detection
  * Detect when the frame changes by a reasonable amount
  *
  * BE SURE TO SET "TOOLS > CORE DEBUG LEVEL = DEBUG"
@@ -61,17 +61,17 @@ void loop() {
 
     // convert JPEG to RGB565
     if (!camera.rgb565.convert().isOk()) {
-      Serial.println(camera.rgb565.exception.toString());
-      return;
+        Serial.println(camera.rgb565.exception.toString());
+        return;
     }
 
     // run motion detection
     if (!motion::detection.update(camera.rgb565).isOk()) {
-      Serial.println(motion::detection.exception.toString());
-      return;
+        Serial.println(motion::detection.exception.toString());
+        return;
     }
 
     // on motion, perform action
     if (motion::detection.triggered())
-      Serial.println("Motion detected");
+        Serial.println("Motion detected");
 }

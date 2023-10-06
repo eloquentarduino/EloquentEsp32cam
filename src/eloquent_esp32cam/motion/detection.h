@@ -3,9 +3,11 @@
 
 #include <dl_image.hpp>
 #include "../extra/exception.h"
+#include "../extra/time/benchmark.h"
 #include "../extra/time/rate_limit.h"
 
 using Eloquent::Extra::Exception;
+using Eloquent::Extra::Time::Benchmark;
 using Eloquent::Extra::Time::RateLimit;
 
 
@@ -19,7 +21,8 @@ namespace Eloquent {
                 public:
                     float moving_ratio;
                     Exception exception;
-                    RateLimit rate_limiter;
+                    Benchmark benchmark;
+                    RateLimit rate;
                     
                     /**
                      * 
@@ -76,27 +79,31 @@ namespace Eloquent {
                      */
                     template<typename Frame>
                     Exception& update(Frame& frame) {
+                        // first frame, only copy frame to prev
                         if (_prev == NULL) {
-                            _prev = (uint8_t*) malloc(frame.length);
-                            memcpy(_prev, frame.data, frame.length);
+                            _prev = (uint8_t*) malloc(frame.length * sizeof(uint16_t));
+                            copy(frame);
 
                             return exception.set("First frame, can't detect motion").soft();
                         }
 
-                        if (!rate_limiter) {
-                            // update prev, but don't run prediction
-                            memcpy(_prev, frame.data, frame.length);
+                        // rate limited, copy frame but don't run detection
+                        if (!rate) {
+                            copy(frame);
 
-                            return exception.set(rate_limiter.getRetryInMessage());
+                            return exception.set(rate.getRetryInMessage()).soft();
                         }
 
-                        int movingPoints = dl::image::get_moving_point_number((uint16_t *) frame.data, (uint16_t*) _prev, frame.height, frame.width, _stride, _threshold);
-                        moving_ratio = ((float) movingPoints) / frame.length * _stride * _stride;
-                        memcpy(_prev, frame.data, frame.length);
-                        ESP_LOGD("MotionDetection", "moving points: %d (%.2f)", movingPoints, movingRatio);
+                        benchmark.timeit([this, &frame]() {
+                            int movingPoints = dl::image::get_moving_point_number((uint16_t *) frame.data, (uint16_t*) _prev, frame.height, frame.width, _stride, _threshold);
+                            moving_ratio = ((float) movingPoints) / frame.length * _stride * _stride;
+                            copy(frame);
+                        });
+                        
+                        ESP_LOGD("MotionDetection", "moving points: %.2f%%", moving_ratio);
 
                         if (triggered())
-                            rate_limiter.touch();
+                            rate.touch();
 
                         return exception.clear();
                     }
@@ -106,13 +113,23 @@ namespace Eloquent {
                     uint8_t _stride;
                     uint8_t _threshold;
                     float _ratio;
+
+                    /**
+                     * 
+                     */
+                    template<typename Frame>
+                    void copy(Frame frame) {
+                        memcpy(_prev, frame.data, frame.length);
+                    }
             };
         }
     }
 }
 
 namespace e {
-    static Eloquent::Esp32cam::Motion::Detection motion_detection;
+    namespace motion {
+        static Eloquent::Esp32cam::Motion::Detection detection;
+    }
 }
 
 #endif

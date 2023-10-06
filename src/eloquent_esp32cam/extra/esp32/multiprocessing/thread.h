@@ -83,16 +83,15 @@ namespace Eloquent {
                      */
                     template<typename Task>
                     void run(Task task) {
-                        ESP_LOGI(name, "Starting thread with stack size = %d bytes on core %d", (int) stackSize, (int) core);
+                        ESP_LOGI(name, "Starting thread with stack size %d bytes on core %d", (int) stackSize, (int) core);
 
                         xTaskCreate(
-                                task,      // Function to implement the task
-                                name,      // Name of the task
-                                stackSize, // Stack size in bytes
-                                args,      // Task input parameter
-                                priority,  // Priority of the task
-                                NULL      // Task handle.
-                                // core       // Core where the task should run
+                            task,      // Function to implement the task
+                            name,      // Name of the task
+                            stackSize, // Stack size in bytes
+                            args,      // Task input parameter
+                            priority,  // Priority of the task
+                            NULL       // Task handle.
                         );
                     }
 

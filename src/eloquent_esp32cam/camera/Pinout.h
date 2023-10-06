@@ -178,7 +178,7 @@ namespace Eloquent {
                 /**
                  * 
                  */
-                void freenove_s3() {
+                void freenove_camera_s3() {
                     wroom_s3();
                 }
 

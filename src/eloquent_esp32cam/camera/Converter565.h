@@ -110,7 +110,7 @@ namespace Eloquent {
                             width = camera->resolution.getWidth() / 8;
                             height = camera->resolution.getHeight() / 8;
                             size = width * height;
-                            length = size * 2;
+                            length = size * sizeof(uint16_t);
 
                             ESP_LOGI("Camera", "Allocating %d bytes for %dx%d RGB565 image", length, width, height);
                             data = (uint8_t*) malloc(length);

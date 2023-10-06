@@ -34,6 +34,9 @@
         "functional": "cpp",
         "sstream": "cpp",
         "stdexcept": "cpp",
-        "__string": "cpp"
+        "__string": "cpp",
+        "limits": "cpp",
+        "semaphore": "cpp",
+        "ratio": "cpp"
     }
 }

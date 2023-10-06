@@ -82,8 +82,15 @@ namespace Eloquent {
                 /**
                  * Convert exception to string
                  */
-                String toString() {
+                inline String toString() {
                     return _message;
+                }
+
+                /**
+                 * Convert exception to char*
+                 */
+                inline const char* toCString() {
+                    return toString().c_str();
                 }
 
                 /**

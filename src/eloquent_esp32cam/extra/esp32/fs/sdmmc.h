@@ -38,6 +38,13 @@ namespace Eloquent {
 
                     /**
                      * 
+                     */
+                    fs::FS& fs() {
+                        return SD_MMC;
+                    }
+
+                    /**
+                     * 
                     */
                     void mountAt(String mountpoint) {
                         root = mountpoint;

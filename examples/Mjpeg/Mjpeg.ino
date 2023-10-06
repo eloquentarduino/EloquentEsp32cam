@@ -23,7 +23,7 @@
 #define HOSTNAME "esp32cam"
 
 #include <eloquent_esp32cam.h>
-#include <eloquent_esp32cam/mjpeg.h>
+#include <eloquent_esp32cam/viz/mjpeg.h>
 
 using namespace e;
 

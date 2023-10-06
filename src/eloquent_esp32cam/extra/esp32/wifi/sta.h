@@ -48,8 +48,12 @@ namespace Eloquent {
                         Exception& connect(const char *ssid, const char* password, size_t timeout = 20000) {
                             ESP_LOGI("WiFi", "Connecting to %s...", ssid);
                             WiFi.mode(WIFI_STA);
-                            WiFi.disconnect();
+                            WiFi.disconnect(true, true);
                             WiFi.begin(ssid, password);
+                            /*WiFi.persistent(true);
+                            WiFi.setAutoConnect(false);
+                            WiFi.setAutoReconnect(true);
+                            WiFi.setTxPower(WIFI_POWER_2dBm);*/
 
                             timeout += millis();
 
@@ -64,7 +68,7 @@ namespace Eloquent {
                                     return exception.clear();
                                 }
 
-                                delay(100);
+                                delay(50);
                             }
 
                             if (WiFi.status() == 1)
