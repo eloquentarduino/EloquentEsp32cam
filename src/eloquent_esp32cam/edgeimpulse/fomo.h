@@ -30,7 +30,7 @@
                      */
                     FOMO() :
                         exception("FOMO"),
-                        isDebugEnabled(false) {
+                        _isDebugEnabled(false) {
                             isRGB = (EI_CLASSIFIER_NN_INPUT_FRAME_SIZE / EI_CLASSIFIER_RAW_SAMPLE_COUNT) > 1;
                             signal.total_length = EI_CLASSIFIER_RAW_SAMPLE_COUNT;
                             signal.get_data = [this](size_t offset, size_t length, float *out) {
@@ -47,7 +47,7 @@
                      * @param enabled
                      */
                     void debug(bool enabled = true) {
-                        isDebugEnabled = enabled;
+                        _isDebugEnabled = enabled;
                     }
 
                     /**
@@ -79,21 +79,21 @@
                      */
                     Exception& detectObjects() {
                         if (!camera.hasFrame())
-                            return exception.set("Cannot predict from empty frame");
+                            return exception.set("Cannot detect objects in empty frame");
 
                         if (!camera.rgb565.convert().isOk())
-                            return exception.set("Cannot convert to RGB565");
+                            return exception.set("Cannot convert frame to RGB565");
 
                         if (!isRGB)
                             camera.rgb565.toGrayscale();
 
                         benchmark.start();
                         crop();
-                        error = run_classifier(&signal, &result, isDebugEnabled);
+                        error = run_classifier(&signal, &result, _isDebugEnabled);
                         benchmark.stop();
 
                         if (error != EI_IMPULSE_OK)
-                            return exception.set(String("Failed to run classifier. Error code ") + error);
+                            return exception.set(String("Failed to run classifier with error code ") + error);
 
                         return exception.clear();
                     }
@@ -101,7 +101,7 @@
                     /**
                      * Check if objects were found
                      */
-                    bool hasObjects() {
+                    bool found() {
                         return result.bounding_boxes[0].value != 0;
                     }
 
@@ -142,7 +142,7 @@
                     }
 
                 protected:
-                    bool isDebugEnabled;
+                    bool _isDebugEnabled;
                     bool isRGB;
 
                     /**

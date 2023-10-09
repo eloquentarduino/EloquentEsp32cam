@@ -21,13 +21,28 @@ namespace Eloquent {
                     struct {
                         uint16_t x;
                         uint16_t y;
-                    } left_eye, right_eye, nose, left_mounth, right_mounth;
+                    } leftEye, rightEye, nose, leftMouth, rightMouth;
                     std::list<dl::detect::result_t>::iterator result;
 
                     /**
                      * 
                      */
-                    Face(std::list<dl::detect::result_t>::iterator res) : result(result) {
+                    Face() {
+                    }
+
+                    /**
+                     * Check if face has keypoints
+                     */
+                    bool hasKeypoints() {
+                        return leftEye.x != rightEye.x;
+                    }
+
+                    /**
+                     * Fill data from face detection result
+                     */
+                    void fill(std::list<dl::detect::result_t>::iterator res) {
+                        result = res;
+
                         x = x0 = result->box[0];
                         y = y0 = result->box[1];
                         x1 = result->box[2];
@@ -36,17 +51,40 @@ namespace Eloquent {
                         height = y1 - y0 + 1;
 
                         if (result->keypoint.size() == 10) {
-                            left_eye.x = result->keypoint[0];
-                            left_eye.y = result->keypoint[1];
-                            left_mounth.x = result->keypoint[2];
-                            left_mounth.y = result->keypoint[3];
+                            leftEye.x = result->keypoint[0];
+                            leftEye.y = result->keypoint[1];
+                            leftMouth.x = result->keypoint[2];
+                            leftMouth.y = result->keypoint[3];
                             nose.x = result->keypoint[4];
                             nose.y = result->keypoint[5];
-                            right_eye.x = result->keypoint[6];
-                            right_eye.y = result->keypoint[7];
-                            right_mounth.x = result->keypoint[8];
-                            right_mounth.y = result->keypoint[9];
+                            rightEye.x = result->keypoint[6];
+                            rightEye.y = result->keypoint[7];
+                            rightMouth.x = result->keypoint[8];
+                            rightMouth.y = result->keypoint[9];
                         }
+                    }
+
+                    /**
+                     * Clear all coordinates
+                     */
+                    void clear() {
+                        x = x0 = 0;
+                        y = y0 = 0;
+                        x1 = 0;
+                        y1 = 0;
+                        width = 0;
+                        height = 0;
+
+                        leftEye.x = 0;
+                        leftEye.y = 0;
+                        leftMouth.x = 0;
+                        leftMouth.y = 0;
+                        nose.x = 0;
+                        nose.y = 0;
+                        rightEye.x = 0;
+                        rightEye.y = 0;
+                        rightMouth.x = 0;
+                        rightMouth.y = 0;
                     }
 
                     /**
@@ -71,9 +109,9 @@ namespace Eloquent {
     }
 }
 
-// create alias
+// create class alias
 namespace e {
-    class face_t : public Eloquent::Esp32cam::Face::Face {};
+    typedef Eloquent::Esp32cam::Face::Face face_t; 
 }
 
 #endif

@@ -3,17 +3,16 @@
 
 #include <human_face_detect_msr01.hpp>
 #include <human_face_detect_mnp01.hpp>
-#include "../camera/Camera.h"
+#include "../camera/camera.h"
 #include "../extra/exception.h"
-#include "../extra/benchmark.h"
+#include "../extra/time/benchmark.h"
 #include "./msr_config.h"
 #include "./mnp_config.h"
 #include "./face_t.h"
 
 using namespace e;
-using Eloquent::Extra::Benchmark;
 using Eloquent::Extra::Exception;
-using Eloquent::Esp32cam::Camera::Camera;
+using Eloquent::Extra::Time::Benchmark;
 
 
 namespace Eloquent {
@@ -29,6 +28,7 @@ namespace Eloquent {
                     MSRConfig msr;
                     MNPConfig mnp;
                     std::list<dl::detect::result_t> *results;
+                    face_t first;
                     uint8_t image[240 * 240 * 3];
 
                     /**
@@ -73,13 +73,14 @@ namespace Eloquent {
 
                         benchmark.start();
 
-                        //if (!jpg2rgb565(fb->buf, fb->len, image, JPG_SCALE_NONE))
                         if (!fmt2rgb888(fb->buf, fb->len, fb->format, image))
-                            return exception.set("Cannot convert JPG frame to RGB565");
+                            return exception.set("Cannot convert JPG frame to RGB888");
 
                         int width = fb->width;
                         int height = fb->height;
                         std::vector<int> shape = {width, height, 3};
+
+                        first.clear();
 
                         if (useTwoStageDetection) {
                             HumanFaceDetectMSR01 s1(
@@ -110,21 +111,29 @@ namespace Eloquent {
 
                         benchmark.stop();
 
+                        // keep track of first face, if any
+                        if (found()) {
+                            for (std::list<dl::detect::result_t>::iterator prediction = results->begin(); prediction != results->end(); prediction++) {
+                                first.fill(prediction);
+                                break;
+                            }
+                        }
+                        
                         return exception.clear();
                     }
 
                     /**
                      * Test if no face was in the frame
                      */
-                    inline bool isEmpty() {
+                    inline bool notFound() {
                         return results == NULL || results->size() == 0;
                     }
 
                     /**
                      * Test if any face was in the frame
                      */
-                    inline bool isNotEmpty() {
-                        return !isEmpty();
+                    inline bool found() {
+                        return !notFound();
                     }
 
                     /**
@@ -132,13 +141,14 @@ namespace Eloquent {
                      */
                     template<typename Callback>
                     void forEach(Callback callback) {
-                        if (isEmpty())
+                        if (notFound())
                             return;
 
                         int i = 0;
 
                         for (std::list<dl::detect::result_t>::iterator prediction = results->begin(); prediction != results->end(); prediction++, i++) {
-                            Face face(prediction);
+                            face_t face;
+                            face.fill(prediction);
                             callback(i, face);
                         }
                     }
@@ -151,7 +161,9 @@ namespace Eloquent {
 }
 
 namespace e {
-    static Eloquent::Esp32cam::Face::FaceDetection faceDetector;
+    namespace face {
+        static Eloquent::Esp32cam::Face::FaceDetection detection;
+    }
 }
 
 #endif

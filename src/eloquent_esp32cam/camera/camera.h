@@ -2,13 +2,13 @@
 #define ELOQUENT_ESP32CAMERA_CAMERA_CAMERA
 
 #include <esp_camera.h>
-#include "./JpegQuality.h"
-#include "./Brownout.h"
-#include "./XCLK.h"
-#include "./Resolution.h"
-#include "./Pinout.h"
-#include "./Sensor.h"
-#include "./Converter565.h"
+#include "./quality.h"
+#include "./brownout.h"
+#include "./xclk.h"
+#include "./resolution.h"
+#include "./pinout.h"
+#include "./sensor.h"
+#include "./rgb_565.h"
 #include "../extra/exception.h"
 #include "../extra/time/rate_limit.h"
 

@@ -9,3 +9,4 @@ src/deprecated
 _src
 sketches
 paid_examples
+src/eloquent_esp32cam/avi/libavi.h
