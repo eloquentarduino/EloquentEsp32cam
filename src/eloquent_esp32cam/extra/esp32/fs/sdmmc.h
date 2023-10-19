@@ -94,6 +94,24 @@ namespace Eloquent {
                     }
 
                     /**
+                     * Write string content
+                     */
+                    WriteSession& save(const char *content) {
+                        session.open(content);
+
+                        return session;
+                    }
+
+                    /**
+                     * Write string content
+                     */
+                    WriteSession& save(String& content) {
+                        session.open(content.c_str());
+
+                        return session;
+                    }
+
+                    /**
                      * See save(data, length)
                      */
                     template<typename BinaryContent>

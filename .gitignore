@@ -1,12 +1,7 @@
-cmake-build-debug
-.idea
 publish
-todo
-html
-docs
-assets
-src/deprecated
-_src
-sketches
-paid_examples
+ignore
+examples/ignore
 src/eloquent_esp32cam/avi/libavi.h
+.DS_Store
+.vscode
+.idea

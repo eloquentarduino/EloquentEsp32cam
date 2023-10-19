@@ -117,6 +117,13 @@ namespace Eloquent {
                     }
 
                     /**
+                     * Get time as string
+                     */
+                    String time() {
+                        return format("%H%M%S");
+                    }
+
+                    /**
                      * Get datetime as string
                      */
                     String datetime() {

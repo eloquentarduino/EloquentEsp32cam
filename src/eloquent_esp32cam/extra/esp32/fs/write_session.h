@@ -20,6 +20,7 @@ namespace Eloquent {
                     public:
                         char *mode;
                         uint8_t *data;
+                        char *text;
                         size_t length;
                         String folder;
                         String lastFilename;
@@ -34,6 +35,7 @@ namespace Eloquent {
                             fsystem(filesystem),
                             mode("wb"),
                             data(NULL),
+                            text(NULL),
                             length(0),
                             folder(""),
                             lastFilename(""),
@@ -44,12 +46,23 @@ namespace Eloquent {
                             }
 
                         /**
-                         * Set data
+                         * Set binary data
                         */
-                        void open(uint8_t *data, size_t length) {
-                            this->data = data;
-                            this->length = length;
-                            this->mode = (char*) "wb";
+                        void open(uint8_t *content, size_t size) {
+                            data = content;
+                            length = size;
+                            text = NULL;
+                            mode = (char*) "wb";
+                        }
+
+                        /**
+                         * Set string data
+                         */
+                        void open(const char* content) {
+                            data = NULL;
+                            length = 0;
+                            text = (char*) content;
+                            mode = (char*) "w";
                         }
 
                         /**
@@ -74,8 +87,8 @@ namespace Eloquent {
                          * 
                          */
                         Exception& to(String filename, String ext = "") {
-                            if (data == NULL || length == 0)
-                                return exception.set("Cannot write empty data");
+                            if ((data == NULL || length == 0) && (text == NULL))
+                                return close("Cannot write empty data");
 
                             if (filename == "")
                                 filename = counter.nextString();
@@ -93,24 +106,39 @@ namespace Eloquent {
                             filename = toAbs(filename);
                             filename.replace("//", "/");
 
-                            // write binary
+                            // write binary data
                             if (mode == "wb") {
                                 const char *fname = filename.c_str();
                                 ESP_LOGI("WriteSession", "Writing %d bytes to file %s", length, fname);
                             
-                                auto file = fsystem->open(filename, mode);
+                                auto file = fsystem->open(filename, "wb");
 
                                 if (!file)
-                                    return exception.set(String("Cannot open file ") + filename);
+                                    return close(String("Cannot open file ") + filename);
 
                                 size_t written = file.write(data, length);
                                 file.close();
 
                                 if (written != length)
-                                    return exception.set(String("Write length mismatch: written ") + written + " vs " + length + " expected");
+                                    return close(String("Write length mismatch: written ") + written + " vs " + length + " expected");
                             }
 
-                            return exception.clear();
+                            // write string data
+                            if (mode == "w") {
+                                const char *fname = filename.c_str();
+                                const uint16_t fsize = strlen(text);
+                                ESP_LOGI("WriteSession", "Writing %d chars to file %s", fsize, fname);
+                            
+                                auto file = fsystem->open(filename, "w");
+
+                                if (!file)
+                                    return close(String("Cannot open file ") + filename);
+
+                                file.print(text);
+                                file.close();
+                            }
+
+                            return close("");
                         }
 
                     protected:
@@ -128,6 +156,17 @@ namespace Eloquent {
                          */
                         String untrail(String path) {
                             return path.endsWith("/") ? path.substring(0, path.length() - 1) : path;
+                        }
+
+                        /**
+                         * Close session
+                         */
+                        Exception& close(String error) {
+                            data = NULL;
+                            text = NULL;
+                            length = 0;
+
+                            return exception.set(error);
                         }
                 };
             }

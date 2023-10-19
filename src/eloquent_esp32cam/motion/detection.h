@@ -78,7 +78,7 @@ namespace Eloquent {
                      * 
                      */
                     template<typename Frame>
-                    Exception& update(Frame& frame) {
+                    Exception& detect(Frame& frame) {
                         // first frame, only copy frame to prev
                         if (_prev == NULL) {
                             _prev = (uint8_t*) malloc(frame.length * sizeof(uint16_t));

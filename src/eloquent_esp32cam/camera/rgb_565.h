@@ -17,9 +17,8 @@ namespace Eloquent {
                 public:
                     Camera *camera;
                     Exception exception;
-                    uint8_t *data;
+                    uint16_t *data;
                     size_t length;
-                    size_t size;
                     size_t width;
                     size_t height;
 
@@ -31,29 +30,20 @@ namespace Eloquent {
                         camera(cam),
                         length(0),
                         width(0),
-                        size(0),
-                        height(0),
-                        isGrayscale(false) {
+                        height(0) {
                     }
 
                     /**
                      * Access data at given index
                      */
                     uint16_t operator[](size_t i) {
-                        if (i >= size)
+                        if (i >= length)
                             return 0;
 
                         if (data == NULL)
                             return 0;
 
-                        if (isGrayscale)
-                            return data[i];
-
-                        i *= 2;
-                        const uint16_t high = data[i];
-                        const uint16_t low = data[i + 1];
-
-                        return (high << 8) | low;
+                        return data[i];
                     }
 
                     /**
@@ -88,9 +78,6 @@ namespace Eloquent {
                     uint32_t as888(size_t i) {
                         uint32_t pixel = (*this)[i];
 
-                        if (isGrayscale)
-                            return (pixel << 16) | (pixel << 8) | pixel;
-
                         const int r = (pixel >> 11) & 0x1F;
                         const int g = (pixel >> 5) & 0x3F;
                         const int b = pixel & 0x1F;
@@ -109,20 +96,18 @@ namespace Eloquent {
                         if (!width) {
                             width = camera->resolution.getWidth() / 8;
                             height = camera->resolution.getHeight() / 8;
-                            size = width * height;
-                            length = size * sizeof(uint16_t);
+                            length = width * height;
 
-                            ESP_LOGI("Camera", "Allocating %d bytes for %dx%d RGB565 image", length, width, height);
-                            data = (uint8_t*) malloc(length);
+                            ESP_LOGI("Camera", "Allocating %d bytes for %dx%d RGB565 image", length * 2, width, height);
+                            data = (uint16_t*) malloc(length * 2);
                         }
 
                         if (data == NULL)
                             return exception.set("Cannot allocate memory");
 
-                        if (!jpg2rgb565(camera->frame->buf, camera->frame->len, data, JPG_SCALE_8X))
+                        if (!jpg2rgb565(camera->frame->buf, camera->frame->len, (uint8_t*) data, JPG_SCALE_8X))
                             return exception.set("Error converting frame");
 
-                        isGrayscale = false;
                         swapBytes();
 
                         return exception.clear();
@@ -133,35 +118,14 @@ namespace Eloquent {
                      * Use this function to revert the swap
                      */
                     void swapBytes() {
-                        for (size_t i = 0; i < length; i += 2) {
-                            const uint8_t a = data[i];
-                            const uint8_t b = data[i + 1];
+                        for (size_t i = 0; i < length; i++) {
+                            const uint16_t pixel = data[i];
+                            const uint16_t h = (pixel >> 8);
+                            const uint16_t l = pixel & 0xFF;
 
-                            data[i] = b;
-                            data[i + 1] = a;
+                            data[i] = (l << 8) | h;
                         }
                     }
-
-                    /**
-                     * Convert to grayscale
-                     */
-                    void toGrayscale() {
-                        for (size_t i = 0; i < length; i += 2) {
-                            const uint16_t high = data[i];
-                            const uint16_t low = data[i + 1];
-                            const uint16_t pixel = (high << 8) | low;
-                            const int r = (pixel >> 11) & 0x1F;
-                            const int g = (pixel >> 5) & 0x3F;
-                            const int b = pixel & 0x1F;
-
-                            data[i >> 1] = constrain((r * 38 + g * 75 + b * 15) >> 7, 0, 255);
-                        }
-
-                        isGrayscale = true;
-                    }
-
-                protected:
-                    bool isGrayscale;
             };
         }
     }
