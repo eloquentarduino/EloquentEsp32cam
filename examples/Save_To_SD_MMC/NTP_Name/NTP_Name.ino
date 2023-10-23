@@ -109,7 +109,10 @@ void loop() {
     else Serial.println(sdmmc.session.exception.toString());
 
     // save under nested directory
-    if (sdmmc.save(camera.frame).inside(ntp.date()).to(ntp.datetime(), "jpg").isOk()) {
+    String date = ntp.date();
+    String datetime = ntp.datetime();
+
+    if (sdmmc.save(camera.frame).inside(date).to(datetime, "jpg").isOk()) {
       Serial.print("File written to ");
       Serial.println(sdmmc.session.lastFilename);
     }
