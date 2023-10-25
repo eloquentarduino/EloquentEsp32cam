@@ -16,7 +16,7 @@
 #include <eloquent_esp32cam/motion/detection.h>
 #include <eloquent_esp32cam/extra/esp32/telegram.h>
 
-using namespace e;
+using namespace eloq;
 
 
 /**

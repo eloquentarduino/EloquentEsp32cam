@@ -110,7 +110,7 @@ namespace Eloquent {
 }
 
 // create class alias
-namespace e {
+namespace eloq {
     typedef Eloquent::Esp32cam::Face::Face face_t; 
 }
 

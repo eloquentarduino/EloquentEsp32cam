@@ -149,7 +149,7 @@ namespace Eloquent {
     }
 }
 
-namespace e {
+namespace eloq {
     namespace motion {
         // create class alias
         class RoI : public Eloquent::Esp32cam::Motion::RoI {};

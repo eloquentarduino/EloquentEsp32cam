@@ -14,7 +14,7 @@
 #include <eloquent_esp32cam.h>
 #include <eloquent_esp32cam/extra/esp32/fs/sdmmc.h>
 
-using namespace e;
+using namespace eloq;
 
 
 void setup() {

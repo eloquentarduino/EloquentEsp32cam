@@ -73,7 +73,7 @@ namespace Eloquent {
     }
 }
 
-namespace e {
+namespace eloq {
     static Eloquent::Esp32cam::Face::FaceDetectionServer faceDetectionServer;
 }
 

@@ -6,7 +6,7 @@
 #include "../extra/esp32/wifi/sta.h"
 #include "../extra/esp32/http/server.h"
 
-using namespace e;
+using namespace eloq;
 using Eloquent::Extra::Exception;
 using Eloquent::Extra::Esp32::Http::HttpServer;
 
@@ -113,8 +113,10 @@ namespace Eloquent {
     }
 }
 
-namespace e {
-    static Eloquent::Esp32cam::Viz::Mjpeg mjpeg;
+namespace eloq {
+    namespace viz {
+        static Eloquent::Esp32cam::Viz::Mjpeg mjpeg;
+    }
 }
 
 #endif

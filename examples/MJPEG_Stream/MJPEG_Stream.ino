@@ -13,19 +13,20 @@
  */
 
 // if you define WIFI_SSID and WIFI_PASS before importing the library, 
-// you can call connect() instead of connect(ssid, pass) on the wifi object
+// you can call connect() instead of connect(ssid, pass)
 //
 // If you set HOSTNAME and your router supports mDNS, you can access
 // the camera at http://{HOSTNAME}.local
 
 #define WIFI_SSID "SSID"
 #define WIFI_PASS "PASSWORD"
-#define HOSTNAME "esp32cam"
+#define HOSTNAME  "esp32cam"
 
 #include <eloquent_esp32cam.h>
 #include <eloquent_esp32cam/viz/mjpeg.h>
 
-using namespace e;
+using namespace eloq;
+using namespace eloq::viz;
 
 
 /**
@@ -49,13 +50,14 @@ void setup() {
 
     // connect to WiFi
     while (!wifi.connect().isOk())
-      Serial.println(wifi.exception.toString());
+        Serial.println(wifi.exception.toString());
 
     // start mjpeg http server
     while (!mjpeg.begin().isOk())
         Serial.println(mjpeg.exception.toString());
 
     Serial.println("Camera OK");
+    Serial.println("WiFi OK");
     Serial.println("MjpegStream OK");
     Serial.println(mjpeg.address());
 }

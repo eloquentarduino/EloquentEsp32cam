@@ -1,11 +1,10 @@
-#ifndef ELOQUENT_ESP32CAM_EDGEIMPULSE_FOMO_S3_H
-#define ELOQUENT_ESP32CAM_EDGEIMPULSE_FOMO_S3_H
+#ifndef ELOQUENT_ESP32CAM_EDGEIMPULSE_FOMO_H
+#define ELOQUENT_ESP32CAM_EDGEIMPULSE_FOMO_H
 
 #if defined(EI_CLASSIFIER_OBJECT_DETECTION)
     #include <edge-impulse-sdk/dsp/image/image.hpp>
     #include "../extra/exception.h"
     #include "../extra/time/benchmark.h"
-    #include "../transform/crop.h"
     #include "./bbox.h"
 
     using Eloquent::Extra::Exception;
@@ -18,40 +17,46 @@
                 /**
                  * Run Edge Impulse FOMO model
                  */
-                class FOMOS3 {
+                class FOMO {
                 public:
                     ei::signal_t signal;
                     ei_impulse_result_t result;
                     EI_IMPULSE_ERROR error;
                     Exception exception;
                     Benchmark benchmark;
-                    uint8_t input[EI_CLASSIFIER_NN_INPUT_FRAME_SIZE];
-                    bool isRGB;
+                    uint16_t input[EI_CLASSIFIER_RAW_SAMPLE_COUNT];
                     bbox_t first;
 
                     /**
                      *
                      */
-                    FOMOS3() :
+                    FOMO() :
                         exception("FOMO"),
                         first(0, 0, 0, 0, 0),
                         _isDebugEnabled(false) {
-                            isRGB = (EI_CLASSIFIER_NN_INPUT_FRAME_SIZE / EI_CLASSIFIER_RAW_SAMPLE_COUNT) > 1;
                             signal.total_length = EI_CLASSIFIER_RAW_SAMPLE_COUNT;
                             signal.get_data = [this](size_t offset, size_t length, float *out) {
-                                if (isRGB) {
-                                    for (size_t i = 0, off = offset * 3; i < length; i++, off += 3) {
-                                        const uint32_t r = input[off + 0];
-                                        const uint32_t g = input[off + 1];
-                                        const uint32_t b = input[off + 2];
+                                const size_t i = 0;
+                                const size_t end = offset + length;
 
-                                        out[i] = (r << 16) | (g << 8) | b;
-                                    }
-                                }
-                                else {
-                                    for (size_t i = 0; i < length; i++) {
-                                        const uint32_t gray = input[offset + i];
-                                        out[i] = (gray << 16) | (gray << 8) | gray;
+                                for (int y = 0; y < EI_CLASSIFIER_INPUT_HEIGHT; y++) {
+                                    const size_t offset_y = y * 2 * EI_CLASSIFIER_INPUT_WIDTH;
+
+                                    for (int x = 0; x < EI_CLASSIFIER_INPUT_WIDTH; x++) {
+                                        if (i >= end)
+                                            break;
+
+                                        if (i >= offset) {
+                                            const uint16_t pixel = input[offset_y + x + x];
+                                            const uint16_t r = (pixel & 0b1111100000000000) >> 11;
+                                            const uint16_t b = (pixel & 0b111111000000) >> 6; // 5 bit also for green
+                                            const uint16_t g = (pixel & 0b11111);
+                                            const uint32_t gray = (r + g + b) / 3;
+
+                                            out[i] = (gray << 16) | (gray << 8) | gray;
+                                        }
+
+                                        i += 1;
                                     }
                                 }
 
@@ -97,19 +102,20 @@
                      */
                     template<typename Frame>
                     Exception& detectObjects(Frame& frame) {
+                        if (camera.resolution.getWidth() != 96)
+                            return exception.set("FOMO only works with camera.resolution.yolo()");
+
+                        if (camera.resolution.getHeight() != 96)
+                            return exception.set("FOMO only works with camera.resolution.yolo()");
+
+                        if (!camera.pixformat.isRGB565())
+                            return exception.set("FOMO only works with camera.pixformat.rgb565()");
+
                         if (!frame.length)
                             return exception.set("Cannot run FOMO on empty image");
 
                         benchmark.start();
-                        // crop squash
-                        crop
-                            .from(frame)
-                            .to(EI_CLASSIFIER_INPUT_WIDTH, EI_CLASSIFIER_INPUT_HEIGHT)
-                            .squash()
-                            .rgb(isRGB)
-                            .nearest()
-                            .apply(input);
-
+                        crop();
                         error = run_classifier(&signal, &result, _isDebugEnabled);
                         benchmark.stop();
 
@@ -180,36 +186,16 @@
                     bool _isDebugEnabled;
 
                     /**
-                     * 
+                     * Allow overriding
                      */
-                    void _crop() {
-                        /*const float src_width = camera.rgb565.width;
-                        const float src_height = camera.rgb565.height;
-                        const size_t limit = (src_width - 1) * (src_height * 1);
-                        const float dx = src_width / EI_CLASSIFIER_INPUT_WIDTH;
-                        const float dy = src_height / EI_CLASSIFIER_INPUT_HEIGHT;
-
-                        for (size_t y = 0; y < EI_CLASSIFIER_INPUT_HEIGHT; y++) {
-                            const size_t dest_y = y * EI_CLASSIFIER_INPUT_WIDTH;
-                            const size_t src_y = constrain(dy * y, 0, src_height - 1);
-                            const size_t offset_y = src_y * src_width;
-                            
-                            for (size_t x = 0; x < EI_CLASSIFIER_INPUT_WIDTH; x++) {
-                                const size_t pixel_offset = offset_y + constrain(x * dy, 0, src_width - 1);
-                                //const uint32_t pixel = camera.rgb565.as888(pixel_offset);
-                                const uint32_t pixel = 0; // todo
-
-                                data[dest_y + x] = pixel;
-                            }
-                        }*/
-                    }
+                    virtual void crop() {}
                 };
             }
         }
     }
 
     namespace eloq {
-        static Eloquent::Esp32cam::EdgeImpulse::FOMOS3 fomo;
+        static Eloquent::Esp32cam::EdgeImpulse::FOMO fomo;
     }
 
 #else

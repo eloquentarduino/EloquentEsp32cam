@@ -8,7 +8,7 @@
 #include "./wifi/sta.h"
 #include "../exception.h"
 
-using namespace e;
+using namespace eloq;
 using Eloquent::Extra::Exception;
 
 static const char _TELEGRAM_CERT[] PROGMEM = R"EOF(
@@ -239,7 +239,7 @@ namespace Eloquent {
 }
 
 
-namespace e {
+namespace eloq {
     static Eloquent::Extra::Esp32::Telegram telegram;
 }
 

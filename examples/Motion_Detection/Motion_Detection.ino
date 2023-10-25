@@ -8,7 +8,7 @@
 #include <eloquent_esp32cam.h>
 #include <eloquent_esp32cam/motion/detection.h>
 
-using namespace e;
+using namespace eloq;
 
 
 /**

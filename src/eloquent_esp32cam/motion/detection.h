@@ -126,7 +126,7 @@ namespace Eloquent {
     }
 }
 
-namespace e {
+namespace eloq {
     namespace motion {
         static Eloquent::Esp32cam::Motion::Detection detection;
     }

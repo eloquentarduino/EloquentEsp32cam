@@ -7,7 +7,7 @@
 #include "../../motion/roi_detection.h"
 #include "../mjpeg.h"
 
-using namespace e;
+using namespace eloq;
 using Eloquent::Extra::Exception;
 using Eloquent::Extra::Esp32::Http::HttpServer;
 using Eloquent::Esp32cam::Motion::RoI;
@@ -121,7 +121,7 @@ namespace Eloquent {
     }
 }
 
-namespace e {
+namespace eloq {
     static Eloquent::Esp32cam::Viz::Motion::RoIMotionDetection roiViz;
 }
 

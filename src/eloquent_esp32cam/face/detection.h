@@ -10,7 +10,7 @@
 #include "./mnp_config.h"
 #include "./face_t.h"
 
-using namespace e;
+using namespace eloq;
 using Eloquent::Extra::Exception;
 using Eloquent::Extra::Time::Benchmark;
 
@@ -160,7 +160,7 @@ namespace Eloquent {
     }
 }
 
-namespace e {
+namespace eloq {
     namespace face {
         static Eloquent::Esp32cam::Face::FaceDetection detection;
     }

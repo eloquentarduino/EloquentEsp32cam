@@ -7,7 +7,7 @@
 #include "../wifi/sta.h"
 #include "../multiprocessing/thread.h"
 
-using namespace e;
+using namespace eloq;
 using Eloquent::Extra::Exception;
 using Eloquent::Extra::Esp32::Multiprocessing::Thread;
 

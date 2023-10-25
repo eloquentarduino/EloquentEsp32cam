@@ -1,7 +1,5 @@
 /**
- * Example 3: Get your First picture
- * This sketch shows the basic code you need to take a picture
- * from your Esp32 camera.
+ * Get your first picture with ESP32
  *
  * Open the Serial Monitor and enter 'capture' (without quotes)
  * to capture a new image
@@ -9,11 +7,11 @@
  * BE SURE TO SET "TOOLS > CORE DEBUG LEVEL = INFO"
  * to turn on debug messages
  */
-#include "esp32camera.h"
+#include <eloquent_esp32cam.h>
 
-// all esp32camera objects (e.g. `camera`) 
-// are scoped under the `e` namespace
-using namespace e;
+// all global objects (e.g. `camera`) 
+// are scoped under the `eloq` namespace
+using namespace eloq;
 
 
 /**
@@ -69,12 +67,22 @@ void setup() {
         Serial.println(camera.exception.toString());
 
     Serial.println("Camera OK");
+    Serial.println("Enter 'capture' (without quotes) to shot");
 }
 
 /**
  *
  */
 void loop() {
+    // await for Serial command
+    if (!Serial.available())
+        return;
+
+    if (Serial.readStringUntil('\n') != "capture") {
+        Serial.println("I only understand 'capture' (without quotes)");
+        return;
+    }
+
     // capture picture
     if (!camera.capture().isOk()) {
         Serial.println(camera.exception.toString());
@@ -89,5 +97,5 @@ void loop() {
         camera.resolution.getHeight()
     );
 
-    delay(1000);
+    Serial.println("Enter 'capture' (without quotes) to shot");
 }

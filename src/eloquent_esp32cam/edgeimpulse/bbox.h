@@ -1,7 +1,7 @@
 #ifndef ELOQUENT_ESP32CAM_EDGEIMPULSE_BBOX_H
 #define ELOQUENT_ESP32CAM_EDGEIMPULSE_BBOX_H
 
-namespace e {
+namespace eloq {
     class bbox_t {
         public:
             uint8_t value;

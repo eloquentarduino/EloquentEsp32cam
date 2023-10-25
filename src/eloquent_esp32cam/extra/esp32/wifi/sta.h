@@ -101,7 +101,7 @@ namespace Eloquent {
     }
 }
 
-namespace e {
+namespace eloq {
     static Eloquent::Extra::Esp32::Wifi::Sta wifi;
 }
 

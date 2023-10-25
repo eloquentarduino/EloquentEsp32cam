@@ -254,7 +254,7 @@ namespace Eloquent {
                 /**
                  * 
                  */
-                void m5timer() {
+                void m5_timer() {
                     pins.d0 = 32;
                     pins.d1 = 35;
                     pins.d2 = 34;

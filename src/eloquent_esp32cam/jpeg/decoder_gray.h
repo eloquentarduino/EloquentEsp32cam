@@ -10,7 +10,7 @@
 
 using Eloquent::Extra::Exception;
 using Eloquent::Extra::Benchmark;
-using namespace e;
+using namespace eloq;
 
 struct JpegDecoding {
     uint16_t offset;
@@ -200,7 +200,7 @@ namespace Eloquent {
     }
 }
 
-namespace e {
+namespace eloq {
     static Eloquent::Esp32cam::Jpeg::JpegDecoderGray jpeg;
 }
 

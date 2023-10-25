@@ -9,7 +9,7 @@
 
 
 using Eloquent::Extra::Exception;
-using namespace e;
+using namespace eloq;
 
 
 namespace Eloquent {
@@ -138,7 +138,7 @@ namespace Eloquent {
     }
 }
 
-namespace e {
+namespace eloq {
     static Eloquent::Extra::Esp32::Fs::SDMMC sdmmc;
 }
 

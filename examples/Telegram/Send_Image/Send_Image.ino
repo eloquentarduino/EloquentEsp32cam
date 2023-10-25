@@ -15,7 +15,7 @@
 #include <eloquent_esp32cam.h>
 #include <eloquent_esp32cam/extra/esp32/telegram.h>
 
-using namespace e;
+using namespace eloq;
 
 
 /**
