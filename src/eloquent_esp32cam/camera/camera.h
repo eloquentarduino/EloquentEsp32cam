@@ -8,6 +8,7 @@
 #include "./resolution.h"
 #include "./pinout.h"
 #include "./sensor.h"
+#include "./pixformat.h"
 #include "./rgb_565.h"
 #include "../extra/exception.h"
 #include "../extra/time/rate_limit.h"
@@ -32,6 +33,7 @@ namespace Eloquent {
                     Resolution resolution;
                     Pinout pinout;
                     Sensor sensor;
+                    Pixformat pixformat;
                     Exception exception;
                     RateLimit rateLimit;
                     Converter565<Camera> rgb565;
@@ -75,7 +77,7 @@ namespace Eloquent {
                         config.ledc_channel = LEDC_CHANNEL_0;
                         config.ledc_timer = LEDC_TIMER_0;
                         config.fb_count = 1;
-                        config.pixel_format = PIXFORMAT_JPEG;
+                        config.pixel_format = pixformat.format;
                         config.frame_size = resolution.framesize;
                         config.jpeg_quality = quality.quality;
                         config.xclk_freq_hz = xclk.freq;
