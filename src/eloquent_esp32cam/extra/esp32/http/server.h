@@ -90,6 +90,18 @@ namespace Eloquent {
                         }
 
                         /**
+                         * 
+                         */
+                        Exception& beginInThread(Exception& ex) {
+                            thread.withStackSize(5000);
+
+                            if (!begin().isOk())
+                                return ex.propagate(*this);
+
+                            return ex.clear();
+                        }
+
+                        /**
                          * Handle HTTP client
                          */
                         virtual void handle() {
