@@ -40,11 +40,25 @@ namespace Eloquent {
                             count = current();
                             count += 1;
 
+                            set(count);
+
+                            return count;
+                        }
+
+                        /**
+                         * 
+                         */
+                        void set(uint16_t n) {
                             prefs.begin("e::counter", false);
                             prefs.putULong(key, count);
                             prefs.end();
+                        }
 
-                            return count;
+                        /**
+                         * 
+                         */
+                        void reset() {
+                            set(0);
                         }
 
                         /**

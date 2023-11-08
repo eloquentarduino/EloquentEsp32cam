@@ -10,7 +10,29 @@ namespace Eloquent {
                  * Mutex for concurrent access to resource
                  */
                 class Mutex {
-                    
+                    public:
+                        SemaphoreHandle_t mutex;
+                        
+                        /**
+                         * 
+                         */
+                        Mutex() {
+                            mutex = xSemaphoreCreateMutex();
+                        }
+
+                        /**
+                         * Run function with mutex
+                         */
+                        template<typename Callback>
+                        bool threadsafe(Callback callback, size_t timeout = portMAX_DELAY) {
+                            if (xSemaphoreTake(mutex, timeout) != pdTRUE)
+                                return false;
+
+                            callback();
+                            xSemaphoreGive(mutex);
+
+                            return true;
+                        }
                 };
             }
         }

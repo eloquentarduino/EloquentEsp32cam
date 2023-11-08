@@ -76,7 +76,9 @@
     }
 
     namespace eloq {
-        static Eloquent::Esp32cam::EdgeImpulse::FOMOS3 fomo;
+        namespace ei {
+            static Eloquent::Esp32cam::EdgeImpulse::FOMOS3 fomo;
+        }
     }
 
 #else

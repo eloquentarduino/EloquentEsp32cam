@@ -3,12 +3,10 @@
 
 #include <FS.h>
 #include <SD_MMC.h>
-#include "../../exception.h"
+#include "./fs.h"
 #include "./sdmmc_pins.h"
-#include "./write_session.h"
 
 
-using Eloquent::Extra::Exception;
 using namespace eloq;
 
 
@@ -19,35 +17,17 @@ namespace Eloquent {
                 /**
                  * Interact with the SD
                  */
-                class SDMMC {
+                class SDMMC : public FileSystem {
                 public:
-                    Exception exception;
                     Pinout pinout;
-                    WriteSession session;
 
                     /**
                      * 
                      */
                     SDMMC() : 
-                        exception("SDMMC"),
-                        root("/sdcard"), 
+                        FileSystem("SDMMC", &SD_MMC, "/sdcard"),
                         freq(SDMMC_FREQ_DEFAULT), 
-                        maxFiles(5),
-                        session(&SD_MMC) {
-                    }
-
-                    /**
-                     * 
-                     */
-                    fs::FS& fs() {
-                        return SD_MMC;
-                    }
-
-                    /**
-                     * 
-                    */
-                    void mountAt(String mountpoint) {
-                        root = mountpoint;
+                        maxFiles(5) {
                     }
 
                     /**
@@ -93,43 +73,7 @@ namespace Eloquent {
                         return exception.clear();
                     }
 
-                    /**
-                     * Write string content
-                     */
-                    WriteSession& save(const char *content) {
-                        session.open(content);
-
-                        return session;
-                    }
-
-                    /**
-                     * Write string content
-                     */
-                    WriteSession& save(String& content) {
-                        session.open(content.c_str());
-
-                        return session;
-                    }
-
-                    /**
-                     * See save(data, length)
-                     */
-                    template<typename BinaryContent>
-                    WriteSession& save(BinaryContent& content) {
-                        return save(content->buf, content->len);
-                    }
-
-                    /**
-                     * Write binary content
-                     */
-                    WriteSession& save(uint8_t *data, size_t length) {
-                        session.open(data, length);
-
-                        return session;
-                    }
-
                 protected:
-                    String root;
                     int freq;
                     uint8_t maxFiles;
                 };

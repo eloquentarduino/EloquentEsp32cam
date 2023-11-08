@@ -3,11 +3,9 @@
 
 #include <FS.h>
 #include <SPIFFS.h>
-#include "../../exception.h"
-#include "./write_session.h"
+#include "./fs.h"
 
 
-using Eloquent::Extra::Exception;
 using namespace eloq;
 
 
@@ -18,28 +16,16 @@ namespace Eloquent {
                 /**
                  * Interact with SPIFFS
                  */
-                class Spiffs {
+                class Spiffs : public FileSystem {
                 public:
-                    Exception exception;
-                    WriteSession session;
-
                     /**
                      * 
                      */
                     Spiffs() : 
-                        exception("SPIFFS"),
-                        root("/spiffs"),
+                        FileSystem("SPIFFS", &SPIFFS, "/spiffs"),
                         partitionLabel(""),
                         format(false),
-                        maxFiles(5),
-                        session(&SPIFFS) {
-                    }
-
-                    /**
-                     * 
-                     */
-                    fs::FS& fs() {
-                        return SPIFFS;
+                        maxFiles(5) {
                     }
 
                     /**
@@ -82,26 +68,10 @@ namespace Eloquent {
                         return exception.clear();
                     }
 
-                    /**
-                     * See save(data, length)
-                     */
-                    template<typename BinaryContent>
-                    WriteSession& save(BinaryContent& content) {
-                        return save(content->buf, content->len);
-                    }
-
-                    /**
-                     * Write binary content
-                     */
-                    WriteSession& save(uint8_t *data, size_t length) {
-                        session.open(data, length);
-
-                        return session;
-                    }
+                    
 
                 protected:
                     bool format;
-                    String root;
                     String partitionLabel;
                     uint8_t maxFiles;
                 };

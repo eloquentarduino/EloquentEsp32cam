@@ -12,9 +12,11 @@
 #include "./rgb_565.h"
 #include "../extra/exception.h"
 #include "../extra/time/rate_limit.h"
+#include "../extra/esp32/multiprocessing/mutex.h"
 
 using Eloquent::Extra::Exception;
 using Eloquent::Extra::Time::RateLimit;
+using Eloquent::Extra::Esp32::Multiprocessing::Mutex;
 
 namespace Eloquent {
     namespace Esp32cam {
@@ -36,6 +38,7 @@ namespace Eloquent {
                     Pixformat pixformat;
                     Exception exception;
                     RateLimit rateLimit;
+                    Mutex mutex;
                     Converter565<Camera> rgb565;
 
                     /**
@@ -98,8 +101,14 @@ namespace Eloquent {
                         if (!rateLimit)
                             return exception.set("Too many requests for frame");
 
-                        free();
-                        frame = esp_camera_fb_get();
+                        bool captured = mutex.threadsafe([this]() {
+                            free();
+                            frame = esp_camera_fb_get();
+                        });
+
+                        if (!captured)
+                            return exception.set("Cannot acquire mutex");
+
                         rateLimit.touch();
 
                         if (!hasFrame())

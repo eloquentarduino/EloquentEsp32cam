@@ -41,7 +41,7 @@
                                 if (fb == NULL)
                                     return 0;
 
-                                #if EI_CLASSIFIER_INPUT_WIDTH == 49
+                                #if EI_CLASSIFIER_INPUT_WIDTH == 48
                                     get_data_48x48(offset, length, out);
                                 #else
                                     get_data_96x96(offset, length, out);
@@ -263,7 +263,9 @@
 
 #ifndef ELOQUENT_ESP32CAM_EDGEIMPULSE_FOMO_S3_H
     namespace eloq {
-        static Eloquent::Esp32cam::EdgeImpulse::FOMO fomo;
+        namespace ei {
+            static Eloquent::Esp32cam::EdgeImpulse::FOMO fomo;
+        }
     }
 #endif
 

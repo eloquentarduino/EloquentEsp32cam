@@ -26,6 +26,7 @@ namespace Eloquent {
                         String lastFilename;
                         String lastPath;
                         Exception exception;
+                        Counter counter;
                         fs::FS *fsystem;
 
                         /**
@@ -96,6 +97,8 @@ namespace Eloquent {
                             if (ext != "")
                                 filename += String(".") + ext;
 
+                            ESP_LOGI("FS::Write", "Filename = %s", filename.c_str());
+
                             lastFilename = filename;
                             
                             if (folder != "") {
@@ -142,7 +145,6 @@ namespace Eloquent {
                         }
 
                     protected:
-                        Counter counter;
 
                         /**
                          * 
