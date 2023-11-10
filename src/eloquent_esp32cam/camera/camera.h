@@ -46,6 +46,7 @@ namespace Eloquent {
                      */
                     Camera() :
                         exception("Camera"),
+                        mutex("Camera"),
                         rgb565(this) {
 
                     }
@@ -101,12 +102,12 @@ namespace Eloquent {
                         if (!rateLimit)
                             return exception.set("Too many requests for frame");
 
-                        bool captured = mutex.threadsafe([this]() {
+                        mutex.threadsafe([this]() {
                             free();
                             frame = esp_camera_fb_get();
-                        });
+                        }, 1000);
 
-                        if (!captured)
+                        if (!mutex.isOk())
                             return exception.set("Cannot acquire mutex");
 
                         rateLimit.touch();

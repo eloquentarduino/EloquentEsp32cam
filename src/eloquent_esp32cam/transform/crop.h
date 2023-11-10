@@ -227,7 +227,9 @@ namespace Eloquent {
 
 
 namespace eloq {
-    static Eloquent::Esp32cam::Transform::Crop crop;
+    namespace cv {
+        static Eloquent::Esp32cam::Transform::Crop crop;
+    }
 }
 
 #endif

@@ -27,6 +27,17 @@ namespace Eloquent {
                 }
 
                 /**
+                 * Benchmark given function
+                 */
+                template<typename Callback>
+                size_t benchmark(Callback callback) {
+                    start();
+                    callback();
+                    
+                    return stop();
+                }
+
+                /**
                  * Get elapsed time in millis
                  */
                 inline size_t millis() {

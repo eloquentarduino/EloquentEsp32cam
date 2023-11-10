@@ -6,6 +6,7 @@
 
 using Eloquent::Extra::Exception;
 using Eloquent::Extra::Time::Benchmark;
+using ei::signal_t;
 
 
 namespace Eloquent {
@@ -16,7 +17,7 @@ namespace Eloquent {
              */
             class Classifier {
                 public:
-                    ei::signal_t signal;
+                    signal_t signal;
                     ei_impulse_result_t result;
                     EI_IMPULSE_ERROR error;
                     Exception exception;
@@ -48,23 +49,19 @@ namespace Eloquent {
                     /**
                      * Run model
                      */
-                    Exception& run() {
+                    virtual Exception& run() {
                         if (!beforeClassification())
                             return exception;
                             
-                        benchmark.start();
-                        error = run_classifier(&signal, &result, _isDebugEnabled);
-                        benchmark.stop();
+                        benchmark.benchmark([this]() {
+                            error = run_classifier(&signal, &result, _isDebugEnabled);
+                        });
 
                         if (error != EI_IMPULSE_OK)
                             return exception.set(String("Failed to run classifier with error code ") + error);
 
                         afterClassification();
-
-                        timing.dsp = result.timing.dsp;
-                        timing.classification = result.timing.classification;
-                        timing.anomaly = result.timing.anomaly;
-                        timing.total = timing.dsp + timing.classification + timing.anomaly;
+                        breakTiming();
 
                         return exception.clear();
                     }
@@ -82,6 +79,16 @@ namespace Eloquent {
                      * Run actions after classification results
                      */
                     virtual void afterClassification() = 0;
+
+                    /**
+                     * 
+                     */
+                    void breakTiming() {
+                        timing.dsp = result.timing.dsp;
+                        timing.classification = result.timing.classification;
+                        timing.anomaly = result.timing.anomaly;
+                        timing.total = timing.dsp + timing.classification + timing.anomaly;
+                    }
             };
         }
     }
