@@ -6,7 +6,8 @@
 #include "../extra/esp32/wifi/sta.h"
 #include "../extra/esp32/http/server.h"
 
-using namespace eloq;
+using eloq::camera;
+using eloq::wifi;
 using Eloquent::Extra::Exception;
 using Eloquent::Extra::Esp32::Http::HttpServer;
 

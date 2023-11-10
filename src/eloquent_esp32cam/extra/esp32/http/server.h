@@ -135,6 +135,33 @@ namespace Eloquent {
                         }
 
                         /**
+                         * Add GET stream route handler
+                         * @tparam Handler
+                         * @param route
+                         * @param handler
+                         */
+                        template<typename Handler>
+                        void onStream(const char *route, Handler handler, size_t warmupTime = 0) {
+                            ESP_LOGI("HttpServer", "Registering route GET stream %s::%s", name, route);
+
+                            webServer.on(route, HTTP_GET, [this, handler, warmupTime]() {
+                                WiFiClient client = webServer.client();
+
+                                if (warmupTime > 0)
+                                    delay(warmupTime);
+
+                                while (true) {
+                                    delay(1);
+                                    yield();
+                                    client.print("##SOF##");
+                                    handler(&webServer, &client);
+                                    client.print("##EOF##");
+                                    client.flush();
+                                }
+                            });
+                        }
+
+                        /**
                          * Add POST route handler
                          * @tparam Handler
                          * @param route
@@ -199,31 +226,19 @@ namespace Eloquent {
                         }
 
                         /**
-                         * Send gzip'd javascript
+                         * Send Gzipped content
                          */
-                        //void gzipJs(const char* route, const uint8_t* gz) {
-                        //    gzip(route, "text/javascript", gz);
-                        //}
+                        void sendGzip(const uint8_t* contents, const size_t length) {
+                            WiFiClient client = webServer.client();
 
-                        /**
-                         * Send gzip'd content
-                         */
-                        // void gzip(const char* route, const char* contentType, const uint8_t* gz) {
-                        //     on(route, [this, route, contentType, gz]() {
-                        //         ESP_LOGI("HttpServer", "Registering gzip'd route GET %s::%s", name, route);
-                        //         webServer.on(route, HTTP_GET, [this, contentType, gz]() {
-                        //             WiFiClient client = webServer.client();
-
-                        //             client.println(F("HTTP/1.1 200 OK"));
-                        //             client.print(F("Content-Type: "));
-                        //             client.println(contentType);
-                        //             client.print(F("Content-Length: "));
-                        //             client.println(sizeof(gz));
-                        //             client.println(F("Content-Encoding: gzip\r\n\r\n"));
-                        //             client.write(gz, sizeof(gz));
-                        //         });
-                        //     });
-                        // }
+                            client.println(F("HTTP/1.1 200 OK"));
+                            client.println(F("Content-Type: text/html"));
+                            client.print(F("Content-Length: "));
+                            client.println(length);
+                            client.println(F("Content-Encoding: gzip\r\n"));
+                            client.write(contents, length);
+                            client.flush();
+                        }
 
                         /**
                          * Abort with error message

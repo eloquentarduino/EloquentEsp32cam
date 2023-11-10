@@ -24,6 +24,8 @@ namespace Eloquent {
                     String label;
                     uint8_t ix;
                     float proba;
+                    size_t srcWidth;
+                    size_t srcHeight;
 
                     /**
                      * 
@@ -69,8 +71,6 @@ namespace Eloquent {
                 protected:
                     uint8_t *_buf;
                     size_t _len;
-                    size_t _srcWidth;
-                    size_t _srcHeight;
                     float _dx;
                     float _dy;
 
@@ -84,8 +84,8 @@ namespace Eloquent {
                         if (camera.pixformat.isRGB565()) {
                             _buf = camera.frame->buf;
                             _len = camera.frame->len;
-                            _srcWidth = camera.resolution.getWidth();
-                            _srcHeight = camera.resolution.getHeight();
+                            srcWidth = camera.resolution.getWidth();
+                            srcHeight = camera.resolution.getHeight();
 
                             // rgb 565 bytes are swapped!
                             for (int i = 0; i < _len; i += 2) {
@@ -117,8 +117,8 @@ namespace Eloquent {
                                     logScale
                                 );
                                 _len = newSize * 2;
-                                _srcWidth = newWidth;
-                                _srcHeight = newHeight;
+                                srcWidth = newWidth;
+                                srcHeight = newHeight;
 
                                 if (_buf == NULL) _buf = (uint8_t*) malloc(newSize * 2);
                                 else _buf = (uint8_t*) realloc(_buf, newSize * 2);
@@ -139,11 +139,11 @@ namespace Eloquent {
                         if (_buf == NULL)
                             return exception.set("Error allocating memory buffer");
 
-                        if (_srcWidth < EI_CLASSIFIER_INPUT_WIDTH || _srcHeight < EI_CLASSIFIER_INPUT_HEIGHT)
+                        if (srcWidth < EI_CLASSIFIER_INPUT_WIDTH || srcHeight < EI_CLASSIFIER_INPUT_HEIGHT)
                             return exception.set("Cannot run EI model on resolution lower than model").isOk();
 
-                        _dx = ((float) _srcWidth) / EI_CLASSIFIER_INPUT_WIDTH;
-                        _dy = ((float) _srcHeight) / EI_CLASSIFIER_INPUT_HEIGHT;
+                        _dx = ((float) srcWidth) / EI_CLASSIFIER_INPUT_WIDTH;
+                        _dy = ((float) srcHeight) / EI_CLASSIFIER_INPUT_HEIGHT;
 
                         signal.get_data = [this](size_t offset, size_t length, float *out) {
                             return getData(offset, length, out);
@@ -176,7 +176,7 @@ namespace Eloquent {
                         const size_t end = min((int) EI_CLASSIFIER_RAW_SAMPLE_COUNT, (int) (offset + length));
 
                         for (uint16_t y = 0; y < EI_CLASSIFIER_INPUT_HEIGHT; y++) {
-                            const size_t offsetY = ((size_t) (y * _dy)) * _srcWidth;
+                            const size_t offsetY = ((size_t) (y * _dy)) * srcWidth;
 
                             for (uint16_t x = 0; x < EI_CLASSIFIER_INPUT_WIDTH; x++, i++) {
                                 if (i < offset)

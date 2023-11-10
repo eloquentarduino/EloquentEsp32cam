@@ -36,7 +36,7 @@ namespace eloq {
                     width = width_;
                     height = height_;
                     x2 = x1 + width;
-                    y2 = y2 + height;
+                    y2 = y1 + height;
                     cx = (x1 + x2) / 2;
                     cy = (y1 + y2) / 2;
                 }
