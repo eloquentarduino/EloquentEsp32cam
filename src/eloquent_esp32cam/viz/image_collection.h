@@ -62,6 +62,7 @@ namespace Eloquent {
                             server.sendGzip(index, 8939);
                         });
                     }
+            };
         }
     }
 }
