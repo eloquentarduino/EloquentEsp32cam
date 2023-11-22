@@ -30,7 +30,7 @@ void setup() {
 
     // camera settings
     // replace with your own model!
-    camera.pinout.wroom_s3();
+    camera.pinout.freenove_s3();
     camera.brownout.disable();
     camera.resolution.vga();
     camera.quality.high();
@@ -81,7 +81,9 @@ void setup() {
     Serial.println("Camera OK");
     Serial.println("SD card OK");
     Serial.println("NTP OK");
-    Serial.println("Enter 'capture' to capture a new picture and save to SD");
+    Serial.print("Current time is ");
+    Serial.println(ntp.datetime());
+    Serial.println("Enter 'capture' to capture a new picture");
 }
 
 
@@ -91,7 +93,7 @@ void loop() {
         return;
 
     if (Serial.readStringUntil('\n') != "capture") {
-        Serial.println("I only understand 'capture' (without quotes)");
+        Serial.println("I only understand 'capture'");
         return;
     }
 

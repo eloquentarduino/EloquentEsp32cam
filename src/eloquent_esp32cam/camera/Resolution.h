@@ -187,7 +187,7 @@ namespace Eloquent {
                 /**
                  * 720 x 1280
                  */
-                void p_hd() {
+                void phd() {
                     framesize = FRAMESIZE_P_HD;
                     width = 720;
                     height = 1280;
@@ -196,7 +196,7 @@ namespace Eloquent {
                 /**
                  * 864 x 1536
                  */
-                void p_3mp() {
+                void p3mp() {
                     framesize = FRAMESIZE_P_3MP;
                     width = 864;
                     height = 1536;
@@ -232,7 +232,7 @@ namespace Eloquent {
                 /**
                  * 1080 x 1920
                  */
-                void p_fhd() {
+                void pfhd() {
                     framesize = FRAMESIZE_P_FHD;
                     width = 1080;
                     height = 1920;
@@ -269,6 +269,35 @@ namespace Eloquent {
                  */
                 bool isXGA() {
                     return framesize == FRAMESIZE_XGA;
+                }
+
+                /**
+                 * Print help message
+                 */
+                void help() {
+                    LOG_HELP("AVAILABLE RESOLUTIONS");
+                    LOG_HELP(" > yolo (96x96)");
+                    LOG_HELP(" > qqvga (160x120)");
+                    LOG_HELP(" > qcif (176x144)");
+                    LOG_HELP(" > hqvga (240x176)");
+                    LOG_HELP(" > face (240x240)");
+                    LOG_HELP(" > qvga (320x240)");
+                    LOG_HELP(" > cif (400x296)");
+                    LOG_HELP(" > hvga (480x320)");
+                    LOG_HELP(" > vga (640x480)");
+                    LOG_HELP(" > svga (800x600)");
+                    LOG_HELP(" > xga (1204x768)");
+                    LOG_HELP(" > hd (1280x720)");
+                    LOG_HELP(" > sxga (1280x1024)");
+                    LOG_HELP(" > uxga (1600x1200)");
+                    LOG_HELP(" > fhd (1920x1080)");
+                    LOG_HELP(" > phd (720x1280)");
+                    LOG_HELP(" > p3mp (864x1536)");
+                    LOG_HELP(" > qxga (2048x1536)");
+                    LOG_HELP(" > qhd (2560x1440)");
+                    LOG_HELP(" > wqxga (2560x1600)");
+                    LOG_HELP(" > pfhd (1080x1920)");
+                    LOG_HELP(" > qsxga (2560x1920)");
                 }
 
             protected:

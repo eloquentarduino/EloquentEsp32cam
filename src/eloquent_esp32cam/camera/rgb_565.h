@@ -105,9 +105,14 @@ namespace Eloquent {
                         if (data == NULL)
                             return exception.set("Cannot allocate memory");
 
-                        if (!jpg2rgb565(camera->frame->buf, camera->frame->len, (uint8_t*) data, JPG_SCALE_8X))
-                            return exception.set("Error converting frame");
+                        camera->mutex.threadsafe([this]() {
+                            if (!jpg2rgb565(camera->frame->buf, camera->frame->len, (uint8_t*) data, JPG_SCALE_8X))
+                                exception.set("Error converting frame from JPEG to RGB565");
+                        });
 
+                        if (!exception.isOk())
+                            return exception;
+                        
                         swapBytes();
 
                         return exception.clear();

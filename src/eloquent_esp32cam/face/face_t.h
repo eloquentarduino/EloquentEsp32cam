@@ -10,24 +10,25 @@ namespace Eloquent {
              */
             class Face {
                 public:
-                    uint16_t x;
-                    uint16_t y;
-                    uint16_t x0;
-                    uint16_t y0;
-                    uint16_t x1;
-                    uint16_t y1;
+                    int16_t x;
+                    int16_t y;
+                    int16_t x0;
+                    int16_t y0;
+                    int16_t x1;
+                    int16_t y1;
                     uint16_t width;
                     uint16_t height;
+                    float score;
                     struct {
-                        uint16_t x;
-                        uint16_t y;
+                        int16_t x;
+                        int16_t y;
                     } leftEye, rightEye, nose, leftMouth, rightMouth;
-                    std::list<dl::detect::result_t>::iterator result;
 
                     /**
-                     * 
+                     * Check if face is valid
                      */
-                    Face() {
+                    bool isValid() {
+                        return width > 0 && height > 0;
                     }
 
                     /**
@@ -40,27 +41,31 @@ namespace Eloquent {
                     /**
                      * Fill data from face detection result
                      */
-                    void fill(std::list<dl::detect::result_t>::iterator res) {
-                        result = res;
+                    void copyFrom(const dl::detect::result_t& result) {
+                        if (result.box.size() != 4) {
+                            clear();
+                            return;
+                        }
 
-                        x = x0 = result->box[0];
-                        y = y0 = result->box[1];
-                        x1 = result->box[2];
-                        y1 = result->box[3];
+                        x = x0 = result.box[0];
+                        y = y0 = result.box[1];
+                        x1 = result.box[2];
+                        y1 = result.box[3];
                         width = x1 - x0 + 1;
                         height = y1 - y0 + 1;
+                        score = result.score;
 
-                        if (result->keypoint.size() == 10) {
-                            leftEye.x = result->keypoint[0];
-                            leftEye.y = result->keypoint[1];
-                            leftMouth.x = result->keypoint[2];
-                            leftMouth.y = result->keypoint[3];
-                            nose.x = result->keypoint[4];
-                            nose.y = result->keypoint[5];
-                            rightEye.x = result->keypoint[6];
-                            rightEye.y = result->keypoint[7];
-                            rightMouth.x = result->keypoint[8];
-                            rightMouth.y = result->keypoint[9];
+                        if (result.keypoint.size() == 10) {
+                            leftEye.x = result.keypoint[0];
+                            leftEye.y = result.keypoint[1];
+                            leftMouth.x = result.keypoint[2];
+                            leftMouth.y = result.keypoint[3];
+                            nose.x = result.keypoint[4];
+                            nose.y = result.keypoint[5];
+                            rightEye.x = result.keypoint[6];
+                            rightEye.y = result.keypoint[7];
+                            rightMouth.x = result.keypoint[8];
+                            rightMouth.y = result.keypoint[9];
                         }
                     }
 
@@ -85,24 +90,6 @@ namespace Eloquent {
                         rightEye.y = 0;
                         rightMouth.x = 0;
                         rightMouth.y = 0;
-                    }
-
-                    /**
-                     * Execute function on each keypoint
-                    */
-                    template<typename Callback>
-                    void forEachKeypoint(Callback callback) {
-                        if (result->keypoint.size() == 10) {
-                            ESP_LOGE("Face", "No keypoints found for current face");
-                            return;
-                        }
-
-                        for (uint8_t i = 0, j = 0; j < 10; i += 1, j +=2) {
-                            uint16_t x = result->keypoint[j];
-                            uint16_t y = result->keypoint[j + 1];
-
-                            callback(i, x, y);
-                        }
                     }
             };
         }

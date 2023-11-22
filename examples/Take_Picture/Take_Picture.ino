@@ -11,7 +11,7 @@
 
 // all global objects (e.g. `camera`) 
 // are scoped under the `eloq` namespace
-using namespace eloq;
+using eloq::camera;
 
 
 /**
@@ -32,8 +32,8 @@ void setup() {
     // - eye
     // - wrover
     // - wroom_s3
-    // - freenove_camera_s3
-    // - xiao_s3
+    // - freenove_s3
+    // - xiao
     // - ttgo_lcd
     // - simcam
     camera.pinout.aithinker();
@@ -79,7 +79,7 @@ void loop() {
         return;
 
     if (Serial.readStringUntil('\n') != "capture") {
-        Serial.println("I only understand 'capture' (without quotes)");
+        Serial.println("I only understand 'capture'");
         return;
     }
 

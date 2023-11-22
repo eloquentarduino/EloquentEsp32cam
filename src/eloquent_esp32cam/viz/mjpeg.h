@@ -72,6 +72,9 @@ namespace Eloquent {
                             client.println(F("\r\n--frame"));
 
                             while (true) {
+                                delay(1);
+                                yield();
+
                                 if (!client.connected())
                                     continue;
 
@@ -84,8 +87,6 @@ namespace Eloquent {
                                 client.write((const char *) camera.frame->buf, camera.frame->len);
                                 client.println(F("\r\n--frame"));
                                 client.flush();
-                                delay(1);
-                                yield();
                             }
                         });
                     }

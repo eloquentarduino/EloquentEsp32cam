@@ -6,6 +6,7 @@
 #include "../extra/time/benchmark.h"
 #include "../extra/time/rate_limit.h"
 
+using eloq::camera;
 using Eloquent::Extra::Exception;
 using Eloquent::Extra::Time::Benchmark;
 using Eloquent::Extra::Time::RateLimit;
@@ -19,7 +20,7 @@ namespace Eloquent {
              */
             class Detection {
                 public:
-                    float moving_ratio;
+                    float movingRatio;
                     Exception exception;
                     Benchmark benchmark;
                     RateLimit rate;
@@ -32,7 +33,7 @@ namespace Eloquent {
                         _threshold(5),
                         _ratio(0.2),
                         _prev(NULL),
-                        moving_ratio(0),
+                        movingRatio(0),
                         exception("MotionDetection") {
 
                         }
@@ -71,36 +72,45 @@ namespace Eloquent {
                      * Test if motion triggered
                      */
                     inline bool triggered() {
-                        return moving_ratio >= _ratio;
+                        return movingRatio >= _ratio;
                     }
 
                     /**
                      * 
                      */
-                    template<typename Frame>
-                    Exception& detect(Frame& frame) {
+                    Exception& run() {
+                        // convert JPEG to RGB565
+                        // this reduces the frame to 1/8th
+                        if (!camera.rgb565.convert().isOk())
+                            return camera.rgb565.exception;
+
                         // first frame, only copy frame to prev
                         if (_prev == NULL) {
-                            _prev = (uint8_t*) malloc(frame.length * sizeof(uint16_t));
-                            copy(frame);
+                            _prev = (uint16_t*) malloc(camera.rgb565.length * sizeof(uint16_t));
+                            copy(camera.rgb565);
 
                             return exception.set("First frame, can't detect motion").soft();
                         }
 
-                        // rate limited, copy frame but don't run detection
-                        if (!rate) {
-                            copy(frame);
+                        benchmark.timeit([this]() {
+                            int movingPoints = dl::image::get_moving_point_number(
+                                camera.rgb565.data, 
+                                _prev, 
+                                camera.rgb565.height, 
+                                camera.rgb565.width, 
+                                _stride, 
+                                _threshold
+                            );
 
-                            return exception.set(rate.getRetryInMessage()).soft();
-                        }
-
-                        benchmark.timeit([this, &frame]() {
-                            int movingPoints = dl::image::get_moving_point_number((uint16_t *) frame.data, (uint16_t*) _prev, frame.height, frame.width, _stride, _threshold);
-                            moving_ratio = ((float) movingPoints) / frame.length * _stride * _stride;
-                            copy(frame);
+                            movingRatio = ((float) movingPoints) / camera.rgb565.length * _stride * _stride;
+                            copy(camera.rgb565);
                         });
-                        
-                        ESP_LOGD("MotionDetection", "moving points: %.2f%%", moving_ratio);
+
+                        ESP_LOGD("MotionDetection", "moving points ratio: %.2f", movingRatio);
+
+                        // rate limit
+                        if (triggered() && !rate)
+                            return exception.set(rate.getRetryInMessage()).soft();
 
                         if (triggered())
                             rate.touch();
@@ -109,7 +119,7 @@ namespace Eloquent {
                     }
 
                 protected:
-                    uint8_t *_prev;
+                    uint16_t *_prev;
                     uint8_t _stride;
                     uint8_t _threshold;
                     float _ratio;
@@ -119,7 +129,7 @@ namespace Eloquent {
                      */
                     template<typename Frame>
                     void copy(Frame frame) {
-                        memcpy(_prev, frame.data, frame.length);
+                        memcpy((uint8_t*) _prev, (uint8_t*) frame.data, frame.length * sizeof(uint16_t));
                     }
             };
         }

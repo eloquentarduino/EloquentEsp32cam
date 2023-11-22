@@ -151,7 +151,7 @@ namespace Eloquent {
                                     delay(warmupTime);
 
                                 while (true) {
-                                    delay(1);
+                                    delay(5);
                                     yield();
                                     client.print("##SOF##");
                                     handler(&webServer, &client);

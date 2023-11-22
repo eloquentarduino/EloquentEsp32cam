@@ -1,7 +1,7 @@
 /**
  * Send text to Telegram
  *
- * BE SURE TO SET "TOOLS > CORE DEBUG LEVEL = DEBUG"
+ * BE SURE TO SET "TOOLS > CORE DEBUG LEVEL = INFO"
  * to turn on debug messages
  */
 // WiFi credentials
@@ -15,7 +15,8 @@
 #include <eloquent_esp32cam.h>
 #include <eloquent_esp32cam/extra/esp32/telegram.h>
 
-using namespace eloq;
+using eloq::wifi;
+using eloq::telegram;
 
 
 /**

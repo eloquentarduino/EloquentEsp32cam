@@ -66,7 +66,9 @@ namespace Eloquent {
                     /**
                      * Display main page
                      */
-                    void onIndex() {}
+                    void onIndex() {
+                        
+                    }
 
                     /**
                      * Respond to commands over HTTP

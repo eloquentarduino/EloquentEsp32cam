@@ -16,8 +16,10 @@
 #include <eloquent_esp32cam/motion/detection.h>
 #include <eloquent_esp32cam/extra/esp32/telegram.h>
 
-using namespace eloq;
-
+using eloq::camera;
+using eloq::wifi;
+using eloq::telegram;
+using eloq::motion::detection;
 
 /**
  * 
@@ -35,10 +37,10 @@ void setup() {
     camera.quality.high();
 
     // motion detection settings
-    motion::detection.stride(1);
-    motion::detection.threshold(5);
-    motion::detection.ratio(0.2);
-    motion::detection.rate.atMostOnceEvery(20).seconds();
+    detection.stride(1);
+    detection.threshold(5);
+    detection.ratio(0.2);
+    detection.rate.atMostOnceEvery(20).seconds();
 
     // init camera
     while (!camera.begin().isOk())
@@ -72,13 +74,13 @@ void loop() {
     }
 
     // run motion detection
-    if (!motion::detection.detect(camera.rgb565).isOk()) {
-        Serial.println(motion::detection.exception.toString());
+    if (!detection.run().isOk()) {
+        Serial.println(detection.exception.toString());
         return;
     }
 
     // on motion, send Telegram notification
-    if (motion::detection.triggered()) {
+    if (detection.triggered()) {
         Serial.println("Motion detected. Sending picture to Telegram...");
 
         if (!telegram.to(TELEGRAM_CHAT).send(camera.frame).isOk()) {

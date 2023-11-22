@@ -34,7 +34,7 @@ namespace Eloquent {
                         /**
                          * 
                          */
-                        void freenove_camera_s3() {
+                        void freenove_s3() {
                             clk(39);
                             cmd(38);
                             d0(40);

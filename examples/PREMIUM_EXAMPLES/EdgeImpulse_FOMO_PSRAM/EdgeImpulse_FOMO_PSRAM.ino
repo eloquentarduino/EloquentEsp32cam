@@ -1,14 +1,11 @@
 /**
  * Run Edge Impulse FOMO model.
- * It works on both PSRAM and non-PSRAM boards.
+ * This only works on boards with lots of RAM
+ * (e.g. ESP32S3 with OPI RAM)
  * 
  * The difference from the PSRAM version
  * is that this sketch only runs on 96x96 frames,
  * while PSRAM version runs on higher resolutions too.
- * 
- * The PSRAM version can be found in my
- * "ESP32S3 Camera Mastery" course
- * at https://dub.sh/ufsDj93
  *
  * BE SURE TO SET "TOOLS > CORE DEBUG LEVEL = INFO"
  * to turn on debug messages
@@ -27,15 +24,15 @@ using eloq::ei::fomo;
 void setup() {
     delay(3000);
     Serial.begin(115200);
-    Serial.println("__EDGE IMPULSE FOMO (NO-PSRAM)__");
+    Serial.println("__EDGE IMPULSE FOMO (OPI PSRAM)__");
 
     // camera settings
     // replace with your own model!
-    camera.pinout.aithinker();
+    camera.pinout.wroom_s3();
     camera.brownout.disable();
-    // NON-PSRAM FOMO only works on 96x96 (yolo) RGB565 images
-    camera.resolution.yolo();
-    camera.pixformat.rgb565();
+    // PSRAM FOMO works on any resolution
+    // (up to your PSRAM limits, of course)
+    camera.resolution.vga();
 
     // init camera
     while (!camera.begin().isOk())
@@ -98,4 +95,7 @@ void loop() {
         );
       });
     }
+
+  // you still have access to the full-resolution
+  // frame in JPEG format at camera.frame->buf
 }

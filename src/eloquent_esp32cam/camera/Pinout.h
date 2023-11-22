@@ -178,7 +178,7 @@ namespace Eloquent {
                 /**
                  * 
                  */
-                void freenove_camera_s3() {
+                void freenove_s3() {
                     wroom_s3();
                 }
 
@@ -231,7 +231,7 @@ namespace Eloquent {
                 /**
                  * 
                  */
-                void xiao_s3() {
+                void xiao() {
                     pins.d0 = 15;
                     pins.d1 = 17;
                     pins.d2 = 18;

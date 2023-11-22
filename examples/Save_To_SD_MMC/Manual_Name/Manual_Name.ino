@@ -24,7 +24,7 @@ void setup() {
 
     // camera settings
     // replace with your own model!
-    camera.pinout.wroom_s3();
+    camera.pinout.freenove_s3();
     camera.brownout.disable();
     camera.resolution.vga();
     camera.quality.high();
@@ -34,6 +34,8 @@ void setup() {
     sdmmc.pinout.clk(39);
     sdmmc.pinout.cmd(38);
     sdmmc.pinout.d0(40); 
+    // or shorter
+    sdmmc.pinout.freenove_s3();
 
     // init camera
     while (!camera.begin().isOk())

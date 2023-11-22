@@ -196,7 +196,7 @@ namespace Eloquent {
                                 #if _EI_RGB_
                                     out[i - offset] = (r << 16) | (g << 8) | b;
                                 #else
-                                    const uint8_t gray = (r + g + b) / 3;
+                                    const uint32_t gray = constrain((r * 38 + g * 75 + b * 15) >> 7, 0, 255);
                                     out[i - offset] = (gray << 16) | (gray << 8) | gray;
                                 #endif
                             }

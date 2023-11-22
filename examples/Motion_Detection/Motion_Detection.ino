@@ -21,7 +21,7 @@ void setup() {
 
     // camera settings
     // replace with your own model!
-    camera.pinout.aithinker();
+    camera.pinout.freenove_s3();
     camera.brownout.disable();
     camera.resolution.vga();
     camera.quality.high();
@@ -58,15 +58,8 @@ void loop() {
         return;
     }
 
-    // convert JPEG to RGB565
-    // this reduces the frame to 1/8th
-    if (!camera.rgb565.convert().isOk()) {
-        Serial.println(camera.rgb565.exception.toString());
-        return;
-    }
-
     // run motion detection
-    if (!motion::detection.detect(camera.rgb565).isOk()) {
+    if (!motion::detection.run().isOk()) {
         Serial.println(motion::detection.exception.toString());
         return;
     }
