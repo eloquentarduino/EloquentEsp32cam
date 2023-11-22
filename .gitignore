@@ -1,7 +1,7 @@
 publish
 ignore
 examples/ignore
-examples/Premium
+examples/PREMIUM_EXAMPLES
 src/eloquent_esp32cam/avi/libavi.h
 .DS_Store
 .vscode
