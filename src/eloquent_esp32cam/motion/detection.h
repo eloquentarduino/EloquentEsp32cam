@@ -5,12 +5,16 @@
 #include "../extra/exception.h"
 #include "../extra/time/benchmark.h"
 #include "../extra/time/rate_limit.h"
+#include "../extra/pubsub.h"
 #include "./daemon.h"
 
 using eloq::camera;
 using Eloquent::Extra::Exception;
 using Eloquent::Extra::Time::Benchmark;
 using Eloquent::Extra::Time::RateLimit;
+#if defined(ELOQUENT_EXTRA_PUBSUB_H)
+using Eloquent::Extra::PubSub;
+#endif
 
 
 namespace Eloquent {
@@ -26,6 +30,9 @@ namespace Eloquent {
                     Benchmark benchmark;
                     RateLimit rate;
                     Daemon<Detection> daemon;
+                    #if defined(ELOQUENT_EXTRA_PUBSUB_H)
+                    PubSub<Detection> mqtt;
+                    #endif
                     
                     /**
                      * 
@@ -38,6 +45,9 @@ namespace Eloquent {
                         _skip(5),
                         movingRatio(0),
                         daemon(this),
+                        #if defined(ELOQUENT_EXTRA_PUBSUB_H)
+                        mqtt(this),
+                        #endif
                         exception("MotionDetection") {
 
                         }
@@ -132,6 +142,20 @@ namespace Eloquent {
                             rate.touch();
 
                         return exception.clear();
+                    }
+                    
+                    /**
+                     * @brief Convert to JSON
+                     */
+                    String toJSON() {
+                        return String("{\"motion\":") + (triggered() ? "true" : "false") + "}";
+                    }
+                    
+                    /**
+                     * @brief Test if an MQTT message should be published
+                     */
+                    bool shouldPub() {
+                        return triggered();
                     }
 
                 protected:

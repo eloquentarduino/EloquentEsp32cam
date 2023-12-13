@@ -6,6 +6,7 @@
 #include "../camera/camera.h"
 #include "../extra/exception.h"
 #include "../extra/time/benchmark.h"
+#include "../extra/pubsub.h"
 #include "./msr_config.h"
 #include "./mnp_config.h"
 #include "./face_t.h"
@@ -15,6 +16,9 @@ using eloq::camera;
 using eloq::face_t;
 using Eloquent::Extra::Exception;
 using Eloquent::Extra::Time::Benchmark;
+#if defined(ELOQUENT_EXTRA_PUBSUB_H)
+using Eloquent::Extra::PubSub;
+#endif
 
 #ifndef MAX_FACES
 #define MAX_FACES 10
@@ -34,6 +38,9 @@ namespace Eloquent {
                     MSRConfig msr;
                     MNPConfig mnp;
                     Daemon<FaceDetection> daemon;
+                    #if defined(ELOQUENT_EXTRA_PUBSUB_H)
+                    PubSub<FaceDetection> mqtt;
+                    #endif
                     uint8_t image[240 * 240 * 3];
                     face_t first;
                     face_t faces[MAX_FACES];
@@ -44,6 +51,9 @@ namespace Eloquent {
                     FaceDetection() :
                         exception("FaceDetection"),
                         daemon(this),
+                        #if defined(ELOQUENT_EXTRA_PUBSUB_H)
+                        mqtt(this),
+                        #endif
                         _twoStages(false),
                         _confidence(0.5)
                     {
@@ -183,6 +193,50 @@ namespace Eloquent {
                             if (face.isValid() && face.score >= _confidence)
                                 callback(idx++, face);
                         }
+                    }
+                    
+                    /**
+                     * @brief Convert to JSON
+                     */
+                    String toJSON() {
+                        static char buf[MAX_FACES * 33] = {' '};
+                        String json(buf);
+                        
+                        json = "[]";
+                        
+                        if (notFound())
+                            return json;
+                            
+                        json = '[';
+                        
+                        forEach([&json](int i, face_t face) {
+                            if (i > 0)
+                                json += ',';
+                                
+                            json += "{\"x\":";
+                            json += face.x;
+                            json += ",\"y\":";
+                            json += face.y;
+                            json += ",\"w\":";
+                            json += face.width;
+                            json += ",\"h\":";
+                            json += face.height;
+                            json += ",\"proba\":";
+                            json += face.score;
+                            json += "}";
+                        });
+                        
+                        json += ']';
+                        
+                        return json;
+                            
+                    }
+                    
+                    /**
+                     * @brief Test if an MQTT message should be published
+                     */
+                    bool shouldPub() {
+                        return found();
                     }
 
                 protected:
