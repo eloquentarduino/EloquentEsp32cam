@@ -4,6 +4,7 @@
 #if defined(EI_CLASSIFIER_OBJECT_DETECTION)
     #include "./image.h"
     #include "./bbox.h"
+    #include "./fomo_daemon.h"
     
     using eloq::ei::bbox_t;
 
@@ -16,13 +17,15 @@
                 class FOMO : public ImageClassifier {
                 public:
                     bbox_t first;
+                    FOMODaemon<FOMO> daemon;
 
                     /**
                      *
                      */
                     FOMO() :
                         ImageClassifier(),
-                        first("", 0, 0, 0, 0, 0) {
+                        first("", 0, 0, 0, 0, 0),
+                        daemon(this) {
                     }
 
                     /**

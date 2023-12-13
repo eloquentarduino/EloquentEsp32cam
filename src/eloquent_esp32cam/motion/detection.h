@@ -5,6 +5,7 @@
 #include "../extra/exception.h"
 #include "../extra/time/benchmark.h"
 #include "../extra/time/rate_limit.h"
+#include "./daemon.h"
 
 using eloq::camera;
 using Eloquent::Extra::Exception;
@@ -24,6 +25,7 @@ namespace Eloquent {
                     Exception exception;
                     Benchmark benchmark;
                     RateLimit rate;
+                    Daemon<Detection> daemon;
                     
                     /**
                      * 
@@ -33,7 +35,9 @@ namespace Eloquent {
                         _threshold(5),
                         _ratio(0.2),
                         _prev(NULL),
+                        _skip(5),
                         movingRatio(0),
+                        daemon(this),
                         exception("MotionDetection") {
 
                         }
@@ -53,6 +57,14 @@ namespace Eloquent {
                      */
                     void threshold(uint8_t threshold) {
                         _threshold = threshold;
+                    }
+                    
+                    /**
+                     * @brief Skip first frames (to avoid false detection)
+                     * @param skip
+                     */
+                    void skip(uint8_t skip) {
+                        _skip = skip;
                     }
 
                     /**
@@ -79,6 +91,10 @@ namespace Eloquent {
                      * 
                      */
                     Exception& run() {
+                        // skip fre first frames
+                        if (_skip > 0 && _skip-- > 0)
+                            return exception.set("Skipping fre frames...");
+                            
                         // convert JPEG to RGB565
                         // this reduces the frame to 1/8th
                         if (!camera.rgb565.convert().isOk())
@@ -119,6 +135,7 @@ namespace Eloquent {
                     }
 
                 protected:
+                    uint8_t _skip;
                     uint16_t *_prev;
                     uint8_t _stride;
                     uint8_t _threshold;

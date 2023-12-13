@@ -8,7 +8,8 @@
 #include <eloquent_esp32cam.h>
 #include <eloquent_esp32cam/motion/detection.h>
 
-using namespace eloq;
+using eloq::camera;
+using eloq::motion::detection;
 
 
 /**
@@ -29,16 +30,16 @@ void setup() {
     // configure motion detection
     // the higher the stride, the faster the detection
     // the higher the stride, the lesser granularity
-    motion::detection.stride(1);
+    detection.stride(1);
     // the higher the threshold, the lesser sensitivity
     // (at pixel level)
-    motion::detection.threshold(5);
+    detection.threshold(5);
     // the higher the threshold, the lesser sensitivity
     // (at image level, from 0 to 1)
-    motion::detection.ratio(0.2);
+    detection.ratio(0.2);
     // optionally, you can enable rate limiting (aka debounce)
     // motion won't trigger more often than the specified frequency
-    motion::detection.rate.atMostOnceEvery(5).seconds();
+    detection.rate.atMostOnceEvery(5).seconds();
 
     // init camera
     while (!camera.begin().isOk())
@@ -59,12 +60,12 @@ void loop() {
     }
 
     // run motion detection
-    if (!motion::detection.run().isOk()) {
+    if (!detection.run().isOk()) {
         Serial.println(motion::detection.exception.toString());
         return;
     }
 
     // on motion, perform action
-    if (motion::detection.triggered())
+    if (detection.triggered())
         Serial.println("Motion detected!");
 }
