@@ -9,6 +9,7 @@
 #include "./msr_config.h"
 #include "./mnp_config.h"
 #include "./face_t.h"
+#include "./daemon.h"
 
 using eloq::camera;
 using eloq::face_t;
@@ -32,6 +33,7 @@ namespace Eloquent {
                     Benchmark benchmark;
                     MSRConfig msr;
                     MNPConfig mnp;
+                    Daemon<FaceDetection> daemon;
                     uint8_t image[240 * 240 * 3];
                     face_t first;
                     face_t faces[MAX_FACES];
@@ -41,6 +43,7 @@ namespace Eloquent {
                      */
                     FaceDetection() :
                         exception("FaceDetection"),
+                        daemon(this),
                         _twoStages(false),
                         _confidence(0.5)
                     {

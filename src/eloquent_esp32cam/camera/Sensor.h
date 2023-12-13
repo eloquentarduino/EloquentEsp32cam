@@ -85,6 +85,14 @@ namespace Eloquent {
                  *
                  * @return
                  */
+                bool defaultBrightness() {
+                    return setBrightness(0);
+                }
+
+                /**
+                 *
+                 * @return
+                 */
                 bool highBrightness() {
                     return setBrightness(1);
                 }
@@ -121,6 +129,14 @@ namespace Eloquent {
                  */
                 bool lowSaturation() {
                     return setSaturation(-1);
+                }
+
+                /**
+                 *
+                 * @return
+                 */
+                bool defaultSaturation() {
+                    return setSaturation(0);
                 }
 
                 /**
