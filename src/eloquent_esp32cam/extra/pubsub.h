@@ -45,7 +45,7 @@ namespace Eloquent {
              * @brief Set client id
              * @param clientName
              */
-            void name(String clientName) {
+            void clientName(String clientName) {
                 clientId = clientName;
                 
                 // replace vars
@@ -56,15 +56,24 @@ namespace Eloquent {
              * @brief Set MQTT server
              * @param server
              */
-            void server(String server, uint16_t port = 0) {
-                _server = server;
-                _port = port ? port : _port;
+            void server(const char* server, uint16_t port = 0) {
+                mqtt.setServer(server, port ? port : _port);
+            }
+            
+            /**
+             * @brief Set username/password for broker
+             * @param user
+             * @param pass
+             */
+            void auth(String user, String pass) {
+                _user = user;
+                _pass = pass;
             }
             
             /**
              * @brief Connect to MQTT client
              */
-            Exception& connect() {
+            Exception& connect(size_t timeout = 10000) {
                 if (mqtt.connected())
                     return exception.clear();
                     
@@ -74,10 +83,17 @@ namespace Eloquent {
                 if (WiFi.status() != WL_CONNECTED)
                     return exception.set("You must be connected to WiFi");
                     
-                if (!mqtt.connect(clientId.c_str()))
-                    return exception.set("Cannot connect to MQTT server");
+                timeout += millis();
+                
+                while (millis() < timeout) {
+                    const char *user = _user == "" ? NULL : _user.c_str();
+                    const char *pass = _pass == "" ? NULL : _pass.c_str();
                     
-                return exception.clear();
+                    if (mqtt.connect(clientId.c_str(), user, pass))
+                        return exception.clear();
+                }
+                    
+                return exception.set("Cannot connect to MQTT server");
             }
         
             /**
@@ -85,13 +101,14 @@ namespace Eloquent {
              * @param topic
              */
             Exception& publish(String topic) {
-                if (!_subject->shouldPub())
-                    return exception;
+                //if (!_subject->shouldPub())
+                //    return exception;
                     
-                if (!connect())
+                if (!connect().isOk())
                     return exception;
-                    
-                mqtt.publish(topic.c_str(), _subject->toJSON().c_str());
+                   
+                if (!mqtt.publish(topic.c_str(), _subject->toJSON().c_str()))
+                    return exception.set("Cannot send MQTT message");
                     
                 return exception.clear();
             }
@@ -100,6 +117,8 @@ namespace Eloquent {
             T *_subject;
             uint16_t _port;
             String _server;
+            String _user;
+            String _pass;
         };
     }
 }

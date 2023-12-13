@@ -56,7 +56,7 @@ namespace Eloquent {
                 void start() {
                     thread
                         .withArgs((void*) this)
-                        .withStackSize(3000)
+                        .withStackSize(5000)
                         .run([](void *args) {
                             Daemon *self = (Daemon*) args;
                             
