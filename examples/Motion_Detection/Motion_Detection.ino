@@ -61,7 +61,7 @@ void loop() {
 
     // run motion detection
     if (!detection.run().isOk()) {
-        Serial.println(motion::detection.exception.toString());
+        Serial.println(detection.exception.toString());
         return;
     }
 
