@@ -26,8 +26,10 @@ namespace Eloquent {
                      * Constructor
                      */
                     Mjpeg() :
-                        exception("MjpegStreamServer"),
-                        server("MjpegStreamServer", MJPEG_HTTP_PORT) {
+                        exception("Mjpeg"),
+                        server("Mjpeg", MJPEG_HTTP_PORT),
+                        _paused(false),
+                        _stopped(false) {
 
                         }
 
@@ -47,6 +49,7 @@ namespace Eloquent {
 
                         onJpeg();
                         onMjpeg();
+                        onHtml();
 
                         // run in thread
                         server.thread.withStackSize(5000);
@@ -57,13 +60,42 @@ namespace Eloquent {
                         return exception.clear();
                     }
 
+                    /**
+                     * Pause stream
+                     */
+                    void pause() {
+                        _paused = true;
+                    }
+
+                    /**
+                     * Play stream
+                     */
+                    void play() {
+                        _paused = false;
+                        _stopped = false;
+                    }
+
+                    /**
+                     * Completely stop the stream
+                     */
+                    void stop() {
+                        _stopped = true;
+                    }
+
                 protected:
+                    bool _paused;
+                    bool _stopped;
 
                     /**
                      * Register / endpoint to get Mjpeg stream
                      */
                     void onMjpeg() {
                         server.onGET("/", [this](WebServer *web) {
+                            if (_stopped) {
+                                web->send(500, "text/plain", "Server is stopped");
+                                return;
+                            }
+
                             WiFiClient client = web->client();
 
                             client.println(F("HTTP/1.1 200 OK"));
@@ -75,8 +107,14 @@ namespace Eloquent {
                                 delay(1);
                                 yield();
 
-                                if (!client.connected())
+                                if (_paused)
                                     continue;
+
+                                if (_stopped)
+                                    break;
+
+                                if (!client.connected())
+                                    break;
 
                                 if (!camera.capture().isOk())
                                     continue;
@@ -96,6 +134,11 @@ namespace Eloquent {
                      */
                     void onJpeg() {
                         server.onGET("/jpeg", [this](WebServer *web) {
+                            if (_stopped) {
+                                web->send(500, "text/plain", "Server is stopped");
+                                return;
+                            }
+
                             if (!camera.capture().isOk())
                                 return server.serverError(camera.exception.toString());
 
@@ -108,6 +151,21 @@ namespace Eloquent {
                             client.println((unsigned int) camera.frame->len);
                             client.println();
                             client.write((const char *) camera.frame->buf, camera.frame->len);
+                        });
+                    }
+
+                    /**
+                     * Register /html endpoint to get a full HTML page
+                     */
+                    void onHtml() {
+                        server.onGET("/html", [this](WebServer *web) {
+                            if (_stopped) {
+                                web->send(500, "text/plain", "Server is stopped");
+                                return;
+                            }
+                            
+                            String html = String("<img src=\"http://") + wifi.ip() + ":81\" />";
+                            web->send(200, "text/html", html);
                         });
                     }
             };
