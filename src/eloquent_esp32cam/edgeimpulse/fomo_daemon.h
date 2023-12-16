@@ -10,6 +10,7 @@ using eloq::camera;
 using eloq::ei::bbox_t;
 using Eloquent::Extra::Esp32::Multiprocessing::Thread;
 using OnObjectCallback = std::function<void(uint8_t, bbox_t&)>;
+using OnNothingCallback = std::function<void()>;
 
 
 namespace Eloquent {
@@ -49,6 +50,14 @@ namespace Eloquent {
                 }
                 
                 /**
+                 * @brief Run function when nothing is detected
+                 * @param callback
+                 */
+                void whenYouDontSeeAnything(OnNothingCallback callback) {
+                    _onNothing = callback;
+                }
+                
+                /**
                  * @brief Run function when a specific object is detected
                  * @param label
                  * @param callback
@@ -75,6 +84,8 @@ namespace Eloquent {
                     thread
                         .withArgs((void*) this)
                         .withStackSize(4000)
+                        // @see https://docs.espressif.com/projects/esp-idf/en/v5.0/esp32s3/api-guides/performance/speed.html
+                        .withPriority(17)
                         .run([](void *args) {
                             FOMODaemon *self = (FOMODaemon*) args;
                             
@@ -90,8 +101,12 @@ namespace Eloquent {
                                 if (!self->_fomo->run().isOk())
                                     continue;
                                     
-                                if (!self->_fomo->foundAnyObject())
+                                if (!self->_fomo->foundAnyObject()) {
+                                    if (self->_onNothing)
+                                        self->_onNothing();
+                                        
                                     continue;
+                                }
                                     
                                 self->_fomo->forEach([&self](int i, bbox_t& bbox) {
                                     // run specific label callback
@@ -109,7 +124,7 @@ namespace Eloquent {
             protected:
                 T *_fomo;
                 uint8_t _numListeners;
-                OnObjectCallback _onAny;
+                OnNothingCallback _onNothing;
                 struct {
                     String label;
                     OnObjectCallback callback;

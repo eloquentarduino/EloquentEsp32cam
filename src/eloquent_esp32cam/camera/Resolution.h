@@ -2,6 +2,9 @@
 #define ELOQUENT_ESP32CAM_CAMERA_RESOLUTION
 
 #include <esp_camera.h>
+#include "../extra/time/benchmark.h"
+
+using Eloquent::Extra::Time::Benchmark;
 
 
 namespace Eloquent {
@@ -13,6 +16,7 @@ namespace Eloquent {
             class Resolution {
             public:
                 framesize_t framesize;
+                Benchmark benchmark;
 
                 /**
                  * Constructor
@@ -262,6 +266,43 @@ namespace Eloquent {
                 size_t getHeight() {
                     return height;
                 }
+                
+                /**
+                 * @brief Set resolution
+                 * @param resolution
+                 */
+                void set(framesize_t resolution) {
+                    switch (resolution) {
+                        case FRAMESIZE_96X96: _96x96(); break;
+                        case FRAMESIZE_QQVGA: square96(); break;
+                        case FRAMESIZE_QCIF: qcif(); break;
+                        case FRAMESIZE_HQVGA: hqvga(); break;
+                        case FRAMESIZE_240X240: _240x240(); break;
+                        case FRAMESIZE_QVGA: square240(); break;
+                        case FRAMESIZE_CIF: cif(); break;
+                        case FRAMESIZE_HVGA: hvga(); break;
+                        case FRAMESIZE_VGA: vga(); break;
+                        case FRAMESIZE_SVGA: svga(); break;
+                        case FRAMESIZE_XGA: xga(); break;
+                        case FRAMESIZE_HD: hd(); break;
+                        case FRAMESIZE_SXGA: sxga(); break;
+                        case FRAMESIZE_UXGA: uxga(); break;
+                        case FRAMESIZE_FHD: fhd(); break;
+                        case FRAMESIZE_P_HD: phd(); break;
+                        case FRAMESIZE_P_3MP: p3mp(); break;
+                        case FRAMESIZE_QXGA: qxga(); break;
+                        case FRAMESIZE_QHD: qhd(); break;
+                        case FRAMESIZE_WQXGA: wqxga(); break;
+                        case FRAMESIZE_P_FHD: pfhd(); break;
+                        case FRAMESIZE_QSXGA: qsxga(); break;
+                        default:
+                            ESP_LOGE("Resolution", "Unsupported resolution: %d", (int) resolution);
+                            return;
+                    }
+                    
+                    sensor_t *sensor = esp_camera_sensor_get();
+                    sensor->set_framesize(sensor, resolution);
+                }
 
                 /**
                  *
@@ -269,6 +310,24 @@ namespace Eloquent {
                  */
                 bool isXGA() {
                     return framesize == FRAMESIZE_XGA;
+                }
+                
+                /**
+                 * @brief Run function at given resolution, that revert back
+                 * @todo test
+                 * @param resolution
+                 * @param callback
+                 */
+                template<typename Callback>
+                void at(framesize_t resolution, Callback callback) {
+                    framesize_t old = framesize;
+                    
+                    // how long does it take to switch resolution?
+                    benchmark.benchmark([this, resolution]() {
+                        set(resolution);
+                    });
+                    callback();
+                    set(old);
                 }
 
                 /**
