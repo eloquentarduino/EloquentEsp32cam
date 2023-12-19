@@ -24,7 +24,7 @@ struct JpegDecoding {
  * @param data
  * @return
  */
-unsigned char pjpegConsume(unsigned char* dest, unsigned char chunkSize, unsigned char *read, void *data) {
+unsigned char _pjpegConsumeGray(unsigned char* dest, unsigned char chunkSize, unsigned char *read, void *data) {
     JpegDecoding *decoding = (JpegDecoding*) data;
 
     if (!camera.hasFrame()) {
@@ -100,7 +100,7 @@ namespace Eloquent {
 
                     benchmark.start();
 
-                    if (status = pjpeg_decode_init(&jpeg, pjpegConsume, (void *) &decoding, 1)) {
+                    if (status = pjpeg_decode_init(&jpeg, _pjpegConsumeGray, (void *) &decoding, 1)) {
                         benchmark.stop();
                         return exception.set(String("JPEG decode error: ") + status);
                     }

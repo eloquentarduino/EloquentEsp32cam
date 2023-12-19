@@ -103,7 +103,7 @@ namespace Eloquent {
                     Exception& run() {
                         // skip fre first frames
                         if (_skip > 0 && _skip-- > 0)
-                            return exception.set("Skipping fre frames...");
+                            return exception.set(String("Still ") + _skip + " frames to skip...");
                             
                         // convert JPEG to RGB565
                         // this reduces the frame to 1/8th
