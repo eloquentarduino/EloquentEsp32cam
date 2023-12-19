@@ -46,6 +46,13 @@ namespace Eloquent {
                 }
 
                 /**
+                 * Alias for vflip
+                 */
+                bool vmirror(bool mirror = true) {
+                    return vflip(mirror);
+                }
+
+                /**
                  * Horizontal mirror
                  *
                  * @param mirror
