@@ -1,4 +1,11 @@
-cmake-build-debug
+.DS_Store
+.vscode
 .idea
+.codelite
+.gitignore
+EloquentEsp32cam.workspace
 publish
-todo
+examples/ignore
+examples/PREMIUM_EXAMPLES
+ignore
+src/eloquent_esp32cam/avi/libavi.h
