@@ -8,7 +8,7 @@
 #include "../multiprocessing/thread.h"
 
 using namespace eloq;
-using Eloquent::Extra::Exception;
+using Eloquent::Error::Exception;
 using Eloquent::Extra::Esp32::Multiprocessing::Thread;
 
 

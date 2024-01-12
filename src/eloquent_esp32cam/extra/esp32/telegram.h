@@ -9,7 +9,7 @@
 #include "../exception.h"
 
 using namespace eloq;
-using Eloquent::Extra::Exception;
+using Eloquent::Error::Exception;
 
 static const char _TELEGRAM_CERT[] PROGMEM = R"EOF(
 -----BEGIN CERTIFICATE-----

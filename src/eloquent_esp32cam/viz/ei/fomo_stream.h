@@ -12,7 +12,7 @@
 using eloq::camera;
 using eloq::viz::mjpeg;
 using eloq::ei::fomo;
-using Eloquent::Extra::Exception;
+using Eloquent::Error::Exception;
 using Eloquent::Extra::Esp32::Http::HttpServer;
 
 namespace Eloquent {

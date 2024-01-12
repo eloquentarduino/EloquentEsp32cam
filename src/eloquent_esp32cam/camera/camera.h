@@ -14,7 +14,7 @@
 #include "../extra/time/rate_limit.h"
 #include "../extra/esp32/multiprocessing/mutex.h"
 
-using Eloquent::Extra::Exception;
+using Eloquent::Error::Exception;
 using Eloquent::Extra::Time::RateLimit;
 using Eloquent::Extra::Esp32::Multiprocessing::Mutex;
 
@@ -100,7 +100,7 @@ namespace Eloquent {
                      */
                     Exception& capture() {
                         if (!rateLimit)
-                            return exception.set("Too many requests for frame");
+                            return exception.soft().set("Too many requests for frame");
 
                         mutex.threadsafe([this]() {
                             free();

@@ -8,7 +8,7 @@
 #include "../extra/exception.h"
 #include "../extra/benchmark.h"
 
-using Eloquent::Extra::Exception;
+using Eloquent::Error::Exception;
 using Eloquent::Extra::Benchmark;
 using namespace eloq;
 

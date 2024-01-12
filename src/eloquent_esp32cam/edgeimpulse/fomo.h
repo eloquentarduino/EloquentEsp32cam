@@ -86,6 +86,52 @@
                         return count;
                     }
 
+                    /**
+                     * Convert to JSON string
+                     */
+                    String toJSON() {
+                        static char buf[10 * 33] = {' '};
+                        String json(buf);
+                        
+                        json = "[]";
+
+                        if (!found())
+                            return json;
+
+                        json = "[";
+
+                        forEach([&json](uint8_t i, bbox_t bbox) {
+                            if (i > 0)
+                                json += ',';
+
+                            json += '{';
+                            json += "\"label\":\"";
+                            json += bbox.label;
+                            json += "\",\"proba\":";
+                            json += bbox.proba;
+                            json += ",\"x\":";
+                            json += bbox.x;
+                            json += ",\"y\":";
+                            json += bbox.y;
+                            json += ",\"w\":";
+                            json += bbox.width;
+                            json += ",\"h\":";
+                            json += bbox.height;
+                            json += '}';
+                        });
+
+                        json += ']';
+                        
+                        return json;
+                    }
+
+                    /**
+                     * Test if a MQTT payload is available
+                     */
+                    bool shouldPub() {
+                        return found();
+                    }
+
                 protected:
 
                     /**

@@ -5,7 +5,7 @@
 #include "./wifi/sta.h"
 
 using namespace eloq;
-using Eloquent::Extra::Exception;
+using Eloquent::Error::Exception;
 
 
 namespace Eloquent {

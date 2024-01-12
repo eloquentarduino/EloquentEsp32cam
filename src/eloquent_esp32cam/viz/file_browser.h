@@ -8,7 +8,7 @@
 #include "../extra/esp32/fs/fs.h"
 
 using namespace eloq;
-using Eloquent::Extra::Exception;
+using Eloquent::Error::Exception;
 using Eloquent::Extra::Esp32::Http::HttpServer;
 using Eloquent::Extra::Esp32::Fs::FileSystem;
 

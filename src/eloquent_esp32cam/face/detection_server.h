@@ -7,7 +7,7 @@
 #include "../assets/face_detection.html.h"
 #include "../assets/face_detection.js.h"
 
-using Eloquent::Extra::Exception;
+using Eloquent::Error::Exception;
 using Eloquent::Extra::Esp32::Http::ThreadedServer;
 using Eloquent::Extra::Esp32::Ws::ThreadedWs;
 

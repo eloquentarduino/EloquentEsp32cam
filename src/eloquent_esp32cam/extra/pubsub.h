@@ -7,7 +7,7 @@
 #include <PubSubClient.h>
 #include "./exception.h"
 
-using Eloquent::Extra::Exception;
+using Eloquent::Error::Exception;
 
 
 namespace Eloquent {

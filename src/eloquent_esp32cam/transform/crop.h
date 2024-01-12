@@ -4,7 +4,7 @@
 #include <dl_image.hpp>
 #include "../extra/exception.h"
 
-using Eloquent::Extra::Exception;
+using Eloquent::Error::Exception;
 using namespace dl::image;
 
 

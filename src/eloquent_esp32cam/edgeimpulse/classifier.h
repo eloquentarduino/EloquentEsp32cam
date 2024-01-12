@@ -4,7 +4,7 @@
 #include "../extra/exception.h"
 #include "../extra/time/benchmark.h"
 
-using Eloquent::Extra::Exception;
+using Eloquent::Error::Exception;
 using Eloquent::Extra::Time::Benchmark;
 using ei::signal_t;
 

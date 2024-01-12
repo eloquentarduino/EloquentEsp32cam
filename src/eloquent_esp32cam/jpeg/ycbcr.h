@@ -9,7 +9,7 @@
 #include "../extra/time/benchmark.h"
 
 using eloq::camera;
-using Eloquent::Extra::Exception;
+using Eloquent::Error::Exception;
 using Eloquent::Extra::Time::Benchmark;
 
 namespace eloq {

@@ -9,7 +9,7 @@
 #include "./daemon.h"
 
 using eloq::camera;
-using Eloquent::Extra::Exception;
+using Eloquent::Error::Exception;
 using Eloquent::Extra::Time::Benchmark;
 using Eloquent::Extra::Time::RateLimit;
 #if defined(ELOQUENT_EXTRA_PUBSUB_H)

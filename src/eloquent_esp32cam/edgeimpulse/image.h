@@ -3,11 +3,15 @@
 
 #include <esp_camera.h>
 #include <edge-impulse-sdk/dsp/image/image.hpp>
+#include "../extra/pubsub.h"
 #include "./classifier.h"
 
 using namespace eloq;
 using eloq::camera;
 using ei::signal_t;
+#if defined(ELOQUENT_EXTRA_PUBSUB_H)
+using Eloquent::Extra::PubSub;
+#endif
 
 
 #define _EI_RGB_ (EI_CLASSIFIER_NN_INPUT_FRAME_SIZE > EI_CLASSIFIER_RAW_SAMPLE_COUNT)
@@ -26,6 +30,9 @@ namespace Eloquent {
                     float proba;
                     size_t srcWidth;
                     size_t srcHeight;
+                    #if defined(ELOQUENT_EXTRA_PUBSUB_H)
+                    PubSub<ImageClassifier> mqtt;
+                    #endif
 
                     /**
                      * 
@@ -35,6 +42,9 @@ namespace Eloquent {
                         label(""),
                         ix(0),
                         proba(0),
+                        #if defined(ELOQUENT_EXTRA_PUBSUB_H)
+                        mqtt(this),
+                        #endif
                         _buf(NULL),
                         _len(0) {
                         }
@@ -66,6 +76,20 @@ namespace Eloquent {
                         breakTiming();
                         
                         return exception.clear();
+                    }
+
+                    /**
+                     * Convert to JSON string
+                     */
+                    virtual String toJSON() {
+                        return String("{\"label\":\"") + label + "\",\"proba\":" + proba + "}";
+                    }
+
+                    /**
+                     * Test if a MQTT payload is available
+                     */
+                    virtual bool shouldPub() {
+                        return true;
                     }
 
                 protected:

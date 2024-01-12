@@ -11,7 +11,7 @@
 using eloq::viz::mjpeg;
 using eloq::face::detection;
 using eloq::face_t;
-using Eloquent::Extra::Exception;
+using Eloquent::Error::Exception;
 using Eloquent::Extra::Esp32::Http::HttpServer;
 using Eloquent::Esp32cam::Face::FaceDetection;
 

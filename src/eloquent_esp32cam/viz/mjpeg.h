@@ -8,7 +8,7 @@
 
 using eloq::camera;
 using eloq::wifi;
-using Eloquent::Extra::Exception;
+using Eloquent::Error::Exception;
 using Eloquent::Extra::Esp32::Http::HttpServer;
 
 namespace Eloquent {

@@ -7,7 +7,7 @@
 #include "./write_session.h"
 
 
-using Eloquent::Extra::Exception;
+using Eloquent::Error::Exception;
 using namespace eloq;
 
 

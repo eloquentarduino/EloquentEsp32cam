@@ -7,7 +7,7 @@
 #include "./mjpeg.h"
 
 using namespace eloq;
-using Eloquent::Extra::Exception;
+using Eloquent::Error::Exception;
 using Eloquent::Extra::Esp32::Http::HttpServer;
 using Eloquent::Extra::Car::Car2WD;
 

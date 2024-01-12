@@ -14,7 +14,7 @@
 
 using eloq::camera;
 using eloq::face_t;
-using Eloquent::Extra::Exception;
+using Eloquent::Error::Exception;
 using Eloquent::Extra::Time::Benchmark;
 #if defined(ELOQUENT_EXTRA_PUBSUB_H)
 using Eloquent::Extra::PubSub;

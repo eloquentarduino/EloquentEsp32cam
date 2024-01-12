@@ -1,8 +1,8 @@
-#ifndef ELOQUENT_EXTRA_ERROR_EXCEPTION_H
-#define ELOQUENT_EXTRA_ERROR_EXCEPTION_H
+#ifndef ELOQUENT_EXCEPTION_H
+#define ELOQUENT_EXCEPTION_H
 
 namespace Eloquent {
-    namespace Extra {
+    namespace Error {
         /**
          * Application expcetion
          */
@@ -56,7 +56,11 @@ namespace Eloquent {
 
                     if (error.length() > 0) {
                         const char *c_str = error.c_str();
-                        ESP_LOGE(_tag, "%s", c_str);
+
+                        if (_isSevere)
+                            ESP_LOGE(_tag, "%s", c_str);
+                        else
+                            ESP_LOGW(_tag, "%s", c_str);
                     }
 
                     return *this;

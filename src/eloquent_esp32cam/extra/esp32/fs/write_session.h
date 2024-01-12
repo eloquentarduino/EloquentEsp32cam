@@ -5,7 +5,7 @@
 #include "../../exception.h"
 #include "../nvs/counter.h"
 
-using Eloquent::Extra::Exception;
+using Eloquent::Error::Exception;
 using Eloquent::Extra::Esp32::NVS::Counter;
 
 
