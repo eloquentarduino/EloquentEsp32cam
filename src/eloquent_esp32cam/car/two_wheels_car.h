@@ -150,4 +150,11 @@ namespace Eloquent {
     }
 }
 
+namespace eloq {
+    namespace car {
+        using TwoWheelsCar = Eloquent::Esp32cam::Car::TwoWheelsCar;
+    }
+}
+
+
 #endif
