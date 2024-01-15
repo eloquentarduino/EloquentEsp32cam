@@ -273,6 +273,29 @@ namespace Eloquent {
                     pins.reset = 15;
                     pins.flashlight = 2;
                 }
+
+                /**
+                 *
+                 */
+                void lilygo_tcamera_s3() {
+                    pins.d0 = 14;
+                    pins.d1 = 47;
+                    pins.d2 = 48;
+                    pins.d3 = 21;
+                    pins.d4 = 13;
+                    pins.d5 = 11;
+                    pins.d6 = 10;
+                    pins.d7 = 9;
+                    pins.xclk = 38;
+                    pins.pclk = 12;
+                    pins.vsync = 8;
+                    pins.href = 18;
+                    pins.sccb_sda = 5;
+                    pins.sccb_scl = 4;
+                    pins.pwdn = -1;
+                    pins.reset = 39;
+                    pins.flashlight = -1;
+                }
             };
         }
     }
