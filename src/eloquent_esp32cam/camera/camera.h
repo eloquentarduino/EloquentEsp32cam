@@ -34,7 +34,7 @@ namespace Eloquent {
                     XCLK xclk;
                     Resolution resolution;
                     Pinout pinout;
-                    Sensor sensor;
+                    sensor_t sensor;
                     Pixformat pixformat;
                     Exception exception;
                     RateLimit rateLimit;
@@ -73,8 +73,8 @@ namespace Eloquent {
                         config.pin_pclk = pinout.pins.pclk;
                         config.pin_vsync = pinout.pins.vsync;
                         config.pin_href = pinout.pins.href;
-                        config.pin_sccb_sda = pinout.pins.sccb_sda;
-                        config.pin_sccb_scl = pinout.pins.sccb_scl;
+                        config.pin_sscb_sda = pinout.pins.sccb_sda;
+                        config.pin_sscb_scl = pinout.pins.sccb_scl;
                         config.pin_pwdn = pinout.pins.pwdn;
                         config.pin_reset = pinout.pins.reset;
 
@@ -90,7 +90,7 @@ namespace Eloquent {
                         if (esp_camera_init(&config) != ESP_OK)
                             return exception.set("Cannot init camera");
 
-                        sensor.setFrameSize(resolution.framesize);
+                        sensor.set_framesize(&sensor, resolution.framesize);
 
                         return exception.clear();
                     }

@@ -1,6 +1,7 @@
 #ifndef ELOQUENT_ESP32CAM_CAMERA_CONVERTER
 #define ELOQUENT_ESP32CAM_CAMERA_CONVERTER
 
+#include <esp_jpg_decode.h>
 #include "../extra/exception.h"
 
 using Eloquent::Error::Exception;
