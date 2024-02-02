@@ -164,7 +164,7 @@ namespace Eloquent {
                                 return;
                             }
                             
-                            String html = String("<img src=\"http://") + wifi.ip() + ":81\" />";
+                            String html = String("<img src=\"http://") + wifi.ip() + ":" + MJPEG_HTTP_PORT + "\" />";
                             web->send(200, "text/html", html);
                         });
                     }
