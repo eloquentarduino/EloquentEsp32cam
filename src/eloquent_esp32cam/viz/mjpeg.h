@@ -10,6 +10,7 @@ using eloq::camera;
 using eloq::wifi;
 using Eloquent::Error::Exception;
 using Eloquent::Extra::Esp32::Http::HttpServer;
+using OnFrameCallback = std::function<void(WiFiClient*, camera_fb_t*)>;
 
 namespace Eloquent {
     namespace Esp32cam {
@@ -29,7 +30,8 @@ namespace Eloquent {
                         exception("Mjpeg"),
                         server("Mjpeg", MJPEG_HTTP_PORT),
                         _paused(false),
-                        _stopped(false) {
+                        _stopped(false),
+                        _onFrame(NULL) {
 
                         }
 
@@ -82,9 +84,18 @@ namespace Eloquent {
                         _stopped = true;
                     }
 
+                    /**
+                     * Set callback to run on each streamed frame
+                     * @param onFrame
+                     */
+                    void onFrame(OnFrameCallback onFrame) {
+                        _onFrame = onFrame;
+                    }
+
                 protected:
                     bool _paused;
                     bool _stopped;
+                    OnFrameCallback _onFrame;
 
                     /**
                      * Register / endpoint to get Mjpeg stream
@@ -121,6 +132,10 @@ namespace Eloquent {
 
                                 client.print("Content-Type: image/jpeg\r\nContent-Length: ");
                                 client.println(camera.frame->len);
+
+                                if (_onFrame != NULL)
+                                    _onFrame(&client, camera.frame);
+
                                 client.println();
                                 client.write((const char *) camera.frame->buf, camera.frame->len);
                                 client.println(F("\r\n--frame"));
