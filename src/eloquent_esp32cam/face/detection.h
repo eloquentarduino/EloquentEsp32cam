@@ -37,6 +37,10 @@ namespace Eloquent {
                     Benchmark benchmark;
                     MSRConfig msr;
                     MNPConfig mnp;
+                    /**
+                     * @added 2.7.3
+                     */
+                    std::list<dl::detect::result_t> results;
                     Daemon<FaceDetection> daemon;
                     #if defined(ELOQUENT_EXTRA_PUBSUB_H)
                     PubSub<FaceDetection> mqtt;
@@ -123,7 +127,7 @@ namespace Eloquent {
                                     );
 
                                     std::list<dl::detect::result_t> &cand = s1.infer(image, shape);
-                                    std::list<dl::detect::result_t> &results = s2.infer(image, shape, cand);
+                                    results = s2.infer(image, shape, cand);
                                     copy(results);
                                 }
                                 else {
@@ -134,7 +138,7 @@ namespace Eloquent {
                                         msr.config.resize_scale
                                     );
 
-                                    std::list<dl::detect::result_t> &results = s1.infer((uint8_t*) image, shape);
+                                    results = s1.infer((uint8_t*) image, shape);
                                     copy(results);
                                 }
                             }, 1000);
@@ -238,6 +242,20 @@ namespace Eloquent {
                     bool shouldPub() {
                         return found();
                     }
+
+                    /**
+                     * @added 27.3
+                     * @return
+                     */
+                    std::vector<int>& keypoints() {
+                        static std::vector<int> empty{};
+
+                        if (!found())
+                            return empty;
+
+                        return results.front().keypoint;
+                    }
+
 
                 protected:
                     bool _twoStages;

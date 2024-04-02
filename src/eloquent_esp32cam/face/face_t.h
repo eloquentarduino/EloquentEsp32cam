@@ -16,6 +16,14 @@ namespace Eloquent {
                     int16_t y0;
                     int16_t x1;
                     int16_t y1;
+                    /**
+                     * @added 2.7.3
+                     */
+                    int16_t cx;
+                    /**
+                     * @added 2.7.3
+                     */
+                    int16_t cy;
                     uint16_t width;
                     uint16_t height;
                     float score;
@@ -54,6 +62,11 @@ namespace Eloquent {
                         width = x1 - x0 + 1;
                         height = y1 - y0 + 1;
                         score = result.score;
+                        /**
+                         * @added 2.7.3
+                         */
+                        cx = x + width / 2;
+                        cy = y + height / 2;
 
                         if (result.keypoint.size() == 10) {
                             leftEye.x = result.keypoint[0];

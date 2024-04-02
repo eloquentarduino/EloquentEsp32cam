@@ -232,7 +232,7 @@ static void fillInBuf(void)
     status = (*g_pNeedBytesCallback)(gInBuf + gInBufOfs, PJPG_MAX_IN_BUF_SIZE - gInBufOfs, &gInBufLeft, g_pCallback_data);
     if (status)
     {
-        // The user provided need bytes callback has indicated an error, so record the error and continue trying to decode.
+        // The user provided need bytes callback has indicated an error, so record the error and continue trying to _mc.
         // The highest level pjpeg entrypoints will catch the error and return the non-zero status.
         gCallbackStatus = status;
     }
