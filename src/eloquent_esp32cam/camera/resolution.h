@@ -334,7 +334,7 @@ namespace Eloquent {
                  * Print help message
                  */
                 void help() {
-                    LOG_HELP("AVAILABLE RESOLUTIONS");
+                    /*LOG_HELP("AVAILABLE RESOLUTIONS");
                     LOG_HELP(" > yolo (96x96)");
                     LOG_HELP(" > qqvga (160x120)");
                     LOG_HELP(" > qcif (176x144)");
@@ -356,7 +356,7 @@ namespace Eloquent {
                     LOG_HELP(" > qhd (2560x1440)");
                     LOG_HELP(" > wqxga (2560x1600)");
                     LOG_HELP(" > pfhd (1080x1920)");
-                    LOG_HELP(" > qsxga (2560x1920)");
+                    LOG_HELP(" > qsxga (2560x1920)");*/
                 }
 
             protected:

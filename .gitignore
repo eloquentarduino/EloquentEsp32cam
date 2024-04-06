@@ -9,3 +9,4 @@ examples/ignore
 examples/PREMIUM_EXAMPLES
 ignore
 src/eloquent_esp32cam/avi/libavi.h
+tools

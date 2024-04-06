@@ -57,10 +57,10 @@ namespace Eloquent {
                     if (error.length() > 0) {
                         const char *c_str = error.c_str();
 
-                        if (_isSevere)
-                            ESP_LOGE(_tag, "%s", c_str);
-                        else
-                            ESP_LOGW(_tag, "%s", c_str);
+                        //if (_isSevere)
+                        //    ESP_LOGE(_tag, "%s", c_str);
+                        //else
+                        //    ESP_LOGW(_tag, "%s", c_str);
                     }
 
                     return *this;
