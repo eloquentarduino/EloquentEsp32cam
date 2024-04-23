@@ -39,7 +39,7 @@ namespace Eloquent {
                 Exception exception;
                 Benchmark benchmark;
                 FaceRecognition112V1S8 recognizer;
-                face_info_t match;
+                matched_face_t match;
 
                 /**
                  * Constructor
@@ -48,6 +48,7 @@ namespace Eloquent {
                     exception(""),
                     thresh(0.85) {
 
+                    match.id = -1;
                     match.name = "";
                     match.similarity = 0;
 
@@ -202,7 +203,11 @@ namespace Eloquent {
 
                     this->benchmark.benchmark([this]() {
                         this->align();
-                        this->match = recognizer.recognize(this->input, detection.keypoints());
+                        face_info_t info = recognizer.recognize(this->input, detection.keypoints());
+
+                        this->match.id = info.id;
+                        this->match.name = String(info.name.c_str());
+                        this->match.similarity = info.similarity;
                     });
 
                     return this->exception.clear();

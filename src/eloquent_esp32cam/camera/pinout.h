@@ -208,6 +208,29 @@ namespace Eloquent {
                 /**
                  *
                  */
+                void ttgo_pir() {
+                    pins.d0 = 5;
+                    pins.d1 = 14;
+                    pins.d2 = 4;
+                    pins.d3 = 15;
+                    pins.d4 = 18;
+                    pins.d5 = 23;
+                    pins.d6 = 36;
+                    pins.d7 = 39;
+                    pins.xclk = 32;
+                    pins.pclk = 19;
+                    pins.vsync = 27;
+                    pins.href = 25;
+                    pins.sccb_sda = 13;
+                    pins.sccb_scl = 12;
+                    pins.pwdn = 26;
+                    pins.reset = -1;
+                    pins.flashlight = -1;
+                }
+
+                /**
+                 *
+                 */
                 void simcam() {
                     pins.d0 = 11;
                     pins.d1 = 9;
