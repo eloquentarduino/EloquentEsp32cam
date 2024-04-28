@@ -2,7 +2,7 @@
 #define ELOQUENT_EXTRA_ESP32_NVS_COUNTER
 
 #include <Preferences.h>
-#include "../../ULID.h"
+#include "../../ulid.h"
 
 namespace Eloquent {
     namespace Extra {
