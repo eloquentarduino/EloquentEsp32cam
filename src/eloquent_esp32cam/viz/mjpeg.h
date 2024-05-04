@@ -46,9 +46,6 @@ namespace Eloquent {
                      * Start server
                      */
                     Exception& begin() {
-                        if (!wifi.isConnected())
-                            return exception.set("WiFi not connected");
-
                         onJpeg();
                         onMjpeg();
                         onHtml();

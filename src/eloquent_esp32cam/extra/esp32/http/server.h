@@ -69,9 +69,6 @@ namespace Eloquent {
                          * @return
                          */
                         Exception& begin() {
-                            if (!wifi.isConnected())
-                                return exception.set("Not connected to WiFi");
-
                             // run server in thread
                             thread
                                 .withArgs((void*) this)
