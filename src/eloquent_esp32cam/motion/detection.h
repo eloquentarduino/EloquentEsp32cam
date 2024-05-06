@@ -100,7 +100,7 @@ namespace Eloquent {
                     /**
                      * 
                      */
-                    Exception& run() {
+                    Exception& run(float& ratio ) {
                         // skip fre first frames
                         if (_skip > 0 && _skip-- > 0)
                             return exception.set(String("Still ") + _skip + " frames to skip...");
@@ -131,7 +131,7 @@ namespace Eloquent {
                             movingRatio = ((float) movingPoints) / camera.rgb565.length * _stride * _stride;
                             copy(camera.rgb565);
                         });
-
+						ratio = movingRatio;
                         ESP_LOGD("MotionDetection", "moving points ratio: %.2f", movingRatio);
 
                         // rate limit
@@ -143,7 +143,10 @@ namespace Eloquent {
 
                         return exception.clear();
                     }
-                    
+                    Exception& run() {
+						float dummy;
+						return run(dummy);
+					}
                     /**
                      * @brief Convert to JSON
                      */
