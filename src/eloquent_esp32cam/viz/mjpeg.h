@@ -31,6 +31,7 @@ namespace Eloquent {
                         server("Mjpeg", MJPEG_HTTP_PORT),
                         _paused(false),
                         _stopped(false),
+                        _delay(50),
                         _onFrame(NULL) {
 
                         }
@@ -40,6 +41,17 @@ namespace Eloquent {
                      */
                     String address() const {
                         return String("MJPEG stream is available at http://") + wifi.ip() + ":" + String(MJPEG_HTTP_PORT);
+                    }
+
+                    /**
+                     * Limit FPS
+                     * @param fps
+                     */
+                    void maxFPS(uint8_t fps) {
+                        _delay = 1000.0f / fps;
+
+                        if (_delay < 1)
+                            _delay = 1;
                     }
 
                     /**
@@ -92,6 +104,7 @@ namespace Eloquent {
                 protected:
                     bool _paused;
                     bool _stopped;
+                    uint16_t _delay;
                     OnFrameCallback _onFrame;
 
                     /**
@@ -111,8 +124,12 @@ namespace Eloquent {
                             client.println(F("Access-Control-Allow-Origin: *"));
                             client.println(F("\r\n--frame"));
 
+                            size_t last = millis();
+
                             while (true) {
-                                delay(1);
+                                while (millis() - last < _delay)
+                                    delay(1);
+
                                 yield();
 
                                 if (_paused)
@@ -137,6 +154,7 @@ namespace Eloquent {
                                 client.write((const char *) camera.frame->buf, camera.frame->len);
                                 client.println(F("\r\n--frame"));
                                 client.flush();
+                                last = millis();
                             }
                         });
                     }
