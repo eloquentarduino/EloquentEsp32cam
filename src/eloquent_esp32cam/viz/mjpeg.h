@@ -144,12 +144,11 @@ namespace Eloquent {
                                 if (!camera.capture().isOk())
                                     continue;
 
-                                client.print("Content-Type: image/jpeg\r\nContent-Length: ");
-                                client.println(camera.frame->len);
-
                                 if (_onFrame != NULL)
                                     _onFrame(&client, camera.frame);
 
+                                client.print("Content-Type: image/jpeg\r\nContent-Length: ");
+                                client.println(camera.frame->len);
                                 client.println();
                                 client.write((const char *) camera.frame->buf, camera.frame->len);
                                 client.println(F("\r\n--frame"));
