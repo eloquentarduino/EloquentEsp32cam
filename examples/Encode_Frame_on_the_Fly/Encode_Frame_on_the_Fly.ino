@@ -103,7 +103,7 @@ void reencode_frame(WiFiClient *client, camera_fb_t* frame) {
     // frame->buf contains RGB565 data
     // that is, 2 bytes per pixel
     //
-    // in this test, we're going to drop the B component
+    // in this test, we're going to do a "negative" effect
     // feel free to replace this with your own code
     for (uint16_t y = 0; y < height; y++) {
         uint16_t *row = (uint16_t*) (frame->buf + width * 2 * y);
@@ -111,12 +111,14 @@ void reencode_frame(WiFiClient *client, camera_fb_t* frame) {
         for (uint16_t x = 0; x < width; x++) {
             // read pixel and parse to R, G, B components
             const uint16_t pixel = row[x];
-            uint16_t r = (pixel >> 11);
+            uint16_t r = (pixel >> 11) & 0b11111;
             uint16_t g = (pixel >> 5) & 0b111111;
             uint16_t b = pixel & 0b11111;
 
-            // actual work: drop B component
-            b = 0;
+            // actual work: make negative
+            r = 31 - r;
+            g = 63 - g;
+            b = 31 - b;
 
             // re-pack to RGB565
             row[x] = (r << 11) | (g << 5) | b;
@@ -125,6 +127,7 @@ void reencode_frame(WiFiClient *client, camera_fb_t* frame) {
 
     // encode to jpeg
     uint8_t quality = 90;
+
     frame2jpg_cb(frame, quality, &buffer_jpeg, NULL);
     ESP_LOGI("var_dump", "JPEG size=%d", jpeg_length);
 }
