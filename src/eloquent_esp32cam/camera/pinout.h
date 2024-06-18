@@ -339,6 +339,26 @@ namespace Eloquent {
                     pins.reset = -1;
                     pins.flashlight = -1;
                 }
+
+                void kaluga() {
+                    pins.d0 = 36;
+                    pins.d1 = 37;
+                    pins.d2 = 41;
+                    pins.d3 = 42;
+                    pins.d4 = 39;
+                    pins.d5 = 40;
+                    pins.d6 = 21;
+                    pins.d7 = 38;
+                    pins.xclk = 1;
+                    pins.pclk = 33;
+                    pins.vsync = 2;
+                    pins.href = 3;
+                    pins.sccb_sda = 8;
+                    pins.sccb_scl = 7;
+                    pins.pwdn = -1;
+                    pins.reset = -1;
+                    pins.flashlight = -1;
+                }
             };
         }
     }
