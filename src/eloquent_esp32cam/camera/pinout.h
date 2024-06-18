@@ -319,6 +319,26 @@ namespace Eloquent {
                     pins.reset = 39;
                     pins.flashlight = -1;
                 }
+
+                void eye_s3() {
+                    pins.d0 = 11;
+                    pins.d1 = 9;
+                    pins.d2 = 8;
+                    pins.d3 = 10;
+                    pins.d4 = 12;
+                    pins.d5 = 18;
+                    pins.d6 = 17;
+                    pins.d7 = 16;
+                    pins.xclk = 15;
+                    pins.pclk = 13;
+                    pins.vsync = 6;
+                    pins.href = 7;
+                    pins.sccb_sda = 4;
+                    pins.sccb_scl = 5;
+                    pins.pwdn = -1;
+                    pins.reset = -1;
+                    pins.flashlight = -1;
+                }
             };
         }
     }
