@@ -129,7 +129,15 @@ namespace Eloquent {
                     }
 
                     /**
-                     * Release frame memory
+                     * Release frame memory.
+                     * Only call if you know what you're doing:
+                     * calling this method at the wrong time may
+                     * 1) make other pieces of code of this library break
+                     * 2) introduce lags in the capture process
+                     *
+                     * Frame buffer is already release before each new capture,
+                     * so you shouldn't have the necessity to call this method
+                     * on your own.
                      */
                     void free() {
                         if (frame != NULL) {
