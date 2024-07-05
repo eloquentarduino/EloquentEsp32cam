@@ -57,6 +57,15 @@ namespace Eloquent {
                     }
 
                     /**
+                     * Set src image
+                     * @param frame
+                     * @return
+                     */
+                    Crop& from(camera_fb_t *frame) {
+                        return from((uint16_t*) frame->buf, frame->width, frame->height);
+                    }
+
+                    /**
                      * 
                      */
                     Crop& to(uint16_t width, uint16_t height) {
@@ -96,12 +105,8 @@ namespace Eloquent {
                         _src.x2 = _src.width;
                         _src.y1 = 0;
                         _src.y2 = _src.height;
-                        _out.x1 = 0;
-                        _out.x2 = _out.width;
-                        _out.y1 = 0;
-                        _out.y2 = _out.height;
 
-                        return *this;
+                        return offset(0, 0);
                     }
 
                     /**
@@ -116,10 +121,8 @@ namespace Eloquent {
                             _src.y1 = dy;
                             _src.x2 = _src.width - dx;
                             _src.y2 = _src.height - dy;
-                            _out.x1 = 0;
-                            _out.y1 = 0;
-                            _out.x2 = _out.width;
-                            _out.y2 = _out.height;
+
+                            return offset(0, 0);
                         }
                         else if (_out.width > _src.width) {
                             uint16_t dx = (_out.width - _src.width) / 2;
@@ -139,6 +142,24 @@ namespace Eloquent {
                     }
 
                     /**
+                     * Manually set crop area origin
+                     * @param x
+                     * @param y
+                     * @return
+                     */
+                    Crop& offset(int16_t x, int16_t y) {
+                        if (x < 0) x += _src.width;
+                        if (y < 0) y += _src.height;
+
+                        _src.x1 = x;
+                        _src.x2 = x + _out.width;
+                        _src.y1 = y;
+                        _src.y2 = y + _out.height;
+
+                        return *this;
+                    }
+
+                    /**
                      * No interpolation
                      */
                     Crop& nearest() {
@@ -150,7 +171,7 @@ namespace Eloquent {
                     /**
                      * Use mean interpolation 
                      */
-                    Crop& mean() {
+                    Crop& linear() {
                         _algo = IMAGE_RESIZE_MEAN;
 
                         return *this;
@@ -184,9 +205,9 @@ namespace Eloquent {
                         if (_out.channels != 1 && _out.channels != 3)
                             return exception.set("Output channels must be 1 (gray) or 3 (rgb)");
 
-                        ESP_LOGI("Crop", "_src: w=%d, h=%d, y1=%d, y2=%d, x1=%d, x2=%d", _src.width, _src.height, _src.y1, _src.y2, _src.x1, _src.x2);
-                        ESP_LOGI("Crop", "_out: w=%d, h=%d, y1=%d, y2=%d, x1=%d, x2=%d", _out.width, _out.height, _out.y1, _out.y2, _out.x1, _out.x2);
-                        
+                        ESP_LOGD("Crop", "src: w=%d, h=%d, y1=%d, y2=%d, x1=%d, x2=%d", _src.width, _src.height, _src.y1, _src.y2, _src.x1, _src.x2);
+                        ESP_LOGD("Crop", "out: w=%d, h=%d, y1=%d, y2=%d, x1=%d, x2=%d", _out.width, _out.height, _out.y1, _out.y2, _out.x1, _out.x2);
+
                         crop_and_resize(
                             out,
                             _out.height,

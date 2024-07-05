@@ -96,6 +96,15 @@ namespace Eloquent {
                     }
 
                     /**
+                     * Manually set frame
+                     *
+                     * @param newFrame
+                     */
+                    void setFrame(camera_fb_t *newFrame) {
+                        frame = newFrame;
+                    }
+
+                    /**
                      * Capture new frame
                      */
                     Exception& capture() {

@@ -99,14 +99,15 @@ namespace Eloquent {
                                 fomo.forEach([client](int i, eloq::ei::bbox_t bbox) {
                                     ESP_LOGI(
                                         "FOMO", 
-                                        "id=%d,x=%d,y=%d,w=%d,h=%d,cx=%d,cy=%d",
+                                        "id=%d,x=%d,y=%d,w=%d,h=%d,cx=%d,cy=%d,score=%.2f",
                                         i, 
                                         bbox.x, 
                                         bbox.y, 
                                         bbox.width, 
                                         bbox.height,
                                         bbox.cx,
-                                        bbox.cy
+                                        bbox.cy,
+                                        bbox.proba
                                     );
                                     client->print("id=");
                                     client->print(i);
@@ -122,6 +123,8 @@ namespace Eloquent {
                                     client->print(((float) bbox.cx) / EI_CLASSIFIER_INPUT_WIDTH);
                                     client->print("&cy=");
                                     client->print(((float) bbox.cy) / EI_CLASSIFIER_INPUT_HEIGHT);
+                                    client->print("&score=");
+                                    client->print(bbox.proba);
                                     client->print("|");
                                 });
 

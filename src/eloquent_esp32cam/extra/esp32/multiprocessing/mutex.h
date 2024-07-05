@@ -47,7 +47,7 @@ namespace Eloquent {
 
                             if (mutex == NULL) {
                                 ESP_LOGE("Mutex", "Cannot create mutex %s", name);
-                                return false; 
+                                return (_ok = false);
                             }
 
                             if (xSemaphoreTake(mutex, ticks) != pdTRUE) {

@@ -278,7 +278,7 @@ namespace Eloquent {
                         case FRAMESIZE_QCIF: qcif(); break;
                         case FRAMESIZE_HQVGA: hqvga(); break;
                         case FRAMESIZE_240X240: _240x240(); break;
-                        case FRAMESIZE_QVGA: square240(); break;
+                        case FRAMESIZE_QVGA: qvga(); break;
                         case FRAMESIZE_CIF: cif(); break;
                         case FRAMESIZE_HVGA: hvga(); break;
                         case FRAMESIZE_VGA: vga(); break;
