@@ -95,7 +95,7 @@ namespace Eloquent {
 
                     if (gray.pixels == NULL) {
                         ESP_LOGI("JPEG", "Allocating memory for decoding");
-                        gray.pixels = (uint8_t*) malloc(camera.resolution.getWidth() / 8 * camera.resolution.getHeight() / 8);
+                        gray.pixels = (uint8_t*) ps_malloc(camera.resolution.getWidth() / 8 * camera.resolution.getHeight() / 8);
                     }
 
                     benchmark.start();

@@ -112,7 +112,7 @@ namespace Eloquent {
 
                         // first frame, only copy frame to prev
                         if (_prev == NULL) {
-                            _prev = (uint16_t*) malloc(camera.rgb565.length * sizeof(uint16_t));
+                            _prev = (uint16_t*) ps_malloc(camera.rgb565.length * sizeof(uint16_t));
                             copy(camera.rgb565);
 
                             return exception.set("First frame, can't detect motion").soft();

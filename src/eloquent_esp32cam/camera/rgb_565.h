@@ -99,7 +99,7 @@ namespace Eloquent {
                             length = width * height;
 
                             ESP_LOGI("Camera", "Allocating %d bytes for %dx%d RGB565 image", length * 2, width, height);
-                            data = (uint16_t*) malloc(length * 2);
+                            data = (uint16_t*) ps_malloc(length * 2);
                         }
 
                         if (data == NULL)

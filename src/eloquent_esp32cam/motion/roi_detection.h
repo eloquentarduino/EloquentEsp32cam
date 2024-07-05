@@ -84,8 +84,8 @@ namespace Eloquent {
                             return exception.set("You MUST set a width and height for the RoI");
 
                         if (_prev == NULL) {
-                            _prev = (uint8_t*) malloc(_w * _h * sizeof(uint16_t));
-                            _roi  = (uint8_t*) malloc(_w * _h * sizeof(uint16_t));
+                            _prev = (uint8_t*) ps_malloc(_w * _h * sizeof(uint16_t));
+                            _roi  = (uint8_t*) ps_malloc(_w * _h * sizeof(uint16_t));
                             copy(frame, _prev);
 
                             return exception.set("First frame, can't detect motion").soft();
