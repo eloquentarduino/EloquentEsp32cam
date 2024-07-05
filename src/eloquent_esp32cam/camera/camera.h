@@ -85,6 +85,7 @@ namespace Eloquent {
                         config.frame_size = resolution.framesize;
                         config.jpeg_quality = quality.quality;
                         config.xclk_freq_hz = xclk.freq;
+                        config.grab_mode = CAMERA_GRAB_LATEST;
 
                         // init
                         if (esp_camera_init(&config) != ESP_OK)
