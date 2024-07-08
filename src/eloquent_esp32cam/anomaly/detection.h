@@ -1,5 +1,5 @@
-#ifndef ELOQUENT_ESP32CAM_MOTION_DETECTION
-#define ELOQUENT_ESP32CAM_MOTION_DETECTION
+#ifndef ELOQUENT_ESP32CAM_ANOMALY_DETECTION
+#define ELOQUENT_ESP32CAM_ANOMALY_DETECTION
 
 #include <dl_image.hpp>
 #include "../extra/exception.h"
@@ -19,9 +19,9 @@ using Eloquent::Extra::PubSub;
 
 namespace Eloquent {
     namespace Esp32cam {
-        namespace Motion {
+        namespace Anomaly {
             /**
-             * Detect motion using "fast" algorithm
+             * Detect anomaly using "fast" algorithm
              */
             class Detection {
                 public:
@@ -40,15 +40,16 @@ namespace Eloquent {
                     Detection() :
                         _stride(4),
                         _threshold(5),
-                        _ratio(0.2),
-                        _prev(NULL),
+                        _detectionRatio(0.2),
+						_referenceRatio(0.05),
+                        _reference(NULL),
                         _skip(5),
                         movingRatio(0),
                         daemon(this),
                         #if defined(ELOQUENT_EXTRA_PUBSUB_H)
                         mqtt(this),
                         #endif
-                        exception("MotionDetection") {
+                        exception("AnomalyDetection") {
 
                         }
 
@@ -78,29 +79,54 @@ namespace Eloquent {
                     }
 
                     /**
-                     * Set detection sensitivity (image level).
-                     * The greater the value, the less sensitive the detection.
+                     * Set reference image sensitivity (image level).
+                     * The greater the value, the more the reference image can vary over time.
                      */
-                    void ratio(float ratio) {
-                        if (ratio <= 0 || ratio > 1) {
-                            ESP_LOGE("MotionDetection", "ratio MUST be between 0 (exclusive) and 1 (inclusive)");
+                    void referenceRatio(float ratio) {
+                        if (ratio < 0 || ratio >= _detectionRatio) {
+                            ESP_LOGE("AnomalyDetection", "referenceRatio MUST be between 0 (inclusive) and _detectionRatio (exclusive)");
                             return;
                         }
 
-                        _ratio = ratio;
+                        _referenceRatio = ratio;
                     }
 
                     /**
-                     * Test if motion triggered
+                     * Set detection sensitivity (image level).
+                     * The greater the value, the less sensitive the detection.
                      */
-                    inline bool triggered() {
-                        return movingRatio >= _ratio;
+                    void detectionRatio(float ratio) {
+                        if (ratio <= _referenceRatio || ratio > 1) {
+                            ESP_LOGE("AnomalyDetection", "detectionRatio MUST be between _referenceRatio (exclusive) and 1 (inclusive)");
+                            return;
+                        }
+                        _detectionRatio = ratio;
                     }
 
+                    /**
+                     * Test if anomaly triggered
+                     */
+                    inline bool triggered() {
+                        return movingRatio >= _detectionRatio;
+                    }
+					
+					Exception& setReference() {
+                        // convert JPEG to RGB565
+                        // this reduces the frame to 1/8th
+                        if (!camera.rgb565.convert().isOk())
+                            return camera.rgb565.exception;
+
+						if (_reference == NULL) {
+							_reference = (uint16_t*) malloc(camera.rgb565.length * sizeof(uint16_t));
+						}
+                        copy(camera.rgb565);
+						
+                        return exception.clear();
+					}
                     /**
                      * 
                      */
-                    Exception& run() {
+                    Exception& run(float& ratio ) {
                         // skip fre first frames
                         if (_skip > 0 && _skip-- > 0)
                             return exception.set(String("Still ") + _skip + " frames to skip...");
@@ -111,17 +137,17 @@ namespace Eloquent {
                             return camera.rgb565.exception;
 
                         // first frame, only copy frame to prev
-                        if (_prev == NULL) {
-                            _prev = (uint16_t*) ps_malloc(camera.rgb565.length * sizeof(uint16_t));
+                        if (_reference == NULL) {
+                            _reference = (uint16_t*) malloc(camera.rgb565.length * sizeof(uint16_t));
                             copy(camera.rgb565);
 
-                            return exception.set("First frame, can't detect motion").soft();
+                            return exception.set("First frame, can't detect anomaly").soft();
                         }
 
                         benchmark.timeit([this]() {
                             int movingPoints = dl::image::get_moving_point_number(
                                 camera.rgb565.data, 
-                                _prev, 
+                                _reference, 
                                 camera.rgb565.height, 
                                 camera.rgb565.width, 
                                 _stride, 
@@ -129,9 +155,13 @@ namespace Eloquent {
                             );
 
                             movingRatio = ((float) movingPoints) / camera.rgb565.length * _stride * _stride;
-                            copy(camera.rgb565);
+							if (movingRatio < _referenceRatio) {
+								ESP_LOGD("AnomalyDetection", "Replacing reference frame - referenceRatio = %.2f", movingRatio);
+								copy(camera.rgb565);
+							}
                         });
-                        ESP_LOGD("MotionDetection", "moving points ratio: %.2f", movingRatio);
+						ratio = movingRatio; // Update the caller's reference to the movingRatio
+                        ESP_LOGD("AnomalyDetection", "moving points ratio: %.2f", movingRatio);
 
                         // rate limit
                         if (triggered() && !rate)
@@ -142,11 +172,15 @@ namespace Eloquent {
 
                         return exception.clear();
                     }
+                    Exception& run() {
+						float dummy;
+						return run(dummy);
+					}
                     /**
                      * @brief Convert to JSON
                      */
                     String toJSON() {
-                        return String("{\"motion\":") + (triggered() ? "true" : "false") + "}";
+                        return String("{\"anomaly\":") + (triggered() ? "true" : "false") + "}";
                     }
                     
                     /**
@@ -158,17 +192,18 @@ namespace Eloquent {
 
                 protected:
                     uint8_t _skip;
-                    uint16_t *_prev;
+                    uint16_t *_reference;
                     uint8_t _stride;
                     uint8_t _threshold;
-                    float _ratio;
+                    float _detectionRatio;
+					float _referenceRatio;
 
                     /**
                      * 
                      */
                     template<typename Frame>
                     void copy(Frame frame) {
-                        memcpy((uint8_t*) _prev, (uint8_t*) frame.data, frame.length * sizeof(uint16_t));
+                        memcpy((uint8_t*) _reference, (uint8_t*) frame.data, frame.length * sizeof(uint16_t));
                     }
             };
         }
@@ -176,8 +211,8 @@ namespace Eloquent {
 }
 
 namespace eloq {
-    namespace motion {
-        static Eloquent::Esp32cam::Motion::Detection detection;
+    namespace anomaly {
+        static Eloquent::Esp32cam::Anomaly::Detection detection;
     }
 }
 
