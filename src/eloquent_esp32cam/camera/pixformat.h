@@ -22,9 +22,16 @@ namespace Eloquent {
                 }
 
                 /**
-                 * 
+                 * Alias for grayscale
                  */
                 void gray() {
+                    grayscale();
+                }
+
+                /**
+                 *
+                 */
+                void grayscale() {
                     format = PIXFORMAT_GRAYSCALE;
                 }
 
@@ -82,6 +89,14 @@ namespace Eloquent {
                  */
                 inline bool is(pixformat_t fmt) {
                     return format == fmt;
+                }
+
+                /**
+                 * Get bytes per pixel
+                 * @return
+                 */
+                inline uint8_t bpp() {
+                    return isGray() ? 1 : (isRGB888() ? 3 : 2);
                 }
             };
         }
