@@ -64,9 +64,9 @@ void loop() {
         Serial.println(camera.exception.toString());
         return;
     }
-    float anomalyProbability;
     
     // run anomaly detection
+    if (!detection.run().isOk()) {
         Serial.println(detection.exception.toString());
         return;
     }
@@ -75,4 +75,5 @@ void loop() {
     if (detection.triggered()) {
         Serial.print("Anomaly detected: "); Serial.println(detection.movingRatio);
     }
+}
 
