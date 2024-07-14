@@ -84,8 +84,8 @@ namespace Eloquent {
                             return exception.set("You MUST set a width and height for the RoI");
 
                         if (_reference == NULL) {
-                            _reference = (uint8_t*) malloc(_w * _h * sizeof(uint16_t));
-                            _roi  = (uint8_t*) malloc(_w * _h * sizeof(uint16_t));
+                            _reference = (uint8_t*) ps_malloc(_w * _h * sizeof(uint16_t));
+                            _roi  = (uint8_t*) ps_malloc(_w * _h * sizeof(uint16_t));
                             copy(frame, _reference);
 
                             return exception.set("First frame, can't detect anomaly").soft();
@@ -97,14 +97,14 @@ namespace Eloquent {
                             copy(frame, _roi);
 
                             int movingPoints = dl::image::get_moving_point_number((uint16_t *) _roi, (uint16_t*) _reference, coords.height, coords.width, _stride, _threshold);
-                            moving_ratio = ((float) movingPoints) / sizeof(_roi) * _stride * _stride;
+                            movingRatio = ((float) movingPoints) / sizeof(_roi) * _stride * _stride;
                             memcpy(_reference, _roi, sizeof(_reference));
                         });
-						if (moving_ratio < _referenceRatio) {
+						if (movingRatio < _referenceRatio) {
 							// update reference
                             copy(frame, _reference);
 						}
-                        
+
                         ESP_LOGD(
                             "RoI AnomalyDetection", 
                             "roi: (x=%d, y=%d, width=%d, height=%d). moving points: %.2f%%", 

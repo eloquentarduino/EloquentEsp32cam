@@ -42,8 +42,8 @@ namespace Eloquent {
                         _src.height = height;
                         _src.x1 = 0;
                         _src.y1 = 0;
-                        _src.x2 = width;
-                        _src.y2 = height;
+                        _src.x2 = width - 1;
+                        _src.y2 = height - 1;
 
                         return *this;
                     }
@@ -64,8 +64,8 @@ namespace Eloquent {
                         _out.height = height;
                         _out.x1 = 0;
                         _out.y1 = 0;
-                        _out.x2 = width;
-                        _out.y2 = height;
+                        _out.x2 = width - 1;
+                        _out.y2 = height - 1;
 
                         return *this;
                     }
@@ -93,13 +93,13 @@ namespace Eloquent {
                      */
                     Crop& squash() {
                         _src.x1 = 0;
-                        _src.x2 = _src.width;
+                        _src.x2 = _src.width - 1;
                         _src.y1 = 0;
-                        _src.y2 = _src.height;
+                        _src.y2 = _src.height - 1;
                         _out.x1 = 0;
-                        _out.x2 = _out.width;
+                        _out.x2 = _out.width - 1;
                         _out.y1 = 0;
-                        _out.y2 = _out.height;
+                        _out.y2 = _out.height - 1;
 
                         return *this;
                     }
@@ -114,12 +114,14 @@ namespace Eloquent {
 
                             _src.x1 = dx;
                             _src.y1 = dy;
-                            _src.x2 = _src.width - dx;
-                            _src.y2 = _src.height - dy;
+                            _src.x2 = _src.width - dx - 1;
+                            _src.y2 = _src.height - dy - 1;
                             _out.x1 = 0;
                             _out.y1 = 0;
-                            _out.x2 = _out.width;
-                            _out.y2 = _out.height;
+                            _out.x2 = _out.width - 1;
+                            _out.y2 = _out.height - 1;
+
+                            return *this;
                         }
                         else if (_out.width > _src.width) {
                             uint16_t dx = (_out.width - _src.width) / 2;
@@ -127,14 +129,32 @@ namespace Eloquent {
 
                             _out.x1 = dx;
                             _out.y1 = dy;
-                            _out.x2 = _out.width - dx;
-                            _out.y2 = _out.height - dy;
+                            _out.x2 = _out.width - dx - 1;
+                            _out.y2 = _out.height - dy - 1;
                             _src.x1 = 0;
                             _src.y1 = 0;
-                            _src.x2 = _src.width;
-                            _src.y2 = _src.height;
+                            _src.x2 = _src.width - 1;
+                            _src.y2 = _src.height - 1;
                         }
                         
+                        return *this;
+                    }
+
+                    /**
+                     * Manually set crop area origin
+                     * @param x
+                     * @param y
+                     * @return
+                     */
+                    Crop& offset(int16_t x, int16_t y) {
+                        if (x < 0) x += _src.width;
+                        if (y < 0) y += _src.height;
+
+                        _src.x1 = x;
+                        _src.x2 = x + _out.width - 1;
+                        _src.y1 = y;
+                        _src.y2 = y + _out.height - 1;
+
                         return *this;
                     }
 

@@ -59,9 +59,8 @@ void loop() {
         return;
     }
 
-    float anomalyProbability;
     // run anomaly detection
-    if (!detection.run(anomalyProbability).isOk()) {
+    if (!detection.run().isOk()) {
         Serial.println(detection.exception.toString());
         return;
     }
@@ -70,7 +69,7 @@ void loop() {
     if (detection.triggered()) {
         Serial.printf(
           "Anomaly of %.2f detected on frame of size %dx%d (%d bytes)\n",
-		  anomalyProbability,
+		  detection.movingRatio,
           camera.resolution.getWidth(),
           camera.resolution.getHeight(),
           camera.getSizeInBytes()
@@ -87,7 +86,7 @@ void loop() {
           );
 
           camera.capture();
-          
+
           Serial.printf(
             "Frame size is now %d bytes\n", 
             camera.getSizeInBytes()

@@ -33,14 +33,15 @@ namespace Eloquent {
                     #if defined(ELOQUENT_EXTRA_PUBSUB_H)
                     PubSub<Detection> mqtt;
                     #endif
-                    
+
                     /**
                      * 
                      */
                     Detection() :
                         _stride(4),
                         _threshold(5),
-                        _detectionRatio(0.2),
+                        _lowerDetectionRatio(0.2),
+						_upperDetectionRatio(0.5),
 						_referenceRatio(0.05),
                         _reference(NULL),
                         _skip(5),
@@ -69,7 +70,7 @@ namespace Eloquent {
                     void threshold(uint8_t threshold) {
                         _threshold = threshold;
                     }
-                    
+
                     /**
                      * @brief Skip first frames (to avoid false detection)
                      * @param skip
@@ -83,11 +84,6 @@ namespace Eloquent {
                      * The greater the value, the more the reference image can vary over time.
                      */
                     void referenceRatio(float ratio) {
-                        if (ratio < 0 || ratio >= _detectionRatio) {
-                            ESP_LOGE("AnomalyDetection", "referenceRatio MUST be between 0 (inclusive) and _detectionRatio (exclusive)");
-                            return;
-                        }
-
                         _referenceRatio = ratio;
                     }
 
@@ -95,42 +91,45 @@ namespace Eloquent {
                      * Set detection sensitivity (image level).
                      * The greater the value, the less sensitive the detection.
                      */
-                    void detectionRatio(float ratio) {
-                        if (ratio <= _referenceRatio || ratio > 1) {
-                            ESP_LOGE("AnomalyDetection", "detectionRatio MUST be between _referenceRatio (exclusive) and 1 (inclusive)");
-                            return;
-                        }
-                        _detectionRatio = ratio;
+                    void lowerDetectionRatio(float ratio) {
+                        _lowerDetectionRatio = ratio;
                     }
 
+                    /**
+                     * Set maximum detection sensitivity (image level).
+                     * This protects against false detections when the light level across the whole image changes
+					 * Useful when you know objects being detected will never fill more than a fraction of the image
+                     */
+                    void upperDetectionRatio(float ratio) {
+                        _upperDetectionRatio = ratio;
+                    }
                     /**
                      * Test if anomaly triggered
                      */
                     inline bool triggered() {
-                        return movingRatio >= _detectionRatio;
+                        return movingRatio >= _lowerDetectionRatio && movingRatio <= _upperDetectionRatio;
                     }
-					
+
 					Exception& setReference() {
                         // convert JPEG to RGB565
-                        // this reduces the frame to 1/8th
                         if (!camera.rgb565.convert().isOk())
                             return camera.rgb565.exception;
 
 						if (_reference == NULL) {
-							_reference = (uint16_t*) malloc(camera.rgb565.length * sizeof(uint16_t));
+							_reference = (uint16_t*) ps_malloc(camera.rgb565.length * sizeof(uint16_t));
 						}
                         copy(camera.rgb565);
-						
+
                         return exception.clear();
 					}
                     /**
                      * 
                      */
-                    Exception& run(float& ratio ) {
+                    Exception& run() {
                         // skip fre first frames
                         if (_skip > 0 && _skip-- > 0)
                             return exception.set(String("Still ") + _skip + " frames to skip...");
-                            
+
                         // convert JPEG to RGB565
                         // this reduces the frame to 1/8th
                         if (!camera.rgb565.convert().isOk())
@@ -160,7 +159,6 @@ namespace Eloquent {
 								copy(camera.rgb565);
 							}
                         });
-						ratio = movingRatio; // Update the caller's reference to the movingRatio
                         ESP_LOGD("AnomalyDetection", "moving points ratio: %.2f", movingRatio);
 
                         // rate limit
@@ -172,17 +170,13 @@ namespace Eloquent {
 
                         return exception.clear();
                     }
-                    Exception& run() {
-						float dummy;
-						return run(dummy);
-					}
                     /**
                      * @brief Convert to JSON
                      */
                     String toJSON() {
                         return String("{\"anomaly\":") + (triggered() ? "true" : "false") + "}";
                     }
-                    
+
                     /**
                      * @brief Test if an MQTT message should be published
                      */
@@ -195,7 +189,8 @@ namespace Eloquent {
                     uint16_t *_reference;
                     uint8_t _stride;
                     uint8_t _threshold;
-                    float _detectionRatio;
+                    float _lowerDetectionRatio;
+					float _upperDetectionRatio;
 					float _referenceRatio;
 
                     /**

@@ -65,14 +65,14 @@ void loop() {
         return;
     }
     float anomalyProbability;
+    
     // run anomaly detection
-    if (!detection.run(anomalyProbability).isOk()) {
         Serial.println(detection.exception.toString());
         return;
     }
 
     // on anomaly, perform action
     if (detection.triggered()) {
-        Serial.print("Anomaly detected: "); Serial.println(anomalyProbability);
+        Serial.print("Anomaly detected: "); Serial.println(detection.movingRatio);
     }
-}
+

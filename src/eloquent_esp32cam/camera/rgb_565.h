@@ -21,6 +21,7 @@ namespace Eloquent {
                     size_t length;
                     size_t width;
                     size_t height;
+					jpg_scale_t scaling;
 
                     /**
                      * 
@@ -30,7 +31,8 @@ namespace Eloquent {
                         camera(cam),
                         length(0),
                         width(0),
-                        height(0) {
+                        height(0),
+						scaling(JPG_SCALE_8X) {
                     }
 
                     /**
@@ -94,8 +96,8 @@ namespace Eloquent {
                             return exception.set("Can't convert empty frame to RGB565");
 
                         if (!width) {
-                            width = camera->resolution.getWidth() / 8;
-                            height = camera->resolution.getHeight() / 8;
+                            width = camera->resolution.getWidth() >> scaling;
+                            height = camera->resolution.getHeight() >> scaling;
                             length = width * height;
 
                             ESP_LOGI("Camera", "Allocating %d bytes for %dx%d RGB565 image", length * 2, width, height);
@@ -106,7 +108,7 @@ namespace Eloquent {
                             return exception.set("Cannot allocate memory");
 
                         camera->mutex.threadsafe([this]() {
-                            if (!jpg2rgb565(camera->frame->buf, camera->frame->len, (uint8_t*) data, JPG_SCALE_8X))
+                            if (!jpg2rgb565(camera->frame->buf, camera->frame->len, (uint8_t*) data, scaling))
                                 exception.set("Error converting frame from JPEG to RGB565");
                         });
 

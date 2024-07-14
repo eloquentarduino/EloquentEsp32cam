@@ -17,8 +17,8 @@ namespace Eloquent {
              * Run anomaly detection in a task
              * 
              * @class Daemon
-             * @author Simone
-             * @date 13/12/2023
+             * @author jksemple
+             * @date 11/07/2024
              * @file daemon.h
              * @brief 
              */
@@ -39,7 +39,7 @@ namespace Eloquent {
                 }
             
                 /**
-                 * Run function when a face is detected
+                 * Run function when a difference from 'normal' is detected
                  * 
                  * @brief 
                  * @param callback
@@ -87,6 +87,5 @@ namespace Eloquent {
         }
     }
 }
-
 
 #endif
