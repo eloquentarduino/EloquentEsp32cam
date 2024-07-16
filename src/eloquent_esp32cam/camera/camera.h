@@ -189,6 +189,20 @@ namespace Eloquent {
                         return disk.writeBinary(filename, frame->buf, frame->len);
                     }
 
+                    /**
+                     * Sometimes you may need to swap RGB565 bytes
+                     */
+                    void swapBytes() {
+                        if (!hasFrame())
+                            return;
+
+                        for (size_t i = 0; i < frame->len; i += 2) {
+                            const uint8_t tmp = frame->buf[i];
+                            frame->buf[i] = frame->buf[i + 1];
+                            frame->buf[i + 1] = tmp;
+                        }
+                    }
+
                 protected:
             };
         }

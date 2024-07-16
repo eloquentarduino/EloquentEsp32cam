@@ -38,6 +38,9 @@ namespace eloq {
      */
     template<typename T>
     T* realloc(T* existing, size_t size) {
+        if (existing == NULL)
+            return alloc<T>(size);
+
         if (psramFound())
             return zero(static_cast<T*>(ps_realloc(existing, size)), size);
 

@@ -103,7 +103,7 @@ namespace Eloquent {
                         return exception.set("No frame available");
 
                     if (!jpeg.openRAM(camera.frame->buf, camera.frame->len, __handleMCU__))
-                        return exception.set("Can't init decoder");
+                        return exception.set(decodeErrorCode(jpeg.getLastError()));
 
                     const uint16_t inputWidth = camera.frame->width / divisor();
                     const uint16_t inputHeight = camera.frame->height / divisor();
@@ -124,13 +124,10 @@ namespace Eloquent {
                         return exception.set("Can't allocate decode buffer");
 
                     benchmark.benchmark([this]() {
-                        if (!jpeg.decode(0, 0, _options)) {
-                            exception.set("Decode failed");
-                        }
-                        else {
-                            exception.clear();
-                        }
-
+                        exception.set(
+                            !jpeg.decode(0, 0, _options) ?
+                            decodeErrorCode(jpeg.getLastError()) : ""
+                        );
                         jpeg.close();
                     });
 
@@ -161,6 +158,20 @@ namespace Eloquent {
                 }
 
                 /**
+                 * Get decoded image width
+                 */
+                inline uint16_t width() {
+                    return outputWidth;
+                }
+
+                /**
+                 * Get decoded image height
+                 */
+                inline uint16_t height() {
+                    return outputHeight;
+                }
+
+                /**
                  * Get bytes per pixel (grayscale = 1, rgb = 2)
                  */
                 inline uint8_t bpp() {
@@ -172,6 +183,13 @@ namespace Eloquent {
                  */
                 uint16_t* u16() {
                     return (uint16_t*) pixels;
+                }
+
+                /**
+                 * Get pixels as uint8_t* buffer
+                 */
+                uint8_t* u8() {
+                    return pixels;
                 }
 
                 /**
@@ -248,6 +266,24 @@ namespace Eloquent {
                         ESP_LOGD("JPEGDEG", "(Re)Allocating %d bytes for decoded pixels", size);
                         pixels = eloq::realloc<uint8_t>(pixels, size);
                         _allocatedSize = size;
+                    }
+                }
+
+                /**
+                 *
+                 */
+                String decodeErrorCode(int code) {
+                    switch (code) {
+                        case JPEG_INVALID_PARAMETER:
+                            return "Invalid parameter";
+                        case JPEG_DECODE_ERROR:
+                            return "Decode error";
+                        case JPEG_UNSUPPORTED_FEATURE:
+                            return "Unsupported feature";
+                        case JPEG_INVALID_FILE:
+                            return "Invalid file";
+                        default:
+                            return "Unknown error";
                     }
                 }
             };
