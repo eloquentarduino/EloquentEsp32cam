@@ -70,7 +70,7 @@ namespace Eloquent {
                  */
                 Exception& begin() {
                     detection.accurate();
-                    SPIFFS.begin();
+                    SPIFFS.begin(true);
                     this->recognizer.set_thresh(this->thresh);
 
                     // delete all enrolled ids
