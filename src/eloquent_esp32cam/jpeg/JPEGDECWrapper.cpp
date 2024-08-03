@@ -1,6 +1,8 @@
 #include <Arduino.h>
-#include <JPEGDEC.h>
 #include "JPEGDECWrapper.h"
+
+#if defined(__JPEGDEC__)
+#include <JPEGDEC.h>
 
 using Eloquent::Esp32cam::JPEG::JPEGDECWrapper;
 
@@ -23,3 +25,5 @@ int __handleMCU__(jpeg_draw_tag *mcu) {
 
     return 1;
 }
+
+#endif
