@@ -1,5 +1,18 @@
 # Unleash the full power of you ESP32 camera
 
+## How to Add the Library
+Download the ZIP File: Download the library as a ZIP file and extract it.
+
+Locate the Correct Folder: Inside the extracted folder, you will find a folder named EloquentEsp32cam-main. This folder contains the necessary files (e.g., library.json, library.properties).
+
+Add the Library to Arduino IDE: Open Arduino IDE and go to:
+
+Sketch -> Include Library -> Add .ZIP Library...
+
+Select the inner EloquentEsp32cam-main folder (the one containing the library files).
+
+Make sure you add the 2nd EloquentEsp32cam-main folder to avoid errors.
+
 This Arduino library kickstarts your ESP32 camera projects
 by providing you a set of tools to easily interact your the camera.
 
