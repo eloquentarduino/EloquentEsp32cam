@@ -6,7 +6,7 @@
     "type": "git",
     "url": "https://github.com/eloquentarduino/EloquentEsp32cam"
   },
-  "version": "2.7.14",
+  "version": "2.7.15",
   "authors": {
     "name": "Simone Salerno",
     "url": "https://github.com/eloquentarduino"
