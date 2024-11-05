@@ -45,7 +45,7 @@ namespace Eloquent {
                     #if defined(ELOQUENT_EXTRA_PUBSUB_H)
                     PubSub<FaceDetection> mqtt;
                     #endif
-                    uint8_t image[240 * 240 * 3];
+                    uint8_t *image;
                     face_t first;
                     face_t faces[MAX_FACES];
 
@@ -55,13 +55,20 @@ namespace Eloquent {
                     FaceDetection() :
                         exception("FaceDetection"),
                         daemon(this),
+                        image(NULL),
                         #if defined(ELOQUENT_EXTRA_PUBSUB_H)
                         mqtt(this),
                         #endif
                         _twoStages(false),
                         _confidence(0.5)
                     {
-                        memset(image, 0, sizeof(image));
+                    }
+
+                    /**
+                     * Destructor
+                     */
+                    ~FaceDetection() {
+                        free(image);
                     }
 
                     /**
@@ -91,6 +98,8 @@ namespace Eloquent {
                      * Perform detection
                      */
                     Exception& run() {
+                        allocateImageBuffer();
+
                         // assert 240x240
                         if (camera.resolution.getWidth() != 240 || camera.resolution.getHeight() != 240)
                             return exception.set("Face detection only works at 240x240");
@@ -288,6 +297,25 @@ namespace Eloquent {
                                 isFirst = false;
                                 first.copyFrom(res);
                             }
+                        }
+                    }
+
+                    /**
+                     *
+                     */
+                    void allocateImageBuffer() {
+                        if (image != NULL)
+                            return;
+
+                        const uint32_t memsize = 240L * 240L * 3;
+
+                        if (psramFound()) {
+                            ESP_LOGD("FaceDetection", "Allocating %d bytes into PSRAM", memsize);
+                            image = (uint8_t *) ps_malloc(memsize);
+                        }
+                        else {
+                            ESP_LOGD("FaceDetection", "Allocating %d bytes into RAM", memsize);
+                            image = (uint8_t *) malloc(memsize);
                         }
                     }
             };
