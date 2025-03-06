@@ -1,7 +1,7 @@
 #ifndef ELOQUENT_ESP32CAM_VIZ_FACE_STREAM_H
 #define ELOQUENT_ESP32CAM_VIZ_FACE_STREAM_H
 
-#include "../camera/Camera.h"
+#include "../camera/camera.h"
 #include "../extra/exception.h"
 #include "../extra/esp32/wifi/sta.h"
 #include "../extra/esp32/http/server.h"

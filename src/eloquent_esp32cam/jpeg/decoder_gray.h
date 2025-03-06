@@ -3,7 +3,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include "../camera/Camera.h"
+#include "../camera/camera.h"
 #include "./picojpeg.h"
 #include "../extra/exception.h"
 #include "../extra/benchmark.h"
