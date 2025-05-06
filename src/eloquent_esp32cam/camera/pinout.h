@@ -183,6 +183,30 @@ namespace Eloquent {
                     return true;
                 }
 
+                 /**
+                 *
+                 */
+                bool robosoccer_esp32_s3() {
+                    pins.d0 = 15;
+                    pins.d1 = 17;
+                    pins.d2 = 18;
+                    pins.d3 = 16;
+                    pins.d4 = 14;
+                    pins.d5 = 12;
+                    pins.d6 = 11;
+                    pins.d7 = 48;
+                    pins.xclk = 10;
+                    pins.pclk = 13;
+                    pins.vsync = 38;
+                    pins.href = 47;
+                    pins.sccb_sda = 40;
+                    pins.sccb_scl = 39;
+                    pins.pwdn = -1;
+                    pins.reset = -1;
+                    pins.flashlight = -1;
+                    return true;
+                }
+                
                 /**
                  * 
                  */
